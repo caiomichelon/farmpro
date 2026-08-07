@@ -9,6 +9,14 @@
 export type PlotType = 'lavoura' | 'pecuaria';
 export type FarmRole = 'admin' | 'campo';
 export type SubscriptionStatus = 'trialing' | 'active' | 'past_due' | 'canceled';
+export type SeasonStatus = 'planejada' | 'plantada' | 'colhendo' | 'colhida';
+export type ProductionCostCategory =
+  | 'semente'
+  | 'adubo'
+  | 'defensivo'
+  | 'combustivel'
+  | 'mao_de_obra'
+  | 'outro';
 
 export type Profile = {
   id: string;
@@ -38,6 +46,65 @@ export type Plot = {
   name: string;
   area_hectares: number;
   type: PlotType;
+  created_at: string;
+};
+
+/** Uma safra (ciclo de plantio) de um talhão. Ver 0003_lavoura.sql. */
+export type PlotSeason = {
+  id: string;
+  plot_id: string;
+  season_label: string;
+  crop: string;
+  variety: string | null;
+  planted_area_hectares: number;
+  planting_date: string | null;
+  status: SeasonStatus;
+  created_at: string;
+};
+
+/** Custo de produção (insumo) de uma safra — também cobre o histórico de
+ * aplicação de defensivo/adubo (categoria + applied_at). */
+export type ProductionCost = {
+  id: string;
+  plot_season_id: string;
+  category: ProductionCostCategory;
+  description: string;
+  quantity: number | null;
+  unit: string | null;
+  unit_cost: number | null;
+  total_cost: number;
+  applied_at: string;
+  created_at: string;
+};
+
+/** Um lançamento de colheita (diário) de uma safra. */
+export type HarvestEntry = {
+  id: string;
+  plot_season_id: string;
+  harvested_at: string;
+  quantity_sacas: number;
+  notes: string | null;
+  created_at: string;
+};
+
+/** Comprador de grão (trading/cerealista). */
+export type GrainBuyer = {
+  id: string;
+  farm_id: string;
+  name: string;
+  notes: string | null;
+  created_at: string;
+};
+
+/** Venda de grão, lançada a partir da tela de colheita de uma safra. */
+export type GrainSale = {
+  id: string;
+  plot_season_id: string;
+  buyer_id: string | null;
+  sale_date: string;
+  quantity_sacas: number;
+  price_per_saca: number;
+  notes: string | null;
   created_at: string;
 };
 
@@ -90,6 +157,50 @@ export interface Database {
         Row: Subscription;
         Insert: Partial<Subscription> & { owner_id: string };
         Update: Partial<Subscription>;
+        Relationships: [];
+      };
+      plot_seasons: {
+        Row: PlotSeason;
+        Insert: Partial<PlotSeason> & {
+          plot_id: string;
+          season_label: string;
+          crop: string;
+          planted_area_hectares: number;
+        };
+        Update: Partial<PlotSeason>;
+        Relationships: [];
+      };
+      production_costs: {
+        Row: ProductionCost;
+        Insert: Partial<ProductionCost> & {
+          plot_season_id: string;
+          category: ProductionCostCategory;
+          description: string;
+          total_cost: number;
+        };
+        Update: Partial<ProductionCost>;
+        Relationships: [];
+      };
+      harvest_entries: {
+        Row: HarvestEntry;
+        Insert: Partial<HarvestEntry> & { plot_season_id: string; quantity_sacas: number };
+        Update: Partial<HarvestEntry>;
+        Relationships: [];
+      };
+      grain_buyers: {
+        Row: GrainBuyer;
+        Insert: Partial<GrainBuyer> & { farm_id: string; name: string };
+        Update: Partial<GrainBuyer>;
+        Relationships: [];
+      };
+      grain_sales: {
+        Row: GrainSale;
+        Insert: Partial<GrainSale> & {
+          plot_season_id: string;
+          quantity_sacas: number;
+          price_per_saca: number;
+        };
+        Update: Partial<GrainSale>;
         Relationships: [];
       };
     };
