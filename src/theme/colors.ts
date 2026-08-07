@@ -29,6 +29,8 @@ export const colors = {
   lavouraLight: '#EAF0E2',
   pecuaria: '#8A4B32',
   pecuariaLight: '#F5E7DE',
+  funcionarios: '#3E5C6B',
+  funcionariosLight: '#E4EBEE',
 
   // Estado / feedback
   success: '#3F7A4E',

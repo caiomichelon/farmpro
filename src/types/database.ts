@@ -18,6 +18,10 @@ export type ProductionCostCategory =
   | 'mao_de_obra'
   | 'outro';
 export type CattleLotStatus = 'ativo' | 'vendido' | 'abatido';
+export type EmployeeSector = 'lavoura' | 'corte' | 'cria' | 'escritorio';
+export type EmployeeCostType = 'mensalista' | 'diarista' | 'tarefa';
+export type EmployeeStatus = 'ativo' | 'inativo';
+export type TimeEntryType = 'entrada' | 'saida_almoco' | 'volta_almoco' | 'saida';
 
 export type Profile = {
   id: string;
@@ -206,6 +210,64 @@ export type Calving = {
   created_at: string;
 };
 
+/** Ficha completa de um funcionário — separado por setor. */
+export type Employee = {
+  id: string;
+  farm_id: string;
+  full_name: string;
+  sector: EmployeeSector;
+  role: string;
+  cost_type: EmployeeCostType;
+  cost_value: number;
+  cpf: string | null;
+  phone: string | null;
+  admission_date: string;
+  birth_date: string | null;
+  address: string | null;
+  emergency_contact_name: string | null;
+  emergency_contact_phone: string | null;
+  status: EmployeeStatus;
+  notes: string | null;
+  created_at: string;
+};
+
+/** Documento de um funcionário — base dos alertas de documentação. */
+export type EmployeeDocument = {
+  id: string;
+  employee_id: string;
+  document_type: string;
+  document_number: string | null;
+  issue_date: string | null;
+  expiry_date: string | null;
+  notes: string | null;
+  created_at: string;
+};
+
+/** Registro de ponto digital, com geolocalização. */
+export type TimeEntry = {
+  id: string;
+  employee_id: string;
+  entry_type: TimeEntryType;
+  recorded_at: string;
+  latitude: number | null;
+  longitude: number | null;
+  location_accuracy_m: number | null;
+  notes: string | null;
+  created_at: string;
+};
+
+/** Lançamento do histórico de produtividade de um funcionário. */
+export type ProductivityRecord = {
+  id: string;
+  employee_id: string;
+  record_date: string;
+  activity: string;
+  quantity: number;
+  unit: string;
+  notes: string | null;
+  created_at: string;
+};
+
 /**
  * Preparação para o futuro — ainda sem gateway de pagamento integrado.
  * Ver supabase/migrations/0002_subscriptions_placeholder.sql.
@@ -357,6 +419,41 @@ export interface Database {
         Row: Calving;
         Insert: Partial<Calving> & { cow_id: string };
         Update: Partial<Calving>;
+        Relationships: [];
+      };
+      employees: {
+        Row: Employee;
+        Insert: Partial<Employee> & {
+          farm_id: string;
+          full_name: string;
+          sector: EmployeeSector;
+          role: string;
+          cost_value: number;
+        };
+        Update: Partial<Employee>;
+        Relationships: [];
+      };
+      employee_documents: {
+        Row: EmployeeDocument;
+        Insert: Partial<EmployeeDocument> & { employee_id: string; document_type: string };
+        Update: Partial<EmployeeDocument>;
+        Relationships: [];
+      };
+      time_entries: {
+        Row: TimeEntry;
+        Insert: Partial<TimeEntry> & { employee_id: string; entry_type: TimeEntryType };
+        Update: Partial<TimeEntry>;
+        Relationships: [];
+      };
+      productivity_records: {
+        Row: ProductivityRecord;
+        Insert: Partial<ProductivityRecord> & {
+          employee_id: string;
+          activity: string;
+          quantity: number;
+          unit: string;
+        };
+        Update: Partial<ProductivityRecord>;
         Relationships: [];
       };
     };

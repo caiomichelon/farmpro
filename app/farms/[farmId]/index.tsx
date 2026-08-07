@@ -52,6 +52,18 @@ export default function FarmHomeScreen() {
             onPress={() => router.push(`/farms/${farmId}/pecuaria`)}
           />
         </View>
+
+        <Pressable
+          style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
+          onPress={() => router.push(`/farms/${farmId}/funcionarios`)}
+        >
+          <View style={[styles.employeesMarker, { backgroundColor: colors.funcionarios }]} />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.employeesTitle}>Funcionários</Text>
+            <Text style={styles.employeesSubtitle}>Ficha, ponto digital e produtividade</Text>
+          </View>
+          <Text style={styles.employeesChevron}>→</Text>
+        </Pressable>
       </SafeAreaView>
     </View>
   );
@@ -90,5 +102,39 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.md,
     padding: spacing.xl,
+  },
+  employeesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    marginHorizontal: spacing.xl,
+    marginTop: -spacing.md,
+    marginBottom: spacing.xl,
+    padding: spacing.lg,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 14,
+  },
+  employeesRowPressed: {
+    opacity: 0.8,
+  },
+  employeesMarker: {
+    width: 4,
+    height: 32,
+    borderRadius: 999,
+  },
+  employeesTitle: {
+    ...typography.subheading,
+    color: colors.textPrimary,
+  },
+  employeesSubtitle: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  employeesChevron: {
+    ...typography.heading,
+    color: colors.funcionarios,
   },
 });
