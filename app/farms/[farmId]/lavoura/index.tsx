@@ -6,13 +6,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../../../src/components/Button';
 import { Card } from '../../../../src/components/Card';
 import { EmptyState } from '../../../../src/components/EmptyState';
+import { FinancialSummary } from '../../../../src/components/FinancialSummary';
 import { ScreenHeader } from '../../../../src/components/ScreenHeader';
+import { StatGrid } from '../../../../src/components/StatGrid';
+import { useLavouraSummary } from '../../../../src/hooks/useLavouraSummary';
 import { usePlotsWithLatestSeason, type PlotWithLatestSeason } from '../../../../src/hooks/usePlots';
 import { colors, radius, spacing, typography } from '../../../../src/theme';
 
 export default function LavouraHomeScreen() {
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const { plots, isLoading, error, reload } = usePlotsWithLatestSeason(farmId);
+  const { summary, reload: reloadSummary } = useLavouraSummary(farmId);
 
   // A tela de "novo talhão" é uma rota separada — ao voltar pra cá o hook
   // desta tela não recarrega sozinho (ela já estava montada, nada mudou nas
@@ -21,16 +25,15 @@ export default function LavouraHomeScreen() {
   useFocusEffect(
     useCallback(() => {
       reload();
-    }, [reload])
+      reloadSummary();
+    }, [reload, reloadSummary])
   );
-
-  const totalHectares = plots.reduce((sum, p) => sum + Number(p.area_hectares), 0);
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScreenHeader
         title="Lavoura"
-        subtitle={`${plots.length} ${plots.length === 1 ? 'talhão' : 'talhões'} · ${totalHectares.toLocaleString('pt-BR')} ha`}
+        subtitle={`${summary.totalPlots} ${summary.totalPlots === 1 ? 'talhão' : 'talhões'} · ${summary.totalHectares.toLocaleString('pt-BR')} ha`}
         right={
           <Pressable onPress={() => router.push(`/farms/${farmId}/lavoura/compradores`)} hitSlop={12}>
             <Text style={styles.headerLink}>Compradores</Text>
@@ -45,6 +48,31 @@ export default function LavouraHomeScreen() {
           data={plots}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
+          ListHeaderComponent={
+            <View style={styles.headerContent}>
+              <StatGrid
+                stats={[
+                  { label: 'Talhões', value: String(summary.totalPlots) },
+                  { label: 'Área total', value: `${summary.totalHectares.toLocaleString('pt-BR')} ha` },
+                  { label: 'Safras em andamento', value: String(summary.activeSeasons) },
+                  {
+                    label: 'Produtividade média',
+                    value: summary.avgYieldPerHectare !== null ? `${summary.avgYieldPerHectare.toFixed(1)} sc/ha` : '—',
+                  },
+                ]}
+              />
+              <FinancialSummary cost={summary.totalCost} revenue={summary.totalRevenue} margin={summary.margin} />
+              <View style={styles.linksRow}>
+                <Pressable onPress={() => router.push(`/farms/${farmId}/lavoura/planilha`)} hitSlop={8}>
+                  <Text style={styles.link}>Planilha de talhões</Text>
+                </Pressable>
+                <Text style={styles.linkDivider}>·</Text>
+                <Pressable onPress={() => router.push(`/farms/${farmId}/lavoura/safras`)} hitSlop={8}>
+                  <Text style={styles.link}>Planilha de safras</Text>
+                </Pressable>
+              </View>
+            </View>
+          }
           ListEmptyComponent={<EmptyState text="Nenhum talhão cadastrado ainda. Comece criando o primeiro." />}
           renderItem={({ item }) => (
             <PlotCard plot={item} onPress={() => router.push(`/farms/${farmId}/lavoura/talhao/${item.id}`)} />
@@ -98,6 +126,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     gap: spacing.md,
     flexGrow: 1,
+  },
+  headerContent: {
+    gap: spacing.md,
+    marginBottom: spacing.md,
+  },
+  linksRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  link: {
+    ...typography.captionMedium,
+    color: colors.lavoura,
+  },
+  linkDivider: {
+    color: colors.textMuted,
   },
   card: {
     marginBottom: spacing.md,

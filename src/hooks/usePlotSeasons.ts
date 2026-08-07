@@ -40,6 +40,47 @@ async function withSummary(seasons: PlotSeason[]): Promise<SeasonSummary[]> {
   });
 }
 
+export interface SeasonSummaryWithPlot extends SeasonSummary {
+  plotName: string;
+}
+
+/** Todas as safras da fazenda de uma vez (todos os talhões) — planilha
+ * consolidada, igual à ideia da planilha de abates da Pecuária. */
+export function useSeasonsByFarm(farmId: string | undefined) {
+  const [seasons, setSeasons] = useState<SeasonSummaryWithPlot[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const reload = useCallback(async () => {
+    if (!farmId) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('plot_seasons')
+        .select('*, plots!inner(farm_id, name)')
+        .eq('plots.farm_id', farmId)
+        .order('planting_date', { ascending: false, nullsFirst: false });
+
+      if (fetchError) throw fetchError;
+
+      const rows = (data ?? []) as unknown as (PlotSeason & { plots: { name: string } | null })[];
+      const summarized = await withSummary(rows);
+      setSeasons(summarized.map((s, i) => ({ ...s, plotName: rows[i].plots?.name ?? '' })));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Não foi possível carregar as safras.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [farmId]);
+
+  useEffect(() => {
+    reload();
+  }, [reload]);
+
+  return { seasons, isLoading, error, reload };
+}
+
 /** Histórico de safras de um talhão — a base da rotação de cultura e da
  * produtividade histórica pedidas no briefing. */
 export function usePlotSeasons(plotId: string | undefined) {
