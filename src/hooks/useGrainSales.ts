@@ -1,0 +1,73 @@
+import { useCallback, useEffect, useState } from 'react';
+
+import { supabase } from '../lib/supabase';
+import type { GrainSale } from '../types/database';
+
+export interface GrainSaleWithBuyer extends GrainSale {
+  buyerName: string | null;
+}
+
+/** Vendas de grão de uma safra — lançada dentro da área de colheita. */
+export function useGrainSales(seasonId: string | undefined) {
+  const [sales, setSales] = useState<GrainSaleWithBuyer[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const reload = useCallback(async () => {
+    if (!seasonId) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('grain_sales')
+        .select('*, grain_buyers(name)')
+        .eq('plot_season_id', seasonId)
+        .order('sale_date', { ascending: false });
+
+      if (fetchError) throw fetchError;
+
+      const rows = (data ?? []) as unknown as (GrainSale & { grain_buyers: { name: string } | null })[];
+      setSales(rows.map((row) => ({ ...row, buyerName: row.grain_buyers?.name ?? null })));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Não foi possível carregar as vendas.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [seasonId]);
+
+  useEffect(() => {
+    reload();
+  }, [reload]);
+
+  const createSale = useCallback(
+    async (input: {
+      buyer_id?: string;
+      quantity_sacas: number;
+      price_per_saca: number;
+      sale_date?: string;
+      notes?: string;
+    }) => {
+      if (!seasonId) return { error: 'Safra não encontrada.' };
+
+      const { error: insertError } = await supabase.from('grain_sales').insert({
+        plot_season_id: seasonId,
+        buyer_id: input.buyer_id || null,
+        quantity_sacas: input.quantity_sacas,
+        price_per_saca: input.price_per_saca,
+        sale_date: input.sale_date || new Date().toISOString().slice(0, 10),
+        notes: input.notes || null,
+      });
+
+      if (insertError) return { error: insertError.message };
+
+      await reload();
+      return { error: null };
+    },
+    [seasonId, reload]
+  );
+
+  const totalSacasSold = sales.reduce((sum, s) => sum + Number(s.quantity_sacas), 0);
+  const totalValue = sales.reduce((sum, s) => sum + Number(s.quantity_sacas) * Number(s.price_per_saca), 0);
+
+  return { sales, totalSacasSold, totalValue, isLoading, error, reload, createSale };
+}
