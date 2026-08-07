@@ -11,7 +11,7 @@ export default function FuncionariosLayout() {
         animation: 'slide_from_right',
       }}
     >
-      <Stack.Screen name="novo-funcionario" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+      <Stack.Screen name="novo-funcionario" options={{ animation: 'slide_from_bottom' }} />
     </Stack>
   );
 }

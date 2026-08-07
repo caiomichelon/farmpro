@@ -7,6 +7,7 @@ import { Button } from '../../../../../src/components/Button';
 import { Card } from '../../../../../src/components/Card';
 import { EmptyState } from '../../../../../src/components/EmptyState';
 import { ScreenHeader } from '../../../../../src/components/ScreenHeader';
+import { StatGrid } from '../../../../../src/components/StatGrid';
 import { useBreedingCows, type BreedingCowSummary } from '../../../../../src/hooks/useBreedingCows';
 import { colors, radius, spacing, typography } from '../../../../../src/theme';
 
@@ -20,6 +21,10 @@ export default function CriaHomeScreen() {
       reload();
     }, [reload])
   );
+
+  const pregnantCount = cows.filter((c) => c.isPregnant).length;
+  const totalCalves = cows.reduce((sum, c) => sum + c.calfCount, 0);
+  const pregnancyRate = cows.length > 0 ? (pregnantCount / cows.length) * 100 : 0;
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -40,6 +45,18 @@ export default function CriaHomeScreen() {
           data={cows}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
+          ListHeaderComponent={
+            <View style={styles.headerContent}>
+              <StatGrid
+                stats={[
+                  { label: 'Matrizes', value: String(cows.length) },
+                  { label: 'Prenhas agora', value: String(pregnantCount) },
+                  { label: 'Bezerros até hoje', value: String(totalCalves) },
+                  { label: 'Taxa de prenhez', value: `${pregnancyRate.toFixed(0)}%` },
+                ]}
+              />
+            </View>
+          }
           ListEmptyComponent={<EmptyState text="Nenhuma matriz cadastrada ainda. Comece criando a primeira." />}
           renderItem={({ item }) => (
             <CowCard cow={item} onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/matriz/${item.id}`)} />
@@ -86,6 +103,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     gap: spacing.md,
     flexGrow: 1,
+  },
+  headerContent: {
+    marginBottom: spacing.md,
   },
   card: {
     marginBottom: spacing.md,

@@ -81,3 +81,53 @@ export function useCattleSlaughters(lotId: string | undefined) {
 
   return { slaughters, isLoading, error, reload, createSlaughter };
 }
+
+export interface CattleSlaughterWithLotAndHouse extends CattleSlaughter {
+  lotName: string | null;
+  slaughterhouseName: string | null;
+}
+
+/** Todos os abates da fazenda (todos os lotes de uma vez) — planilha
+ * consolidada, pra ver o histórico completo sem entrar lote por lote. */
+export function useCattleSlaughtersByFarm(farmId: string | undefined) {
+  const [slaughters, setSlaughters] = useState<CattleSlaughterWithLotAndHouse[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const reload = useCallback(async () => {
+    if (!farmId) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('cattle_slaughters')
+        .select('*, cattle_lots!inner(farm_id, name), slaughterhouses(name)')
+        .eq('cattle_lots.farm_id', farmId)
+        .order('slaughter_date', { ascending: false });
+
+      if (fetchError) throw fetchError;
+
+      const rows = (data ?? []) as unknown as (CattleSlaughter & {
+        cattle_lots: { farm_id: string; name: string } | null;
+        slaughterhouses: { name: string } | null;
+      })[];
+      setSlaughters(
+        rows.map((row) => ({
+          ...row,
+          lotName: row.cattle_lots?.name ?? null,
+          slaughterhouseName: row.slaughterhouses?.name ?? null,
+        }))
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Não foi possível carregar os abates.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [farmId]);
+
+  useEffect(() => {
+    reload();
+  }, [reload]);
+
+  return { slaughters, isLoading, error, reload };
+}

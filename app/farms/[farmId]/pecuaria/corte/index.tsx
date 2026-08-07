@@ -7,6 +7,7 @@ import { Button } from '../../../../../src/components/Button';
 import { Card } from '../../../../../src/components/Card';
 import { EmptyState } from '../../../../../src/components/EmptyState';
 import { ScreenHeader } from '../../../../../src/components/ScreenHeader';
+import { StatGrid } from '../../../../../src/components/StatGrid';
 import { CATTLE_LOT_STATUS_LABELS } from '../../../../../src/data/cattleOptions';
 import { useCattleLots, type CattleLotSummary } from '../../../../../src/hooks/useCattleLots';
 import { colors, radius, spacing, typography } from '../../../../../src/theme';
@@ -22,7 +23,12 @@ export default function CorteHomeScreen() {
     }, [reload])
   );
 
-  const totalHead = lots.reduce((sum, l) => sum + l.currentHeadCount, 0);
+  const activeLots = lots.filter((l) => l.status === 'ativo');
+  const totalHead = activeLots.reduce((sum, l) => sum + l.currentHeadCount, 0);
+  const gmdValues = activeLots.map((l) => l.gmdKgPerDay).filter((v): v is number => v !== null);
+  const avgGmd = gmdValues.length > 0 ? gmdValues.reduce((sum, v) => sum + v, 0) / gmdValues.length : null;
+  const avgMortality =
+    lots.length > 0 ? lots.reduce((sum, l) => sum + l.mortalityRatePct, 0) / lots.length : 0;
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -48,6 +54,27 @@ export default function CorteHomeScreen() {
           data={lots}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
+          ListHeaderComponent={
+            <View style={styles.headerContent}>
+              <StatGrid
+                stats={[
+                  { label: 'Lotes ativos', value: String(activeLots.length) },
+                  { label: 'Total de cabeças', value: totalHead.toLocaleString('pt-BR') },
+                  { label: 'GMD médio', value: avgGmd !== null ? `${avgGmd.toFixed(2)} kg/dia` : '—' },
+                  { label: 'Mortalidade média', value: `${avgMortality.toFixed(1)}%` },
+                ]}
+              />
+              <View style={styles.linksRow}>
+                <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/planilha`)} hitSlop={8}>
+                  <Text style={styles.link}>Planilha de lotes</Text>
+                </Pressable>
+                <Text style={styles.linkDivider}>·</Text>
+                <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/abates`)} hitSlop={8}>
+                  <Text style={styles.link}>Planilha de abates</Text>
+                </Pressable>
+              </View>
+            </View>
+          }
           ListEmptyComponent={<EmptyState text="Nenhum lote cadastrado ainda. Comece criando o primeiro." />}
           renderItem={({ item }) => (
             <LotCard lot={item} onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${item.id}`)} />
@@ -108,6 +135,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     gap: spacing.md,
     flexGrow: 1,
+  },
+  headerContent: {
+    gap: spacing.md,
+    marginBottom: spacing.md,
+  },
+  linksRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  link: {
+    ...typography.captionMedium,
+    color: colors.pecuaria,
+  },
+  linkDivider: {
+    color: colors.textMuted,
   },
   card: {
     marginBottom: spacing.md,

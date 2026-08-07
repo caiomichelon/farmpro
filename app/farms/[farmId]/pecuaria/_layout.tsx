@@ -2,7 +2,12 @@ import { Stack } from 'expo-router';
 
 import { colors } from '../../../../src/theme';
 
-const modalOptions = { presentation: 'modal' as const, animation: 'slide_from_bottom' as const };
+// NOTA: já usamos `presentation: 'modal'` aqui, mas revertemos — no Expo Go em
+// iOS as telas com apresentação modal nativa renderizavam em branco (bug
+// relatado testando no aparelho de verdade; no `expo start --web` não
+// reproduzia, porque a web ignora `presentation` e sempre faz push normal).
+// Mantemos só a animação de subida, sem trocar o tipo de apresentação.
+const modalOptions = { animation: 'slide_from_bottom' as const };
 
 export default function PecuariaLayout() {
   return (
