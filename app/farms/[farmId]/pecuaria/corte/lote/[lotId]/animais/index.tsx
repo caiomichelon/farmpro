@@ -1,6 +1,6 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../../../../../../src/components/Button';
@@ -23,7 +23,15 @@ export default function LotAnimalsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <ScreenHeader title="Animais do lote" subtitle={`${animals.length} ${animals.length === 1 ? 'animal' : 'animais'}`} />
+      <ScreenHeader
+        title="Animais do lote"
+        subtitle={`${animals.length} ${animals.length === 1 ? 'animal' : 'animais'}`}
+        right={
+          <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${lotId}/animais/importar`)} hitSlop={12}>
+            <Text style={styles.headerLink}>Importar</Text>
+          </Pressable>
+        }
+      />
 
       {isLoading ? (
         <ActivityIndicator style={styles.loading} color={colors.pecuaria} />
@@ -75,6 +83,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  headerLink: {
+    ...typography.captionMedium,
+    color: colors.pecuaria,
   },
   loading: {
     marginTop: spacing.xxl,

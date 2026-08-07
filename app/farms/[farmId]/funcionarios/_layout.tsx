@@ -12,6 +12,7 @@ export default function FuncionariosLayout() {
       }}
     >
       <Stack.Screen name="novo-funcionario" options={{ animation: 'slide_from_bottom' }} />
+      <Stack.Screen name="importar" options={{ animation: 'slide_from_bottom' }} />
     </Stack>
   );
 }

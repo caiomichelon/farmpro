@@ -1,6 +1,6 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../../src/components/Button';
@@ -36,6 +36,11 @@ export default function EmployeesHomeScreen() {
           totalAlerts > 0
             ? `${employees.length} ${employees.length === 1 ? 'funcionário' : 'funcionários'} · ${totalAlerts} ${totalAlerts === 1 ? 'alerta de documento' : 'alertas de documento'}`
             : `${employees.length} ${employees.length === 1 ? 'funcionário' : 'funcionários'}`
+        }
+        right={
+          <Pressable onPress={() => router.push(`/farms/${farmId}/funcionarios/importar`)} hitSlop={12}>
+            <Text style={styles.headerLink}>Importar</Text>
+          </Pressable>
         }
       />
 
@@ -107,6 +112,10 @@ function EmployeeCard({ employee, onPress }: { employee: EmployeeSummary; onPres
 }
 
 const styles = StyleSheet.create({
+  headerLink: {
+    ...typography.captionMedium,
+    color: colors.funcionarios,
+  },
   container: {
     flex: 1,
     backgroundColor: colors.background,

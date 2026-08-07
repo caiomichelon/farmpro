@@ -32,9 +32,14 @@ export default function CriaHomeScreen() {
         title="Cria / Reprodução"
         subtitle={`${cows.length} ${cows.length === 1 ? 'matriz' : 'matrizes'}`}
         right={
-          <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/planilha`)} hitSlop={12}>
-            <Text style={styles.headerLink}>Planilha</Text>
-          </Pressable>
+          <View style={styles.headerLinks}>
+            <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/importar`)} hitSlop={12}>
+              <Text style={styles.headerLink}>Importar</Text>
+            </Pressable>
+            <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/planilha`)} hitSlop={12}>
+              <Text style={styles.headerLink}>Planilha</Text>
+            </Pressable>
+          </View>
         }
       />
 
@@ -122,6 +127,10 @@ const styles = StyleSheet.create({
   cardStat: {
     ...typography.captionMedium,
     color: colors.pecuaria,
+  },
+  headerLinks: {
+    flexDirection: 'row',
+    gap: spacing.md,
   },
   headerLink: {
     ...typography.captionMedium,

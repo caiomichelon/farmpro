@@ -72,6 +72,10 @@ export default function CorteHomeScreen() {
                 <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/abates`)} hitSlop={8}>
                   <Text style={styles.link}>Planilha de abates</Text>
                 </Pressable>
+                <Text style={styles.linkDivider}>·</Text>
+                <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/importar`)} hitSlop={8}>
+                  <Text style={styles.link}>Importar lotes</Text>
+                </Pressable>
               </View>
             </View>
           }
