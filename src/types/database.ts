@@ -17,6 +17,7 @@ export type ProductionCostCategory =
   | 'combustivel'
   | 'mao_de_obra'
   | 'outro';
+export type CattleLotStatus = 'ativo' | 'vendido' | 'abatido';
 
 export type Profile = {
   id: string;
@@ -104,6 +105,103 @@ export type GrainSale = {
   sale_date: string;
   quantity_sacas: number;
   price_per_saca: number;
+  notes: string | null;
+  created_at: string;
+};
+
+/** Lote de gado de corte — controle é por lote, não por animal individual. */
+export type CattleLot = {
+  id: string;
+  farm_id: string;
+  plot_id: string | null;
+  name: string;
+  entry_date: string;
+  entry_head_count: number;
+  entry_avg_weight_kg: number;
+  status: CattleLotStatus;
+  created_at: string;
+};
+
+/** Pesagem periódica de um lote — base do GMD e do escore de condição corporal. */
+export type CattleLotWeighing = {
+  id: string;
+  lot_id: string;
+  weighed_at: string;
+  avg_weight_kg: number;
+  head_count: number | null;
+  body_condition_score: number | null;
+  notes: string | null;
+  created_at: string;
+};
+
+/** Evento de mortalidade de um lote — base da taxa de mortalidade. */
+export type CattleMortalityEvent = {
+  id: string;
+  lot_id: string;
+  event_date: string;
+  head_count: number;
+  cause: string | null;
+  notes: string | null;
+  created_at: string;
+};
+
+/** Frigorífico comprador. */
+export type Slaughterhouse = {
+  id: string;
+  farm_id: string;
+  name: string;
+  notes: string | null;
+  created_at: string;
+};
+
+/** Registro de abate por frigorífico — indicadores zootécnicos de saída. */
+export type CattleSlaughter = {
+  id: string;
+  lot_id: string;
+  slaughterhouse_id: string | null;
+  slaughter_date: string;
+  head_count: number;
+  exit_avg_weight_kg: number;
+  carcass_yield_pct: number | null;
+  fat_finish_score: number | null;
+  feed_conversion_ratio: number | null;
+  price_per_arroba: number;
+  next_slaughter_date: string | null;
+  notes: string | null;
+  created_at: string;
+};
+
+/** Matriz (vaca reprodutora) — área de Cria/Reprodução, separada do Corte. */
+export type BreedingCow = {
+  id: string;
+  farm_id: string;
+  identification: string;
+  birth_date: string | null;
+  notes: string | null;
+  created_at: string;
+};
+
+/** Inseminação de uma matriz. */
+export type Insemination = {
+  id: string;
+  cow_id: string;
+  insemination_date: string;
+  veterinarian: string | null;
+  method: string | null;
+  sire_or_semen: string | null;
+  expected_calving_date: string | null;
+  notes: string | null;
+  created_at: string;
+};
+
+/** Parto de uma matriz — histórico de quantos bezerros ela já deu. */
+export type Calving = {
+  id: string;
+  cow_id: string;
+  insemination_id: string | null;
+  calving_date: string;
+  calf_count: number;
+  calf_identification: string | null;
   notes: string | null;
   created_at: string;
 };
@@ -201,6 +299,64 @@ export interface Database {
           price_per_saca: number;
         };
         Update: Partial<GrainSale>;
+        Relationships: [];
+      };
+      cattle_lots: {
+        Row: CattleLot;
+        Insert: Partial<CattleLot> & {
+          farm_id: string;
+          name: string;
+          entry_head_count: number;
+          entry_avg_weight_kg: number;
+        };
+        Update: Partial<CattleLot>;
+        Relationships: [];
+      };
+      cattle_lot_weighings: {
+        Row: CattleLotWeighing;
+        Insert: Partial<CattleLotWeighing> & { lot_id: string; avg_weight_kg: number };
+        Update: Partial<CattleLotWeighing>;
+        Relationships: [];
+      };
+      cattle_mortality_events: {
+        Row: CattleMortalityEvent;
+        Insert: Partial<CattleMortalityEvent> & { lot_id: string; head_count: number };
+        Update: Partial<CattleMortalityEvent>;
+        Relationships: [];
+      };
+      slaughterhouses: {
+        Row: Slaughterhouse;
+        Insert: Partial<Slaughterhouse> & { farm_id: string; name: string };
+        Update: Partial<Slaughterhouse>;
+        Relationships: [];
+      };
+      cattle_slaughters: {
+        Row: CattleSlaughter;
+        Insert: Partial<CattleSlaughter> & {
+          lot_id: string;
+          head_count: number;
+          exit_avg_weight_kg: number;
+          price_per_arroba: number;
+        };
+        Update: Partial<CattleSlaughter>;
+        Relationships: [];
+      };
+      breeding_cows: {
+        Row: BreedingCow;
+        Insert: Partial<BreedingCow> & { farm_id: string; identification: string };
+        Update: Partial<BreedingCow>;
+        Relationships: [];
+      };
+      inseminations: {
+        Row: Insemination;
+        Insert: Partial<Insemination> & { cow_id: string };
+        Update: Partial<Insemination>;
+        Relationships: [];
+      };
+      calvings: {
+        Row: Calving;
+        Insert: Partial<Calving> & { cow_id: string };
+        Update: Partial<Calving>;
         Relationships: [];
       };
     };
