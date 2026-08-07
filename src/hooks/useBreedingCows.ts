@@ -5,24 +5,42 @@ import type { BreedingCow } from '../types/database';
 
 export interface BreedingCowSummary extends BreedingCow {
   calfCount: number;
+  lastInseminationDate: string | null;
+  expectedCalvingDate: string | null;
+  isPregnant: boolean;
 }
 
-async function withCalfCount(cows: BreedingCow[]): Promise<BreedingCowSummary[]> {
+async function withSummary(cows: BreedingCow[]): Promise<BreedingCowSummary[]> {
   if (cows.length === 0) return [];
-  const { data, error } = await supabase
-    .from('calvings')
-    .select('cow_id, calf_count')
-    .in(
-      'cow_id',
-      cows.map((c) => c.id)
-    );
+  const cowIds = cows.map((c) => c.id);
 
-  if (error) throw error;
+  const [{ data: calvings, error: calvingsError }, { data: inseminations, error: inseminationsError }] =
+    await Promise.all([
+      supabase.from('calvings').select('cow_id, calf_count, insemination_id').in('cow_id', cowIds),
+      supabase
+        .from('inseminations')
+        .select('id, cow_id, insemination_date, expected_calving_date')
+        .in('cow_id', cowIds)
+        .order('insemination_date', { ascending: false }),
+    ]);
 
-  return cows.map((cow) => ({
-    ...cow,
-    calfCount: (data ?? []).filter((c) => c.cow_id === cow.id).reduce((sum, c) => sum + c.calf_count, 0),
-  }));
+  if (calvingsError) throw calvingsError;
+  if (inseminationsError) throw inseminationsError;
+
+  return cows.map((cow) => {
+    const cowCalvings = (calvings ?? []).filter((c) => c.cow_id === cow.id);
+    const cowInseminations = (inseminations ?? []).filter((i) => i.cow_id === cow.id);
+    const lastInsemination = cowInseminations[0];
+    const isPregnant = Boolean(lastInsemination) && !cowCalvings.some((c) => c.insemination_id === lastInsemination.id);
+
+    return {
+      ...cow,
+      calfCount: cowCalvings.reduce((sum, c) => sum + c.calf_count, 0),
+      lastInseminationDate: lastInsemination?.insemination_date ?? null,
+      expectedCalvingDate: isPregnant ? (lastInsemination?.expected_calving_date ?? null) : null,
+      isPregnant,
+    };
+  });
 }
 
 /** Matrizes (vacas reprodutoras) da fazenda — área de Cria/Reprodução. */
@@ -43,7 +61,7 @@ export function useBreedingCows(farmId: string | undefined) {
         .order('identification', { ascending: true });
 
       if (fetchError) throw fetchError;
-      setCows(await withCalfCount(data ?? []));
+      setCows(await withSummary(data ?? []));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível carregar as matrizes.');
     } finally {
@@ -94,7 +112,7 @@ export function useBreedingCow(cowId: string | undefined) {
         .single();
 
       if (fetchError) throw fetchError;
-      const [summary] = await withCalfCount([data]);
+      const [summary] = await withSummary([data]);
       setCow(summary);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível carregar a matriz.');

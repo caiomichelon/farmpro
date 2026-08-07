@@ -22,9 +22,14 @@ export default function CorteHomeScreen() {
         title="Corte"
         subtitle={`${lots.length} ${lots.length === 1 ? 'lote' : 'lotes'} · ${totalHead.toLocaleString('pt-BR')} cabeças`}
         right={
-          <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/frigorificos`)} hitSlop={12}>
-            <Text style={styles.headerLink}>Frigoríficos</Text>
-          </Pressable>
+          <View style={styles.headerLinks}>
+            <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/animais`)} hitSlop={12}>
+              <Text style={styles.headerLink}>Animais</Text>
+            </Pressable>
+            <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/frigorificos`)} hitSlop={12}>
+              <Text style={styles.headerLink}>Frigoríficos</Text>
+            </Pressable>
+          </View>
         }
       />
 
@@ -79,6 +84,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  headerLinks: {
+    flexDirection: 'row',
+    gap: spacing.md,
   },
   headerLink: {
     ...typography.captionMedium,

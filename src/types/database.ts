@@ -22,6 +22,9 @@ export type EmployeeSector = 'lavoura' | 'corte' | 'cria' | 'escritorio';
 export type EmployeeCostType = 'mensalista' | 'diarista' | 'tarefa';
 export type EmployeeStatus = 'ativo' | 'inativo';
 export type TimeEntryType = 'entrada' | 'saida_almoco' | 'volta_almoco' | 'saida';
+export type CattleAnimalStatus = 'ativo' | 'vendido' | 'abatido' | 'morto';
+export type CattleAnimalSex = 'macho' | 'femea';
+export type CattleHealthEventType = 'vacina' | 'tratamento' | 'doenca' | 'outro';
 
 export type Profile = {
   id: string;
@@ -268,6 +271,54 @@ export type ProductivityRecord = {
   created_at: string;
 };
 
+/** Animal individual dentro de um lote — ficha completa, com brinco. */
+export type CattleAnimal = {
+  id: string;
+  farm_id: string;
+  lot_id: string;
+  tag_number: string;
+  sex: CattleAnimalSex | null;
+  breed: string | null;
+  entry_weight_kg: number | null;
+  entry_date: string;
+  status: CattleAnimalStatus;
+  notes: string | null;
+  created_at: string;
+};
+
+/** Pesagem individual de um animal. */
+export type CattleAnimalWeighing = {
+  id: string;
+  animal_id: string;
+  weighed_at: string;
+  weight_kg: number;
+  body_condition_score: number | null;
+  notes: string | null;
+  created_at: string;
+};
+
+/** Evento de saúde de um animal (vacina, tratamento, doença). */
+export type CattleAnimalHealthEvent = {
+  id: string;
+  animal_id: string;
+  event_date: string;
+  event_type: CattleHealthEventType;
+  description: string;
+  notes: string | null;
+  created_at: string;
+};
+
+/** Movimentação de um animal entre lotes. */
+export type CattleAnimalMovement = {
+  id: string;
+  animal_id: string;
+  from_lot_id: string | null;
+  to_lot_id: string;
+  moved_at: string;
+  notes: string | null;
+  created_at: string;
+};
+
 /**
  * Preparação para o futuro — ainda sem gateway de pagamento integrado.
  * Ver supabase/migrations/0002_subscriptions_placeholder.sql.
@@ -454,6 +505,34 @@ export interface Database {
           unit: string;
         };
         Update: Partial<ProductivityRecord>;
+        Relationships: [];
+      };
+      cattle_animals: {
+        Row: CattleAnimal;
+        Insert: Partial<CattleAnimal> & { farm_id: string; lot_id: string; tag_number: string };
+        Update: Partial<CattleAnimal>;
+        Relationships: [];
+      };
+      cattle_animal_weighings: {
+        Row: CattleAnimalWeighing;
+        Insert: Partial<CattleAnimalWeighing> & { animal_id: string; weight_kg: number };
+        Update: Partial<CattleAnimalWeighing>;
+        Relationships: [];
+      };
+      cattle_animal_health_events: {
+        Row: CattleAnimalHealthEvent;
+        Insert: Partial<CattleAnimalHealthEvent> & {
+          animal_id: string;
+          event_type: CattleHealthEventType;
+          description: string;
+        };
+        Update: Partial<CattleAnimalHealthEvent>;
+        Relationships: [];
+      };
+      cattle_animal_movements: {
+        Row: CattleAnimalMovement;
+        Insert: Partial<CattleAnimalMovement> & { animal_id: string; to_lot_id: string };
+        Update: Partial<CattleAnimalMovement>;
         Relationships: [];
       };
     };

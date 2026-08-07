@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../../../src/components/Button';
@@ -7,7 +7,7 @@ import { Card } from '../../../../../src/components/Card';
 import { EmptyState } from '../../../../../src/components/EmptyState';
 import { ScreenHeader } from '../../../../../src/components/ScreenHeader';
 import { useBreedingCows, type BreedingCowSummary } from '../../../../../src/hooks/useBreedingCows';
-import { colors, spacing, typography } from '../../../../../src/theme';
+import { colors, radius, spacing, typography } from '../../../../../src/theme';
 
 export default function CriaHomeScreen() {
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
@@ -15,7 +15,15 @@ export default function CriaHomeScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <ScreenHeader title="Cria / Reprodução" subtitle={`${cows.length} ${cows.length === 1 ? 'matriz' : 'matrizes'}`} />
+      <ScreenHeader
+        title="Cria / Reprodução"
+        subtitle={`${cows.length} ${cows.length === 1 ? 'matriz' : 'matrizes'}`}
+        right={
+          <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/planilha`)} hitSlop={12}>
+            <Text style={styles.headerLink}>Planilha</Text>
+          </Pressable>
+        }
+      />
 
       {isLoading ? (
         <ActivityIndicator style={styles.loading} color={colors.pecuaria} />
@@ -49,6 +57,11 @@ function CowCard({ cow, onPress }: { cow: BreedingCowSummary; onPress: () => voi
           {cow.calfCount} {cow.calfCount === 1 ? 'bezerro' : 'bezerros'}
         </Text>
       </View>
+      {cow.isPregnant ? (
+        <View style={styles.pregnantBadge}>
+          <Text style={styles.pregnantBadgeText}>Prenha</Text>
+        </View>
+      ) : null}
     </Card>
   );
 }
@@ -79,6 +92,22 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   cardStat: {
+    ...typography.captionMedium,
+    color: colors.pecuaria,
+  },
+  headerLink: {
+    ...typography.captionMedium,
+    color: colors.pecuaria,
+  },
+  pregnantBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.pecuariaLight,
+    borderRadius: radius.sm,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    marginTop: spacing.sm,
+  },
+  pregnantBadgeText: {
     ...typography.captionMedium,
     color: colors.pecuaria,
   },

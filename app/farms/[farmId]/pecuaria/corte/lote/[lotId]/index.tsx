@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../../../../../src/components/Button';
@@ -43,7 +43,18 @@ export default function LotDetailScreen() {
           <SummaryStat label="Mortalidade" value={`${lot.mortalityRatePct.toFixed(1)}%`} />
         </View>
 
-        <Section title="Pesagens" subtitle="Histórico de peso e escore de condição corporal">
+        <Pressable
+          style={({ pressed }) => [styles.animalsRow, pressed && styles.rowPressed]}
+          onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${lotId}/animais`)}
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={styles.animalsRowTitle}>Animais individuais</Text>
+            <Text style={styles.animalsRowSubtitle}>Ficha com brinco, pesagens, saúde e movimentação por animal</Text>
+          </View>
+          <Text style={styles.animalsRowChevron}>→</Text>
+        </Pressable>
+
+        <Section title="Pesagens do lote" subtitle="Histórico de peso e escore de condição corporal médios">
           {weighings.length === 0 ? (
             <EmptyState text="Nenhuma pesagem registrada ainda." />
           ) : (
@@ -210,5 +221,29 @@ const styles = StyleSheet.create({
   rowNotes: {
     ...typography.caption,
     color: colors.textSecondary,
+  },
+  animalsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    backgroundColor: colors.pecuariaLight,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+  },
+  rowPressed: {
+    opacity: 0.8,
+  },
+  animalsRowTitle: {
+    ...typography.subheading,
+    color: colors.pecuaria,
+  },
+  animalsRowSubtitle: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  animalsRowChevron: {
+    ...typography.heading,
+    color: colors.pecuaria,
   },
 });
