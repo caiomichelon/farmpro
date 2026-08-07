@@ -24,10 +24,14 @@ Stack: **React Native (Expo) + TypeScript + Expo Router**, backend em
 - **Módulo Pecuária — Cria/Reprodução**: matrizes, inseminação (com previsão
   automática de parto) e registro de parto, formando o histórico de bezerros
   por vaca.
+- **Gestão de Funcionários**: ficha completa por funcionário (separado por
+  setor: lavoura/corte/cria/escritório), ponto digital com geolocalização
+  real (4 batidas por dia), alertas de documentação (ASO, NR-31 etc. com
+  status em dia/vence em breve/vencido) e histórico de produtividade.
 
-Ainda não construído: **Gestão de funcionários** e as funcionalidades
-transversais do briefing (permissões por perfil aplicadas na UI, painel
-financeiro consolidado, alertas, offline-first, gráficos, exportação de
+Ainda não construído: as funcionalidades transversais do briefing
+(permissões por perfil aplicadas na UI, painel financeiro consolidado, alertas
+climáticos, offline-first, gráficos, exportação de
 relatórios).
 
 Veja o briefing completo do projeto para o escopo total.
@@ -58,9 +62,11 @@ npx eas-cli build --platform all
 2. No painel do projeto, clique em **Connect** e copie a **Project URL** e a
    **anon / publishable key** para o seu `.env` (ver `.env.example`).
 3. Rode as migrations em **SQL Editor**, colando o conteúdo de cada arquivo
-   de `supabase/migrations/` **em ordem** (`0001` → `0002` → `0003` → `0004`),
-   ou tudo de uma vez (são idempotentes, seguras para rodar mais de uma vez).
-   Também dá para usar a Supabase CLI: `supabase db push`.
+   de `supabase/migrations/` **em ordem** (`0001` → `0002` → `0003` → `0004`
+   → `0005`), ou tudo de uma vez (são idempotentes, seguras para rodar mais
+   de uma vez — se o editor travar com o texto grande, cole em pedaços
+   menores, tabela por tabela). Também dá para usar a Supabase CLI:
+   `supabase db push`.
 4. Para testar login sem precisar confirmar e-mail: **Authentication →
    Providers → Email**, desligue **"Confirm email"**. Lembre de ligar de
    volta antes de lançar para usuários de verdade.
@@ -75,6 +81,7 @@ app/                  # Rotas (Expo Router — cada arquivo é uma tela)
     [farmId]/            # Tela principal
       lavoura/             # Módulo Lavoura
       pecuaria/             # Módulo Pecuária (corte/ e cria/)
+      funcionarios/         # Gestão de Funcionários
 src/
   components/          # Componentes de UI reutilizáveis
   context/             # AuthContext (sessão Supabase)
@@ -97,4 +104,5 @@ supabase/
   estiverem todos prontos.
 - **Permissões por perfil**: a tabela `farm_members` já tem os papéis
   `admin`/`campo`, mas a aplicação ainda não restringe telas por papel.
-- **Gestão de funcionários**: módulo ainda não iniciado.
+- **Entrada de dados por foto e integração com e-mail**: fora do escopo do
+  protótipo inicial, conforme o próprio briefing definiu.
