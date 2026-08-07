@@ -85,72 +85,67 @@ export function useSlaughterhouseRanking(farmId: string | undefined) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const reload = useCallback(async () => {
     if (!farmId) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('cattle_slaughters')
+        .select(
+          'head_count, price_per_arroba, exit_avg_weight_kg, slaughter_date, next_slaughter_date, slaughterhouse_id, slaughterhouses(id, name), cattle_lots!inner(farm_id)'
+        )
+        .eq('cattle_lots.farm_id', farmId);
 
-    let cancelled = false;
-    (async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const { data, error: fetchError } = await supabase
-          .from('cattle_slaughters')
-          .select(
-            'head_count, price_per_arroba, exit_avg_weight_kg, slaughter_date, next_slaughter_date, slaughterhouse_id, slaughterhouses(id, name), cattle_lots!inner(farm_id)'
-          )
-          .eq('cattle_lots.farm_id', farmId);
+      if (fetchError) throw fetchError;
 
-        if (fetchError) throw fetchError;
-        if (cancelled) return;
+      const byHouse = new Map<string, SlaughterhouseRanking>();
+      for (const sale of (data ?? []) as unknown as SlaughterWithRelations[]) {
+        if (!sale.slaughterhouse_id || !sale.slaughterhouses) continue;
+        const existing = byHouse.get(sale.slaughterhouse_id) ?? {
+          slaughterhouseId: sale.slaughterhouse_id,
+          slaughterhouseName: sale.slaughterhouses.name,
+          totalHead: 0,
+          totalArrobas: 0,
+          averagePricePerArroba: 0,
+          totalValue: 0,
+          eventCount: 0,
+          lastSlaughterDate: null,
+          nextSlaughterDate: null,
+        };
+        // 1 arroba de carcaça = 15kg
+        const arrobas = (Number(sale.exit_avg_weight_kg) * sale.head_count) / 15;
+        const saleValue = arrobas * Number(sale.price_per_arroba);
 
-        const byHouse = new Map<string, SlaughterhouseRanking>();
-        for (const sale of (data ?? []) as unknown as SlaughterWithRelations[]) {
-          if (!sale.slaughterhouse_id || !sale.slaughterhouses) continue;
-          const existing = byHouse.get(sale.slaughterhouse_id) ?? {
-            slaughterhouseId: sale.slaughterhouse_id,
-            slaughterhouseName: sale.slaughterhouses.name,
-            totalHead: 0,
-            totalArrobas: 0,
-            averagePricePerArroba: 0,
-            totalValue: 0,
-            eventCount: 0,
-            lastSlaughterDate: null,
-            nextSlaughterDate: null,
-          };
-          // 1 arroba de carcaça = 15kg
-          const arrobas = (Number(sale.exit_avg_weight_kg) * sale.head_count) / 15;
-          const saleValue = arrobas * Number(sale.price_per_arroba);
-
-          existing.totalHead += sale.head_count;
-          existing.totalArrobas += arrobas;
-          existing.totalValue += saleValue;
-          existing.eventCount += 1;
-          if (!existing.lastSlaughterDate || sale.slaughter_date > existing.lastSlaughterDate) {
-            existing.lastSlaughterDate = sale.slaughter_date;
-            existing.nextSlaughterDate = sale.next_slaughter_date;
-          }
-          byHouse.set(sale.slaughterhouse_id, existing);
+        existing.totalHead += sale.head_count;
+        existing.totalArrobas += arrobas;
+        existing.totalValue += saleValue;
+        existing.eventCount += 1;
+        if (!existing.lastSlaughterDate || sale.slaughter_date > existing.lastSlaughterDate) {
+          existing.lastSlaughterDate = sale.slaughter_date;
+          existing.nextSlaughterDate = sale.next_slaughter_date;
         }
-
-        const results = Array.from(byHouse.values())
-          .map((r) => ({
-            ...r,
-            averagePricePerArroba: r.totalArrobas > 0 ? r.totalValue / r.totalArrobas : 0,
-          }))
-          .sort((a, b) => b.averagePricePerArroba - a.averagePricePerArroba);
-
-        setRanking(results);
-      } catch (err) {
-        if (!cancelled) setError(err instanceof Error ? err.message : 'Não foi possível montar a comparação.');
-      } finally {
-        if (!cancelled) setIsLoading(false);
+        byHouse.set(sale.slaughterhouse_id, existing);
       }
-    })();
 
-    return () => {
-      cancelled = true;
-    };
+      const results = Array.from(byHouse.values())
+        .map((r) => ({
+          ...r,
+          averagePricePerArroba: r.totalArrobas > 0 ? r.totalValue / r.totalArrobas : 0,
+        }))
+        .sort((a, b) => b.averagePricePerArroba - a.averagePricePerArroba);
+
+      setRanking(results);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Não foi possível montar a comparação.');
+    } finally {
+      setIsLoading(false);
+    }
   }, [farmId]);
 
-  return { ranking, isLoading, error };
+  useEffect(() => {
+    reload();
+  }, [reload]);
+
+  return { ranking, isLoading, error, reload };
 }

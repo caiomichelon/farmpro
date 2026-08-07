@@ -1,5 +1,5 @@
-import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -12,7 +12,17 @@ import { colors, radius, spacing, typography } from '../../../../src/theme';
 
 export default function LavouraHomeScreen() {
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
-  const { plots, isLoading, error } = usePlotsWithLatestSeason(farmId);
+  const { plots, isLoading, error, reload } = usePlotsWithLatestSeason(farmId);
+
+  // A tela de "novo talhão" é uma rota separada — ao voltar pra cá o hook
+  // desta tela não recarrega sozinho (ela já estava montada, nada mudou nas
+  // deps do fetch original). Refazemos a busca sempre que a tela ganha foco
+  // de novo, senão o talhão recém-criado só aparece depois de um refresh manual.
+  useFocusEffect(
+    useCallback(() => {
+      reload();
+    }, [reload])
+  );
 
   const totalHectares = plots.reduce((sum, p) => sum + Number(p.area_hectares), 0);
 

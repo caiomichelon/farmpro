@@ -1,4 +1,5 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -13,9 +14,18 @@ import { colors, radius, spacing, typography } from '../../../../../../../src/th
 
 export default function CowDetailScreen() {
   const { farmId, cowId } = useLocalSearchParams<{ farmId: string; cowId: string }>();
-  const { cow, isLoading } = useBreedingCow(cowId);
-  const { inseminations } = useInseminations(cowId);
-  const { calvings } = useCalvings(cowId);
+  const { cow, isLoading, reload: reloadCow } = useBreedingCow(cowId);
+  const { inseminations, reload: reloadInseminations } = useInseminations(cowId);
+  const { calvings, reload: reloadCalvings } = useCalvings(cowId);
+
+  // Inseminação e parto são cadastrados em rotas separadas.
+  useFocusEffect(
+    useCallback(() => {
+      reloadCow();
+      reloadInseminations();
+      reloadCalvings();
+    }, [reloadCow, reloadInseminations, reloadCalvings])
+  );
 
   if (isLoading || !cow) {
     return (

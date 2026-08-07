@@ -1,5 +1,5 @@
-import { useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -13,9 +13,17 @@ import { colors, radius, spacing, typography } from '../../../../../src/theme';
 
 export default function BuyersScreen() {
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
-  const { buyers, isLoading, error, createBuyer } = useGrainBuyers(farmId);
-  const { ranking, isLoading: isLoadingRanking } = useBuyerRanking(farmId);
+  const { buyers, isLoading, error, createBuyer, reload } = useGrainBuyers(farmId);
+  const { ranking, isLoading: isLoadingRanking, reload: reloadRanking } = useBuyerRanking(farmId);
   const [isAdding, setIsAdding] = useState(false);
+
+  // O ranking muda quando uma venda é lançada lá na safra (rota separada).
+  useFocusEffect(
+    useCallback(() => {
+      reload();
+      reloadRanking();
+    }, [reload, reloadRanking])
+  );
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>

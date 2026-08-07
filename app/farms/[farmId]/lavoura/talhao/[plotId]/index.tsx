@@ -1,4 +1,5 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -13,8 +14,16 @@ import { colors, radius, spacing, typography } from '../../../../../../src/theme
 
 export default function PlotDetailScreen() {
   const { farmId, plotId } = useLocalSearchParams<{ farmId: string; plotId: string }>();
-  const { plot, isLoading: isLoadingPlot } = usePlot(plotId);
-  const { seasons, isLoading: isLoadingSeasons, error } = usePlotSeasons(plotId);
+  const { plot, isLoading: isLoadingPlot, reload: reloadPlot } = usePlot(plotId);
+  const { seasons, isLoading: isLoadingSeasons, error, reload: reloadSeasons } = usePlotSeasons(plotId);
+
+  // "Nova safra" é uma rota separada — refaz a busca ao voltar pra cá.
+  useFocusEffect(
+    useCallback(() => {
+      reloadPlot();
+      reloadSeasons();
+    }, [reloadPlot, reloadSeasons])
+  );
 
   const harvestedSeasons = seasons.filter((s) => s.yieldPerHectare !== null);
   const averageYield =

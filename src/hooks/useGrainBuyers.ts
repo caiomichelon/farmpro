@@ -78,58 +78,53 @@ export function useBuyerRanking(farmId: string | undefined) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const reload = useCallback(async () => {
     if (!farmId) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('grain_sales')
+        .select(
+          'quantity_sacas, price_per_saca, buyer_id, grain_buyers(id, name), plot_seasons!inner(plots!inner(farm_id))'
+        )
+        .eq('plot_seasons.plots.farm_id', farmId);
 
-    let cancelled = false;
-    (async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const { data, error: fetchError } = await supabase
-          .from('grain_sales')
-          .select(
-            'quantity_sacas, price_per_saca, buyer_id, grain_buyers(id, name), plot_seasons!inner(plots!inner(farm_id))'
-          )
-          .eq('plot_seasons.plots.farm_id', farmId);
+      if (fetchError) throw fetchError;
 
-        if (fetchError) throw fetchError;
-        if (cancelled) return;
-
-        const byBuyer = new Map<string, BuyerRanking>();
-        for (const sale of (data ?? []) as unknown as SaleWithRelations[]) {
-          if (!sale.buyer_id || !sale.grain_buyers) continue;
-          const existing = byBuyer.get(sale.buyer_id) ?? {
-            buyerId: sale.buyer_id,
-            buyerName: sale.grain_buyers.name,
-            totalSacas: 0,
-            averagePricePerSaca: 0,
-            totalValue: 0,
-            saleCount: 0,
-          };
-          const saleValue = Number(sale.quantity_sacas) * Number(sale.price_per_saca);
-          existing.totalSacas += Number(sale.quantity_sacas);
-          existing.totalValue += saleValue;
-          existing.saleCount += 1;
-          byBuyer.set(sale.buyer_id, existing);
-        }
-
-        const results = Array.from(byBuyer.values())
-          .map((r) => ({ ...r, averagePricePerSaca: r.totalSacas > 0 ? r.totalValue / r.totalSacas : 0 }))
-          .sort((a, b) => b.averagePricePerSaca - a.averagePricePerSaca);
-
-        setRanking(results);
-      } catch (err) {
-        if (!cancelled) setError(err instanceof Error ? err.message : 'Não foi possível montar a comparação.');
-      } finally {
-        if (!cancelled) setIsLoading(false);
+      const byBuyer = new Map<string, BuyerRanking>();
+      for (const sale of (data ?? []) as unknown as SaleWithRelations[]) {
+        if (!sale.buyer_id || !sale.grain_buyers) continue;
+        const existing = byBuyer.get(sale.buyer_id) ?? {
+          buyerId: sale.buyer_id,
+          buyerName: sale.grain_buyers.name,
+          totalSacas: 0,
+          averagePricePerSaca: 0,
+          totalValue: 0,
+          saleCount: 0,
+        };
+        const saleValue = Number(sale.quantity_sacas) * Number(sale.price_per_saca);
+        existing.totalSacas += Number(sale.quantity_sacas);
+        existing.totalValue += saleValue;
+        existing.saleCount += 1;
+        byBuyer.set(sale.buyer_id, existing);
       }
-    })();
 
-    return () => {
-      cancelled = true;
-    };
+      const results = Array.from(byBuyer.values())
+        .map((r) => ({ ...r, averagePricePerSaca: r.totalSacas > 0 ? r.totalValue / r.totalSacas : 0 }))
+        .sort((a, b) => b.averagePricePerSaca - a.averagePricePerSaca);
+
+      setRanking(results);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Não foi possível montar a comparação.');
+    } finally {
+      setIsLoading(false);
+    }
   }, [farmId]);
 
-  return { ranking, isLoading, error };
+  useEffect(() => {
+    reload();
+  }, [reload]);
+
+  return { ranking, isLoading, error, reload };
 }

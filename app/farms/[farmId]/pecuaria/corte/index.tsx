@@ -1,4 +1,5 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -12,7 +13,14 @@ import { colors, radius, spacing, typography } from '../../../../../src/theme';
 
 export default function CorteHomeScreen() {
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
-  const { lots, isLoading, error } = useCattleLots(farmId);
+  const { lots, isLoading, error, reload } = useCattleLots(farmId);
+
+  // "Novo lote" é uma rota separada — refaz a busca ao voltar pra cá.
+  useFocusEffect(
+    useCallback(() => {
+      reload();
+    }, [reload])
+  );
 
   const totalHead = lots.reduce((sum, l) => sum + l.currentHeadCount, 0);
 

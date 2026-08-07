@@ -1,5 +1,5 @@
-import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -16,7 +16,15 @@ import { colors, radius, spacing, typography } from '../../../../src/theme';
 export default function EmployeesHomeScreen() {
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const [sectorFilter, setSectorFilter] = useState<EmployeeSector | null>(null);
-  const { employees, isLoading, error } = useEmployees(farmId, sectorFilter ?? undefined);
+  const { employees, isLoading, error, reload } = useEmployees(farmId, sectorFilter ?? undefined);
+
+  // "Novo funcionário" é uma rota separada — sem isso, o funcionário recém
+  // cadastrado só apareceria depois de um refresh manual desta tela.
+  useFocusEffect(
+    useCallback(() => {
+      reload();
+    }, [reload])
+  );
 
   const totalAlerts = employees.reduce((sum, e) => sum + e.expiredDocumentCount + e.expiringSoonDocumentCount, 0);
 

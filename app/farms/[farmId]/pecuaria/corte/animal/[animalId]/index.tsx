@@ -1,4 +1,5 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -14,10 +15,20 @@ import { colors, radius, spacing, typography } from '../../../../../../../src/th
 
 export default function AnimalDetailScreen() {
   const { farmId, animalId } = useLocalSearchParams<{ farmId: string; animalId: string }>();
-  const { animal, isLoading } = useCattleAnimal(animalId);
-  const { weighings } = useCattleAnimalWeighings(animalId);
-  const { events: healthEvents } = useCattleAnimalHealthEvents(animalId);
-  const { movements } = useCattleAnimalMovements(animalId);
+  const { animal, isLoading, reload: reloadAnimal } = useCattleAnimal(animalId);
+  const { weighings, reload: reloadWeighings } = useCattleAnimalWeighings(animalId);
+  const { events: healthEvents, reload: reloadHealth } = useCattleAnimalHealthEvents(animalId);
+  const { movements, reload: reloadMovements } = useCattleAnimalMovements(animalId);
+
+  // Pesagem, saúde e movimentação são cadastradas em rotas separadas.
+  useFocusEffect(
+    useCallback(() => {
+      reloadAnimal();
+      reloadWeighings();
+      reloadHealth();
+      reloadMovements();
+    }, [reloadAnimal, reloadWeighings, reloadHealth, reloadMovements])
+  );
 
   if (isLoading || !animal) {
     return (

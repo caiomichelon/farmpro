@@ -1,4 +1,5 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -15,10 +16,21 @@ import { colors, radius, spacing, typography } from '../../../../../../../src/th
 
 export default function LotDetailScreen() {
   const { farmId, lotId } = useLocalSearchParams<{ farmId: string; lotId: string }>();
-  const { lot, isLoading } = useCattleLot(lotId);
-  const { weighings } = useCattleLotWeighings(lotId);
-  const { events: mortalityEvents, totalDeaths } = useCattleMortalityEvents(lotId);
-  const { slaughters } = useCattleSlaughters(lotId);
+  const { lot, isLoading, reload: reloadLot } = useCattleLot(lotId);
+  const { weighings, reload: reloadWeighings } = useCattleLotWeighings(lotId);
+  const { events: mortalityEvents, totalDeaths, reload: reloadMortality } = useCattleMortalityEvents(lotId);
+  const { slaughters, reload: reloadSlaughters } = useCattleSlaughters(lotId);
+
+  // Pesagem, mortalidade e abate são cadastrados em rotas separadas — refaz
+  // tudo ao voltar pra esta tela, senão fica com dado velho até um refresh.
+  useFocusEffect(
+    useCallback(() => {
+      reloadLot();
+      reloadWeighings();
+      reloadMortality();
+      reloadSlaughters();
+    }, [reloadLot, reloadWeighings, reloadMortality, reloadSlaughters])
+  );
 
   if (isLoading || !lot) {
     return (

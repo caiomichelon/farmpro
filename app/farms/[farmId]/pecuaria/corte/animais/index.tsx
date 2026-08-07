@@ -1,4 +1,5 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -27,7 +28,15 @@ const COLUMNS: DataTableColumn<CattleAnimalSummary>[] = [
 
 export default function AllAnimalsSpreadsheetScreen() {
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
-  const { animals, isLoading, error } = useCattleAnimalsByFarm(farmId);
+  const { animals, isLoading, error, reload } = useCattleAnimalsByFarm(farmId);
+
+  // Animais são cadastrados dentro de um lote, em outra rota — refaz a busca
+  // ao focar de novo pra planilha não ficar desatualizada.
+  useFocusEffect(
+    useCallback(() => {
+      reload();
+    }, [reload])
+  );
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>

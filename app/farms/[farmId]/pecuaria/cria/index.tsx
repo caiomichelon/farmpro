@@ -1,4 +1,5 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -11,7 +12,14 @@ import { colors, radius, spacing, typography } from '../../../../../src/theme';
 
 export default function CriaHomeScreen() {
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
-  const { cows, isLoading, error } = useBreedingCows(farmId);
+  const { cows, isLoading, error, reload } = useBreedingCows(farmId);
+
+  // "Nova matriz" é uma rota separada — refaz a busca ao voltar pra cá.
+  useFocusEffect(
+    useCallback(() => {
+      reload();
+    }, [reload])
+  );
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>

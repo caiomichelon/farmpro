@@ -1,4 +1,5 @@
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -9,7 +10,15 @@ import { colors, radius, spacing, typography } from '../../../../../../src/theme
 
 export default function EmployeeDetailScreen() {
   const { farmId, employeeId } = useLocalSearchParams<{ farmId: string; employeeId: string }>();
-  const { employee, isLoading } = useEmployee(employeeId);
+  const { employee, isLoading, reload } = useEmployee(employeeId);
+
+  // Documentos/ponto/produtividade são cadastrados em rotas separadas, e
+  // podem mudar a contagem de alertas mostrada aqui.
+  useFocusEffect(
+    useCallback(() => {
+      reload();
+    }, [reload])
+  );
 
   if (isLoading || !employee) {
     return (

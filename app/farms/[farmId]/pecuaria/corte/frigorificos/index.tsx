@@ -1,5 +1,5 @@
-import { useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -13,9 +13,17 @@ import { colors, radius, spacing, typography } from '../../../../../../src/theme
 
 export default function SlaughterhousesScreen() {
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
-  const { slaughterhouses, isLoading, error, createSlaughterhouse } = useSlaughterhouses(farmId);
-  const { ranking, isLoading: isLoadingRanking } = useSlaughterhouseRanking(farmId);
+  const { slaughterhouses, isLoading, error, createSlaughterhouse, reload } = useSlaughterhouses(farmId);
+  const { ranking, isLoading: isLoadingRanking, reload: reloadRanking } = useSlaughterhouseRanking(farmId);
   const [isAdding, setIsAdding] = useState(false);
+
+  // O ranking muda quando um abate é registrado lá no lote (rota separada).
+  useFocusEffect(
+    useCallback(() => {
+      reload();
+      reloadRanking();
+    }, [reload, reloadRanking])
+  );
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
