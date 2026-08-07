@@ -17,6 +17,8 @@ export default function FarmsLayout() {
         contentStyle: { backgroundColor: colors.background },
         animation: 'slide_from_right',
       }}
-    />
+    >
+      <Stack.Screen name="[farmId]/exportar" options={{ animation: 'slide_from_bottom' }} />
+    </Stack>
   );
 }

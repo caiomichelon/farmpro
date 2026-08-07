@@ -64,6 +64,18 @@ export default function FarmHomeScreen() {
           </View>
           <Text style={styles.employeesChevron}>→</Text>
         </Pressable>
+
+        <Pressable
+          style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
+          onPress={() => router.push(`/farms/${farmId}/exportar`)}
+        >
+          <View style={[styles.employeesMarker, { backgroundColor: colors.textMuted }]} />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.employeesTitle}>Exportar dados</Text>
+            <Text style={styles.employeesSubtitle}>Tudo da fazenda num Excel (.xlsx)</Text>
+          </View>
+          <Text style={styles.employeesChevron}>→</Text>
+        </Pressable>
       </SafeAreaView>
     </View>
   );
