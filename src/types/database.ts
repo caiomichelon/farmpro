@@ -8,6 +8,7 @@
 
 export type PlotType = 'lavoura' | 'pecuaria';
 export type FarmRole = 'admin' | 'campo';
+export type SubscriptionStatus = 'trialing' | 'active' | 'past_due' | 'canceled';
 
 export type Profile = {
   id: string;
@@ -40,6 +41,24 @@ export type Plot = {
   created_at: string;
 };
 
+/**
+ * Preparação para o futuro — ainda sem gateway de pagamento integrado.
+ * Ver supabase/migrations/0002_subscriptions_placeholder.sql.
+ */
+export type Subscription = {
+  id: string;
+  owner_id: string;
+  status: SubscriptionStatus;
+  plan: string | null;
+  provider: string | null;
+  provider_customer_id: string | null;
+  provider_subscription_id: string | null;
+  current_period_end: string | null;
+  trial_ends_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export interface Database {
   public: {
     Tables: {
@@ -65,6 +84,12 @@ export interface Database {
         Row: Plot;
         Insert: Partial<Plot> & { farm_id: string; name: string; area_hectares: number; type: PlotType };
         Update: Partial<Plot>;
+        Relationships: [];
+      };
+      subscriptions: {
+        Row: Subscription;
+        Insert: Partial<Subscription> & { owner_id: string };
+        Update: Partial<Subscription>;
         Relationships: [];
       };
     };
