@@ -7,7 +7,11 @@ interface AuthContextValue {
   session: Session | null;
   isLoading: boolean;
   signInWithPassword: (email: string, password: string) => Promise<{ error: string | null }>;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: string | null }>;
+  signUp: (
+    email: string,
+    password: string,
+    fullName: string
+  ) => Promise<{ error: string | null; hasSession: boolean }>;
   signOut: () => Promise<void>;
 }
 
@@ -39,12 +43,15 @@ export function AuthProvider({ children }: PropsWithChildren) {
         return { error: error?.message ?? null };
       },
       async signUp(email, password, fullName) {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: { data: { full_name: fullName } },
         });
-        return { error: error?.message ?? null };
+        // Se a confirmação de e-mail estiver desligada no projeto Supabase,
+        // o signUp já vem com sessão ativa — não faz sentido pedir pra
+        // confirmar o que já está confirmado.
+        return { error: error?.message ?? null, hasSession: Boolean(data.session) };
       },
       async signOut() {
         await supabase.auth.signOut();

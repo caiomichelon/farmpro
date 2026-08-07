@@ -19,7 +19,7 @@ export default function SignupScreen() {
   async function handleSubmit() {
     setError(null);
     setIsSubmitting(true);
-    const { error: signUpError } = await signUp(email.trim(), password, fullName.trim());
+    const { error: signUpError, hasSession } = await signUp(email.trim(), password, fullName.trim());
     setIsSubmitting(false);
 
     if (signUpError) {
@@ -27,8 +27,14 @@ export default function SignupScreen() {
       return;
     }
 
-    // Se a confirmação de e-mail estiver habilitada no projeto Supabase, ainda
-    // não há sessão aqui — avisamos o usuário em vez de navegar direto.
+    // Se a confirmação de e-mail estiver desligada no projeto Supabase, o
+    // cadastro já vem com sessão ativa — entra direto, sem pedir confirmação
+    // de algo que não é necessário.
+    if (hasSession) {
+      router.replace('/farms');
+      return;
+    }
+
     setConfirmationSent(true);
   }
 
