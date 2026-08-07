@@ -2,13 +2,28 @@ import { Stack } from 'expo-router';
 
 import { colors } from '../../../../src/theme';
 
+const modalOptions = { presentation: 'modal' as const, animation: 'slide_from_bottom' as const };
+
 export default function PecuariaLayout() {
   return (
     <Stack
       screenOptions={{
         headerShown: false,
         contentStyle: { backgroundColor: colors.background },
+        animation: 'slide_from_right',
       }}
-    />
+    >
+      <Stack.Screen name="corte/novo-lote" options={modalOptions} />
+      <Stack.Screen name="corte/lote/[lotId]/animais/novo-animal" options={modalOptions} />
+      <Stack.Screen name="corte/lote/[lotId]/nova-pesagem" options={modalOptions} />
+      <Stack.Screen name="corte/lote/[lotId]/mortalidade" options={modalOptions} />
+      <Stack.Screen name="corte/lote/[lotId]/abate" options={modalOptions} />
+      <Stack.Screen name="corte/animal/[animalId]/nova-pesagem" options={modalOptions} />
+      <Stack.Screen name="corte/animal/[animalId]/novo-evento-saude" options={modalOptions} />
+      <Stack.Screen name="corte/animal/[animalId]/mover-lote" options={modalOptions} />
+      <Stack.Screen name="cria/nova-matriz" options={modalOptions} />
+      <Stack.Screen name="cria/matriz/[cowId]/nova-inseminacao" options={modalOptions} />
+      <Stack.Screen name="cria/matriz/[cowId]/novo-parto" options={modalOptions} />
+    </Stack>
   );
 }

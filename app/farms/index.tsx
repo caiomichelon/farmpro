@@ -4,6 +4,7 @@ import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from '
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../src/components/Button';
+import { EmptyState } from '../../src/components/EmptyState';
 import { TextField } from '../../src/components/TextField';
 import { useAuth } from '../../src/context/AuthContext';
 import { useFarms, type FarmSummary } from '../../src/hooks/useFarms';
@@ -35,7 +36,7 @@ export default function FarmSelectionScreen() {
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={
             !isCreating ? (
-              <Text style={styles.emptyText}>Você ainda não cadastrou nenhuma fazenda.</Text>
+              <EmptyState text="Você ainda não cadastrou nenhuma fazenda. Toque em “+ Nova fazenda” pra começar." />
             ) : null
           }
           renderItem={({ item }) => <FarmCard farm={item} onPress={() => router.push(`/farms/${item.id}`)} />}
@@ -150,12 +151,6 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: spacing.xl,
     gap: spacing.md,
-  },
-  emptyText: {
-    ...typography.body,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginTop: spacing.xxl,
   },
   card: {
     backgroundColor: colors.surface,

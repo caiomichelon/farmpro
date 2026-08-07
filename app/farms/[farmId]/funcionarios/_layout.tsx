@@ -8,7 +8,10 @@ export default function FuncionariosLayout() {
       screenOptions={{
         headerShown: false,
         contentStyle: { backgroundColor: colors.background },
+        animation: 'slide_from_right',
       }}
-    />
+    >
+      <Stack.Screen name="novo-funcionario" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+    </Stack>
   );
 }
