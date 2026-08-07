@@ -22,6 +22,7 @@ create table if not exists public.plot_seasons (
 
 alter table public.plot_seasons enable row level security;
 
+drop policy if exists "plot_seasons: membros da fazenda veem" on public.plot_seasons;
 create policy "plot_seasons: membros da fazenda veem"
   on public.plot_seasons for select
   using (
@@ -32,6 +33,7 @@ create policy "plot_seasons: membros da fazenda veem"
     )
   );
 
+drop policy if exists "plot_seasons: membros da fazenda gerenciam" on public.plot_seasons;
 create policy "plot_seasons: membros da fazenda gerenciam"
   on public.plot_seasons for all
   using (
@@ -68,6 +70,7 @@ create table if not exists public.production_costs (
 
 alter table public.production_costs enable row level security;
 
+drop policy if exists "production_costs: membros da fazenda veem" on public.production_costs;
 create policy "production_costs: membros da fazenda veem"
   on public.production_costs for select
   using (
@@ -79,6 +82,7 @@ create policy "production_costs: membros da fazenda veem"
     )
   );
 
+drop policy if exists "production_costs: membros da fazenda gerenciam" on public.production_costs;
 create policy "production_costs: membros da fazenda gerenciam"
   on public.production_costs for all
   using (
@@ -110,6 +114,7 @@ create table if not exists public.harvest_entries (
 
 alter table public.harvest_entries enable row level security;
 
+drop policy if exists "harvest_entries: membros da fazenda veem" on public.harvest_entries;
 create policy "harvest_entries: membros da fazenda veem"
   on public.harvest_entries for select
   using (
@@ -121,6 +126,7 @@ create policy "harvest_entries: membros da fazenda veem"
     )
   );
 
+drop policy if exists "harvest_entries: membros da fazenda gerenciam" on public.harvest_entries;
 create policy "harvest_entries: membros da fazenda gerenciam"
   on public.harvest_entries for all
   using (
@@ -151,6 +157,7 @@ create table if not exists public.grain_buyers (
 
 alter table public.grain_buyers enable row level security;
 
+drop policy if exists "grain_buyers: membros da fazenda veem" on public.grain_buyers;
 create policy "grain_buyers: membros da fazenda veem"
   on public.grain_buyers for select
   using (
@@ -160,6 +167,7 @@ create policy "grain_buyers: membros da fazenda veem"
     )
   );
 
+drop policy if exists "grain_buyers: membros da fazenda gerenciam" on public.grain_buyers;
 create policy "grain_buyers: membros da fazenda gerenciam"
   on public.grain_buyers for all
   using (
@@ -191,6 +199,7 @@ create table if not exists public.grain_sales (
 
 alter table public.grain_sales enable row level security;
 
+drop policy if exists "grain_sales: membros da fazenda veem" on public.grain_sales;
 create policy "grain_sales: membros da fazenda veem"
   on public.grain_sales for select
   using (
@@ -202,6 +211,7 @@ create policy "grain_sales: membros da fazenda veem"
     )
   );
 
+drop policy if exists "grain_sales: membros da fazenda gerenciam" on public.grain_sales;
 create policy "grain_sales: membros da fazenda gerenciam"
   on public.grain_sales for all
   using (

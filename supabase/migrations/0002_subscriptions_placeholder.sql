@@ -26,13 +26,14 @@ create table if not exists public.subscriptions (
 
 alter table public.subscriptions enable row level security;
 
+drop policy if exists "subscriptions: usuário vê a própria assinatura" on public.subscriptions;
 create policy "subscriptions: usuário vê a própria assinatura"
   on public.subscriptions for select
   using (auth.uid() = owner_id);
 
 -- Toda conta nova começa em trial. Sem lógica de cobrança real ainda — isso
 -- só garante que o campo sempre exista pra consulta no app.
-create function public.handle_new_profile_subscription()
+create or replace function public.handle_new_profile_subscription()
 returns trigger
 language plpgsql
 security definer set search_path = public
@@ -44,6 +45,7 @@ begin
 end;
 $$;
 
+drop trigger if exists on_profile_created_subscription on public.profiles;
 create trigger on_profile_created_subscription
   after insert on public.profiles
   for each row execute procedure public.handle_new_profile_subscription();

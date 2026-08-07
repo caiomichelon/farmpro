@@ -13,12 +13,13 @@ create table if not exists public.profiles (
 
 alter table public.profiles enable row level security;
 
+drop policy if exists "profiles: usuário vê e edita o próprio perfil" on public.profiles;
 create policy "profiles: usuário vê e edita o próprio perfil"
   on public.profiles for all
   using (auth.uid() = id)
   with check (auth.uid() = id);
 
-create function public.handle_new_user()
+create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
 security definer set search_path = public
@@ -30,6 +31,7 @@ begin
 end;
 $$;
 
+drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
@@ -60,10 +62,12 @@ create table if not exists public.farm_members (
 
 alter table public.farm_members enable row level security;
 
+drop policy if exists "farm_members: usuário vê seus próprios vínculos" on public.farm_members;
 create policy "farm_members: usuário vê seus próprios vínculos"
   on public.farm_members for select
   using (auth.uid() = user_id);
 
+drop policy if exists "farms: membros veem suas fazendas" on public.farms;
 create policy "farms: membros veem suas fazendas"
   on public.farms for select
   using (
@@ -73,10 +77,12 @@ create policy "farms: membros veem suas fazendas"
     )
   );
 
+drop policy if exists "farms: usuário autenticado pode criar fazenda" on public.farms;
 create policy "farms: usuário autenticado pode criar fazenda"
   on public.farms for insert
   with check (auth.uid() = created_by);
 
+drop policy if exists "farms: admin da fazenda pode editar" on public.farms;
 create policy "farms: admin da fazenda pode editar"
   on public.farms for update
   using (
@@ -87,7 +93,7 @@ create policy "farms: admin da fazenda pode editar"
   );
 
 -- Ao criar uma fazenda, o criador vira membro admin automaticamente.
-create function public.handle_new_farm()
+create or replace function public.handle_new_farm()
 returns trigger
 language plpgsql
 security definer set search_path = public
@@ -99,6 +105,7 @@ begin
 end;
 $$;
 
+drop trigger if exists on_farm_created on public.farms;
 create trigger on_farm_created
   after insert on public.farms
   for each row execute procedure public.handle_new_farm();
@@ -117,6 +124,7 @@ create table if not exists public.plots (
 
 alter table public.plots enable row level security;
 
+drop policy if exists "plots: membros da fazenda veem os talhões" on public.plots;
 create policy "plots: membros da fazenda veem os talhões"
   on public.plots for select
   using (
@@ -126,6 +134,7 @@ create policy "plots: membros da fazenda veem os talhões"
     )
   );
 
+drop policy if exists "plots: membros da fazenda gerenciam os talhões" on public.plots;
 create policy "plots: membros da fazenda gerenciam os talhões"
   on public.plots for all
   using (
