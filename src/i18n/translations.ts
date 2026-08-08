@@ -136,6 +136,13 @@ export const pt = {
   'settings.notifications.weather': 'Alertas de clima',
   'settings.notifications.weatherDescription':
     'Geada, chuva forte, calor extremo ou vento — quando a fazenda tem localização definida em Clima; avisa também no aparelho',
+  'settings.notifications.theft': 'Possível falta de gado',
+  'settings.notifications.theftDescription':
+    'Contagem de campo do lote abaixo do esperado, sem venda/abate/mortalidade que explique',
+  'settings.notifications.trough': 'Cocho/aguada baixo',
+  'settings.notifications.troughDescription': 'Última leitura de nível de campo abaixo de 20%',
+  'settings.notifications.briefing': 'Boletim diário',
+  'settings.notifications.briefingDescription': 'Lembrete às 6h30 pra ouvir o resumo falado do dia',
 
   'settings.language.subtitle': 'Escolha o idioma do app',
 
@@ -283,6 +290,13 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'settings.notifications.weather': 'Weather alerts',
   'settings.notifications.weatherDescription':
     'Frost, heavy rain, extreme heat or wind — once the farm has a location set in Weather; also alerts on your device',
+  'settings.notifications.theft': 'Possible missing cattle',
+  'settings.notifications.theftDescription':
+    "A lot's field headcount below expected, with no sale/slaughter/mortality that explains it",
+  'settings.notifications.trough': 'Low trough/water level',
+  'settings.notifications.troughDescription': 'Latest field level reading below 20%',
+  'settings.notifications.briefing': 'Daily briefing',
+  'settings.notifications.briefingDescription': 'Reminder at 6:30am to listen to the spoken daily summary',
 
   'settings.language.subtitle': 'Choose the app language',
 
@@ -427,6 +441,13 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'settings.notifications.weather': 'Alertas de clima',
   'settings.notifications.weatherDescription':
     'Helada, lluvia fuerte, calor extremo o viento — cuando la granja tiene ubicación definida en Clima; también avisa en el celular',
+  'settings.notifications.theft': 'Posible falta de ganado',
+  'settings.notifications.theftDescription':
+    'Conteo de campo del lote por debajo de lo esperado, sin venta/faena/mortalidad que lo explique',
+  'settings.notifications.trough': 'Bebedero/comedero bajo',
+  'settings.notifications.troughDescription': 'Última lectura de nivel de campo por debajo del 20%',
+  'settings.notifications.briefing': 'Boletín diario',
+  'settings.notifications.briefingDescription': 'Recordatorio a las 6:30 para escuchar el resumen hablado del día',
 
   'settings.language.subtitle': 'Elige el idioma de la app',
 

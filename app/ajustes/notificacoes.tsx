@@ -45,6 +45,21 @@ function buildItems(t: TFunction): { key: AlertPreferenceKey; title: string; des
       title: t('settings.notifications.weather'),
       description: t('settings.notifications.weatherDescription'),
     },
+    {
+      key: 'abigeato',
+      title: t('settings.notifications.theft'),
+      description: t('settings.notifications.theftDescription'),
+    },
+    {
+      key: 'cocho_baixo',
+      title: t('settings.notifications.trough'),
+      description: t('settings.notifications.troughDescription'),
+    },
+    {
+      key: 'boletim_diario',
+      title: t('settings.notifications.briefing'),
+      description: t('settings.notifications.briefingDescription'),
+    },
   ];
 }
 

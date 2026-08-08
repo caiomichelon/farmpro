@@ -125,6 +125,69 @@ export function useFarmAlerts(farmId: string | undefined) {
             }
           }
         }
+
+        // ── Possível abigeato — contagem de campo abaixo do esperado ──────
+        if (isAlertEnabled('abigeato')) {
+          const { data: headcountCollections } = await supabase
+            .from('cattle_field_collections')
+            .select('lot_id, head_count, collected_at')
+            .in('lot_id', lotIds)
+            .eq('category', 'rebanho')
+            .not('head_count', 'is', null)
+            .order('collected_at', { ascending: false });
+
+          for (const lot of lots) {
+            const latestCount = (headcountCollections ?? []).find((c) => c.lot_id === lot.id);
+            if (!latestCount) continue;
+
+            const deaths = (mortalityEvents ?? [])
+              .filter((m) => m.lot_id === lot.id)
+              .reduce((sum, m) => sum + m.head_count, 0);
+            const expectedHeadCount = lot.entry_head_count - deaths;
+            const actualHeadCount = Number(latestCount.head_count);
+            // Tolerância: pelo menos 2 cabeças ou 3% do esperado — pra não
+            // disparar alerta por causa de erro de contagem no olho.
+            const tolerance = Math.max(2, Math.round(expectedHeadCount * 0.03));
+            const missing = expectedHeadCount - actualHeadCount;
+
+            if (missing > tolerance) {
+              result.push({
+                id: `abigeato-${lot.id}`,
+                category: 'abigeato',
+                severity: 'danger',
+                title: `Lote ${lot.name}: possível falta de gado`,
+                description: `Contagem de campo achou ${actualHeadCount} cabeça(s), mas o esperado (entrada − mortalidade registrada) é ${expectedHeadCount} — ${missing} a menos, sem registro de venda/abate/movimentação.`,
+                href: `/farms/${farmId}/pecuaria/corte/lote/${lot.id}`,
+              });
+            }
+          }
+        }
+
+        // ── Cocho/aguada com nível baixo (leitura manual ou de sensor) ────
+        if (isAlertEnabled('cocho_baixo')) {
+          const { data: levelCollections } = await supabase
+            .from('cattle_field_collections')
+            .select('lot_id, level_pct, collected_at')
+            .in('lot_id', lotIds)
+            .eq('category', 'aguada')
+            .not('level_pct', 'is', null)
+            .order('collected_at', { ascending: false });
+
+          const LOW_LEVEL_THRESHOLD_PCT = 20;
+          for (const lot of lots) {
+            const latest = (levelCollections ?? []).find((c) => c.lot_id === lot.id);
+            if (!latest || Number(latest.level_pct) >= LOW_LEVEL_THRESHOLD_PCT) continue;
+
+            result.push({
+              id: `cocho-${lot.id}`,
+              category: 'cocho_baixo',
+              severity: Number(latest.level_pct) <= 5 ? 'danger' : 'warning',
+              title: `Lote ${lot.name}: cocho/aguada com nível baixo`,
+              description: `Última leitura de campo: ${Number(latest.level_pct)}% — hora de repor.`,
+              href: `/farms/${farmId}/pecuaria/corte/lote/${lot.id}`,
+            });
+          }
+        }
       }
 
       // ── Pecuária — vacinas pendentes e partos previstos ─────────────────

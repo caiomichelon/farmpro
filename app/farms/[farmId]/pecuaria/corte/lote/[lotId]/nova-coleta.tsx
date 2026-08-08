@@ -27,6 +27,8 @@ export default function NewFieldCollectionScreen() {
   const [status, setStatus] = useState<CattleFieldCollectionStatus>('dentro_padrao');
   const [notes, setNotes] = useState('');
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [headCount, setHeadCount] = useState('');
+  const [levelPct, setLevelPct] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -61,6 +63,8 @@ export default function NewFieldCollectionScreen() {
       latitude,
       longitude,
       location_accuracy_m: locationAccuracy,
+      head_count: category === 'rebanho' && headCount.trim() ? Number(headCount) : undefined,
+      level_pct: category === 'aguada' && levelPct.trim() ? Number(levelPct) : undefined,
     });
     setIsSubmitting(false);
     if (createError) {
@@ -89,6 +93,24 @@ export default function NewFieldCollectionScreen() {
             onChange={setStatus}
             accentColor={colors.pecuaria}
           />
+          {category === 'rebanho' ? (
+            <TextField
+              label="Quantas cabeças você contou?"
+              value={headCount}
+              onChangeText={setHeadCount}
+              placeholder="Opcional — ajuda a pegar sumiço de gado"
+              keyboardType="numeric"
+            />
+          ) : null}
+          {category === 'aguada' ? (
+            <TextField
+              label="Nível do cocho/aguada (%)"
+              value={levelPct}
+              onChangeText={setLevelPct}
+              placeholder="Opcional — ex.: 30"
+              keyboardType="numeric"
+            />
+          ) : null}
           <TextField label="Observação" value={notes} onChangeText={setNotes} placeholder="Opcional" />
           <PhotoPicker label="Foto (opcional)" photoUrl={photoUrl} onChange={setPhotoUrl} folder="cattle-field-collections" accentColor={colors.pecuaria} />
           <Text style={styles.locationNote}>Sua localização atual é anexada automaticamente como evidência da visita.</Text>

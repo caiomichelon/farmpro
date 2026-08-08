@@ -121,6 +121,11 @@ export default function LotDetailScreen() {
             variant="secondary"
             onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${lotId}/custos`)}
           />
+          <Button
+            label="🎚️ Simular cenários"
+            variant="ghost"
+            onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${lotId}/simulador`)}
+          />
         </Section>
 
         <Pressable

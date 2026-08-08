@@ -35,7 +35,10 @@ export type AlertPreferenceKey =
   | 'financeiro_safra'
   | 'vacina_pendente'
   | 'parto_previsto'
-  | 'clima';
+  | 'clima'
+  | 'abigeato'
+  | 'cocho_baixo'
+  | 'boletim_diario';
 export type AlertPreferences = Partial<Record<AlertPreferenceKey, boolean>>;
 
 export type Profile = {
@@ -480,6 +483,11 @@ export type CattleFieldCollection = {
   latitude: number | null;
   longitude: number | null;
   location_accuracy_m: number | null;
+  /** Contagem de cabeças, só quando `category === 'rebanho'` — base do
+   * detector de possível abigeato. */
+  head_count: number | null;
+  /** Nível (%) do cocho/aguada, só quando `category === 'aguada'`. */
+  level_pct: number | null;
   collected_at: string;
   created_at: string;
 };

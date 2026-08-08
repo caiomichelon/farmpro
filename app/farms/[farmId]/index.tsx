@@ -10,6 +10,7 @@ import { SummaryStat } from '../../../src/components/SummaryStat';
 import { useFarm } from '../../../src/hooks/useFarms';
 import { useFarmAlerts } from '../../../src/hooks/useFarmAlerts';
 import { useSyncCattleNotifications } from '../../../src/hooks/useSyncCattleNotifications';
+import { useSyncDailyBriefingNotification } from '../../../src/hooks/useSyncDailyBriefingNotification';
 import { useSyncWeatherNotifications } from '../../../src/hooks/useSyncWeatherNotifications';
 import { useT } from '../../../src/i18n';
 import { radius, spacing, typography, useColors, type Colors } from '../../../src/theme';
@@ -23,6 +24,7 @@ export default function FarmHomeScreen() {
   const { alerts } = useFarmAlerts(farmId);
   useSyncCattleNotifications(farmId);
   useSyncWeatherNotifications(farmId);
+  useSyncDailyBriefingNotification(farmId);
 
   return (
     <View style={styles.container}>
@@ -126,7 +128,35 @@ export default function FarmHomeScreen() {
             </Pressable>
           </FadeSlideIn>
 
+          <FadeSlideIn delay={135}>
+            <Pressable
+              style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
+              onPress={() => router.push(`/farms/${farmId}/comando-de-voz`)}
+            >
+              <View style={[styles.employeesMarker, { backgroundColor: colors.lavoura }]} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.employeesTitle}>🎙️ Ei FarmPro</Text>
+                <Text style={styles.employeesSubtitle}>Pergunte por voz sobre clima, lotes e mais</Text>
+              </View>
+              <Text style={styles.employeesChevron}>→</Text>
+            </Pressable>
+          </FadeSlideIn>
+
           <FadeSlideIn delay={160}>
+            <Pressable
+              style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
+              onPress={() => router.push(`/farms/${farmId}/boletim`)}
+            >
+              <View style={[styles.employeesMarker, { backgroundColor: colors.pecuaria }]} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.employeesTitle}>Boletim da fazenda</Text>
+                <Text style={styles.employeesSubtitle}>Resumo falado do que importa hoje</Text>
+              </View>
+              <Text style={styles.employeesChevron}>→</Text>
+            </Pressable>
+          </FadeSlideIn>
+
+          <FadeSlideIn delay={185}>
             <Pressable
               style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
               onPress={() => router.push(`/farms/${farmId}/clima`)}

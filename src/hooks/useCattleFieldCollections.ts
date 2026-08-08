@@ -43,6 +43,8 @@ export function useCattleFieldCollections(lotId: string | undefined) {
       latitude?: number;
       longitude?: number;
       location_accuracy_m?: number;
+      head_count?: number;
+      level_pct?: number;
     }) => {
       if (!lotId) return { error: 'Lote não encontrado.' };
 
@@ -55,6 +57,8 @@ export function useCattleFieldCollections(lotId: string | undefined) {
         latitude: input.latitude ?? null,
         longitude: input.longitude ?? null,
         location_accuracy_m: input.location_accuracy_m ?? null,
+        head_count: input.head_count ?? null,
+        level_pct: input.level_pct ?? null,
       });
 
       if (insertError) return { error: insertError.message };

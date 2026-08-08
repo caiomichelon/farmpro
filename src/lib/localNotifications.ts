@@ -60,6 +60,23 @@ export async function scheduleLocalNotification(identifier: string, title: strin
   }
 }
 
+/** Agenda uma notificação que se repete todo dia no mesmo horário — usada
+ * pro lembrete do boletim de voz, cujo conteúdo muda dia a dia (por isso
+ * não dá pra usar `scheduleLocalNotification`, que é pra uma data única). */
+export async function scheduleDailyNotification(identifier: string, title: string, body: string, hour: number, minute: number): Promise<void> {
+  if (!SUPPORTED || !Notifications) return;
+  try {
+    await Notifications.cancelScheduledNotificationAsync(identifier);
+    await Notifications.scheduleNotificationAsync({
+      identifier,
+      content: { title, body },
+      trigger: { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour, minute },
+    });
+  } catch {
+    // Best effort — segue sem o lembrete diário se falhar.
+  }
+}
+
 export async function cancelLocalNotification(identifier: string): Promise<void> {
   if (!SUPPORTED || !Notifications) return;
   try {
