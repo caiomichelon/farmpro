@@ -2,6 +2,7 @@ import { Link, router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { AuthHero } from '../../src/components/AuthHero';
 import { Button } from '../../src/components/Button';
 import { FadeSlideIn } from '../../src/components/FadeSlideIn';
 import { TextField } from '../../src/components/TextField';
@@ -57,12 +58,7 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-        <FadeSlideIn>
-          <View style={styles.hero}>
-            <Text style={styles.heroTitle}>FarmPro</Text>
-            <Text style={styles.heroTagline}>{t('auth.login.tagline')}</Text>
-          </View>
-        </FadeSlideIn>
+        <AuthHero title="FarmPro" tagline={t('auth.login.tagline')} />
 
         <View style={styles.body}>
           <FadeSlideIn delay={80}>
@@ -149,22 +145,6 @@ function createStyles(colors: Colors) {
     },
     scrollContent: {
       flexGrow: 1,
-    },
-    hero: {
-      backgroundColor: colors.primary,
-      paddingTop: spacing.xxxl + spacing.xl,
-      paddingBottom: spacing.xxl,
-      paddingHorizontal: spacing.xl,
-      gap: spacing.xs,
-    },
-    heroTitle: {
-      ...typography.displayLg,
-      color: colors.textInverse,
-    },
-    heroTagline: {
-      ...typography.body,
-      color: colors.textInverse,
-      opacity: 0.85,
     },
     body: {
       paddingHorizontal: spacing.xl,

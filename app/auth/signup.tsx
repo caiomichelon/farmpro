@@ -2,6 +2,7 @@ import { Link, router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { AuthHero } from '../../src/components/AuthHero';
 import { Button } from '../../src/components/Button';
 import { FadeSlideIn } from '../../src/components/FadeSlideIn';
 import { TextField } from '../../src/components/TextField';
@@ -46,9 +47,7 @@ export default function SignupScreen() {
   if (confirmationSent) {
     return (
       <View style={styles.container}>
-        <View style={styles.hero}>
-          <Text style={styles.heroTitle}>FarmPro</Text>
-        </View>
+        <AuthHero title="FarmPro" tagline={t('auth.login.tagline')} />
         <FadeSlideIn style={styles.confirmContent}>
           <Text style={styles.title}>{t('auth.signup.confirmTitle')}</Text>
           <Text style={styles.subtitle}>{t('auth.signup.confirmSubtitle', { email })}</Text>
@@ -61,12 +60,7 @@ export default function SignupScreen() {
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-        <FadeSlideIn>
-          <View style={styles.hero}>
-            <Text style={styles.heroTitle}>FarmPro</Text>
-            <Text style={styles.heroTagline}>{t('auth.login.tagline')}</Text>
-          </View>
-        </FadeSlideIn>
+        <AuthHero title="FarmPro" tagline={t('auth.login.tagline')} />
 
         <FadeSlideIn delay={80} style={styles.body}>
           <Text style={styles.title}>{t('auth.signup.title')}</Text>
@@ -118,22 +112,6 @@ function createStyles(colors: Colors) {
     },
     scrollContent: {
       flexGrow: 1,
-    },
-    hero: {
-      backgroundColor: colors.primary,
-      paddingTop: spacing.xxxl + spacing.xl,
-      paddingBottom: spacing.xxl,
-      paddingHorizontal: spacing.xl,
-      gap: spacing.xs,
-    },
-    heroTitle: {
-      ...typography.displayLg,
-      color: colors.textInverse,
-    },
-    heroTagline: {
-      ...typography.body,
-      color: colors.textInverse,
-      opacity: 0.85,
     },
     confirmContent: {
       flex: 1,
