@@ -132,6 +132,20 @@ export default function FarmHomeScreen() {
             </Pressable>
           </FadeSlideIn>
 
+          <FadeSlideIn delay={110}>
+            <Pressable
+              style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
+              onPress={() => router.push(`/farms/${farmId}/modo-carro`)}
+            >
+              <View style={[styles.employeesMarker, { backgroundColor: colors.primaryDark }]} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.employeesTitle}>🚗 Modo carro</Text>
+                <Text style={styles.employeesSubtitle}>Painel com boletim automático e comando de voz</Text>
+              </View>
+              <Text style={styles.employeesChevron}>→</Text>
+            </Pressable>
+          </FadeSlideIn>
+
           <FadeSlideIn delay={135}>
             <Pressable
               style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
