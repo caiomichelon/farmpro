@@ -86,6 +86,10 @@ export type Farm = {
   emergency_contact_phone: string | null;
   vault_notes: string | null;
   vault_updated_at: string | null;
+  /** Participa do comparativo regional anônimo — se true, os números desta
+   * fazenda entram na média regional que outras fazendas veem (nunca
+   * expostos linha a linha, só agregados). */
+  benchmark_opt_in: boolean;
   created_at: string;
   created_by: string;
 };
@@ -896,6 +900,22 @@ export interface Database {
       join_farm_by_code: {
         Args: { invite_code: string };
         Returns: { result_farm_id: string; result_farm_name: string }[];
+      };
+      regional_benchmark_corte: {
+        Args: { p_farm_id: string };
+        Returns: {
+          regional_avg_gmd_kg_day: number | null;
+          regional_avg_cost_per_arroba: number | null;
+          participant_farm_count: number;
+        }[];
+      };
+      regional_benchmark_cria: {
+        Args: { p_farm_id: string };
+        Returns: { regional_avg_pregnancy_rate_pct: number | null; participant_farm_count: number }[];
+      };
+      regional_benchmark_lavoura: {
+        Args: { p_farm_id: string };
+        Returns: { regional_avg_yield_sacas_ha: number | null; participant_farm_count: number }[];
       };
     };
     Enums: Record<string, never>;

@@ -145,6 +145,10 @@ export default function CriaHomeScreen() {
                 <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/benchmarking`)} hitSlop={8}>
                   <Text style={styles.link}>Benchmarking</Text>
                 </Pressable>
+                <Text style={styles.linkDivider}>·</Text>
+                <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/comparativo-regional`)} hitSlop={8}>
+                  <Text style={styles.link}>🌎 Comparativo regional</Text>
+                </Pressable>
               </View>
 
               <TextField label="Buscar matriz" value={search} onChangeText={setSearch} placeholder="Digite a identificação" />

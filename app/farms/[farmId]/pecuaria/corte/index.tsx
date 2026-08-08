@@ -169,6 +169,10 @@ export default function CorteHomeScreen() {
                 <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/painel-de-campo`)} hitSlop={8}>
                   <Text style={styles.link}>Painel de campo</Text>
                 </Pressable>
+                <Text style={styles.linkDivider}>·</Text>
+                <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/comparativo-regional`)} hitSlop={8}>
+                  <Text style={styles.link}>🌎 Comparativo regional</Text>
+                </Pressable>
               </View>
             </View>
             </FadeSlideIn>

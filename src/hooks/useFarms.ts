@@ -137,11 +137,40 @@ export function useFarms() {
     [reload]
   );
 
-  return { farms, isLoading, error, reload, createFarm, updateFarmLocation, updateFarmGoal, updateFarmVault };
+  const updateFarmBenchmarkOptIn = useCallback(
+    async (farmId: string, optIn: boolean) => {
+      const { error: updateError } = await supabase.from('farms').update({ benchmark_opt_in: optIn }).eq('id', farmId);
+      if (updateError) return { error: updateError.message };
+      await reload();
+      return { error: null };
+    },
+    [reload]
+  );
+
+  return {
+    farms,
+    isLoading,
+    error,
+    reload,
+    createFarm,
+    updateFarmLocation,
+    updateFarmGoal,
+    updateFarmVault,
+    updateFarmBenchmarkOptIn,
+  };
 }
 
 export function useFarm(farmId: string | undefined) {
-  const { farms, isLoading, error, reload, updateFarmLocation, updateFarmGoal, updateFarmVault } = useFarms();
+  const {
+    farms,
+    isLoading,
+    error,
+    reload,
+    updateFarmLocation,
+    updateFarmGoal,
+    updateFarmVault,
+    updateFarmBenchmarkOptIn,
+  } = useFarms();
   const farm = farms.find((f) => f.id === farmId);
-  return { farm, isLoading, error, reload, updateFarmLocation, updateFarmGoal, updateFarmVault };
+  return { farm, isLoading, error, reload, updateFarmLocation, updateFarmGoal, updateFarmVault, updateFarmBenchmarkOptIn };
 }
