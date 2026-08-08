@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { getDocumentAlertStatus } from '../lib/documentAlerts';
+import { buildEmployeeGamification } from '../lib/employeeGamification';
 import { supabase } from '../lib/supabase';
 import type { Employee, EmployeeCostType, EmployeeSector } from '../types/database';
 
@@ -8,6 +9,9 @@ export interface EmployeeSummary extends Employee {
   expiredDocumentCount: number;
   expiringSoonDocumentCount: number;
   unreadMessageCount: number;
+  /** Sequência atual de dias com ponto batido — gamificação leve, calculada
+   * a partir do mesmo histórico usado na tela de ponto do funcionário. */
+  currentStreakDays: number;
 }
 
 async function withDocumentAlerts(employees: Employee[]): Promise<EmployeeSummary[]> {
@@ -15,7 +19,11 @@ async function withDocumentAlerts(employees: Employee[]): Promise<EmployeeSummar
 
   const employeeIds = employees.map((e) => e.id);
 
-  const [{ data: documents, error: docsError }, { data: unreadMessages, error: messagesError }] = await Promise.all([
+  const [
+    { data: documents, error: docsError },
+    { data: unreadMessages, error: messagesError },
+    { data: timeEntries, error: timeEntriesError },
+  ] = await Promise.all([
     supabase.from('employee_documents').select('employee_id, expiry_date').in('employee_id', employeeIds),
     supabase
       .from('employee_messages')
@@ -23,20 +31,24 @@ async function withDocumentAlerts(employees: Employee[]): Promise<EmployeeSummar
       .in('employee_id', employeeIds)
       .eq('sender', 'funcionario')
       .is('read_at', null),
+    supabase.from('time_entries').select('employee_id, recorded_at').in('employee_id', employeeIds),
   ]);
 
   if (docsError) throw docsError;
   if (messagesError) throw messagesError;
+  if (timeEntriesError) throw timeEntriesError;
 
   return employees.map((employee) => {
     const employeeDocs = (documents ?? []).filter((d) => d.employee_id === employee.id);
     const statuses = employeeDocs.map((d) => getDocumentAlertStatus(d.expiry_date));
+    const employeeEntries = (timeEntries ?? []).filter((t) => t.employee_id === employee.id);
 
     return {
       ...employee,
       expiredDocumentCount: statuses.filter((s) => s === 'vencido').length,
       expiringSoonDocumentCount: statuses.filter((s) => s === 'vence_em_breve').length,
       unreadMessageCount: (unreadMessages ?? []).filter((m) => m.employee_id === employee.id).length,
+      currentStreakDays: buildEmployeeGamification(employeeEntries).currentStreakDays,
     };
   });
 }

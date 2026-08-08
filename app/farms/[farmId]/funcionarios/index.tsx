@@ -122,8 +122,15 @@ function EmployeeCard({ employee, onPress }: { employee: EmployeeSummary; onPres
           ) : null}
         </View>
       </View>
-      <View style={styles.sectorBadge}>
-        <Text style={styles.sectorBadgeText}>{EMPLOYEE_SECTOR_LABELS[employee.sector]}</Text>
+      <View style={styles.cardBottomRow}>
+        <View style={styles.sectorBadge}>
+          <Text style={styles.sectorBadgeText}>{EMPLOYEE_SECTOR_LABELS[employee.sector]}</Text>
+        </View>
+        {employee.currentStreakDays >= 3 ? (
+          <Text style={styles.streakText}>
+            🔥 {employee.currentStreakDays} {employee.currentStreakDays === 1 ? 'dia' : 'dias'}
+          </Text>
+        ) : null}
       </View>
     </Card>
   );
@@ -196,17 +203,26 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.funcionarios,
   },
+  cardBottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: spacing.sm,
+  },
   sectorBadge: {
     alignSelf: 'flex-start',
     backgroundColor: colors.funcionariosLight,
     borderRadius: radius.sm,
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
-    marginTop: spacing.sm,
   },
   sectorBadgeText: {
     ...typography.captionMedium,
     color: colors.funcionarios,
+  },
+  streakText: {
+    ...typography.captionMedium,
+    color: colors.textSecondary,
   },
   errorText: {
     ...typography.caption,
