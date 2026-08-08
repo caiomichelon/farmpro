@@ -1,7 +1,7 @@
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import * as Location from 'expo-location';
 import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../src/components/Button';
@@ -80,6 +80,9 @@ export default function ClimaScreen() {
       <ScreenHeader title="Clima" subtitle="Alertas proativos de geada, chuva, calor e vento" />
 
       <ScrollView contentContainerStyle={styles.content}>
+        <Pressable onPress={() => router.push(`/farms/${farmId}/chuva`)} hitSlop={8}>
+          <Text style={styles.rainLink}>🌧️ Pluviômetro — lançar chuva do dia</Text>
+        </Pressable>
         {!hasLocation ? (
           <Card style={styles.card}>
             <Text style={styles.cardTitle}>Ative os alertas de clima</Text>
@@ -155,6 +158,10 @@ function createStyles(colors: Colors) {
     },
     loading: {
       marginTop: spacing.xxl,
+    },
+    rainLink: {
+      ...typography.captionMedium,
+      color: colors.primary,
     },
     content: {
       paddingHorizontal: spacing.xl,

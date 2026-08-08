@@ -541,6 +541,16 @@ export type FarmNote = {
   created_at: string;
 };
 
+/** Pluviômetro manual — chuva do dia (mm) lançada pelo produtor. Uma
+ * leitura por dia (upsert por data). */
+export type RainReading = {
+  id: string;
+  farm_id: string;
+  reading_date: string;
+  mm: number;
+  created_at: string;
+};
+
 export type CattleInventoryCategory = 'racao' | 'nucleo_mineral' | 'medicamento' | 'outro';
 export type CattleInventoryUnit = 'kg' | 'saco' | 'litro' | 'dose' | 'unidade';
 export type CattleInventoryMovementType = 'entrada' | 'saida';
@@ -893,6 +903,12 @@ export interface Database {
         Row: FarmNote;
         Insert: Partial<FarmNote> & { farm_id: string };
         Update: Partial<FarmNote>;
+        Relationships: [];
+      };
+      rain_readings: {
+        Row: RainReading;
+        Insert: Partial<RainReading> & { farm_id: string; reading_date: string; mm: number };
+        Update: Partial<RainReading>;
         Relationships: [];
       };
       cattle_inventory_items: {
