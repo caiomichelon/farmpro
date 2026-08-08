@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -11,43 +11,14 @@ import { useBreedingCows } from '../../../src/hooks/useBreedingCows';
 import { useCattleLots } from '../../../src/hooks/useCattleLots';
 import { useEmployees } from '../../../src/hooks/useEmployees';
 import { useFarm } from '../../../src/hooks/useFarms';
+import { useGrainRevenue } from '../../../src/hooks/useGrainRevenue';
 import { useSeasonsByFarm } from '../../../src/hooks/usePlotSeasons';
 import { buildBankReportHtml, generateBankReportPdf } from '../../../src/lib/bankReport';
-import { supabase } from '../../../src/lib/supabase';
 import type { EmployeeSector } from '../../../src/types/database';
 import { spacing, typography, useColors, type Colors } from '../../../src/theme';
 
 function currency(value: number): string {
   return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-}
-
-/** Soma de venda de grão (quantidade × preço) por fazenda — não vem pronto
- * de nenhum hook existente, então busca direto aqui mesmo (só precisa do
- * total consolidado pro relatório, não por safra). */
-function useGrainRevenue(farmId: string | undefined) {
-  const [revenue, setRevenue] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    if (!farmId) return;
-    let cancelled = false;
-    setIsLoading(true);
-    supabase
-      .from('grain_sales')
-      .select('quantity_sacas, price_per_saca, plot_seasons!inner(plots!inner(farm_id))')
-      .eq('plot_seasons.plots.farm_id', farmId)
-      .then(({ data }) => {
-        if (cancelled) return;
-        const total = (data ?? []).reduce((sum, r) => sum + Number(r.quantity_sacas) * Number(r.price_per_saca), 0);
-        setRevenue(total);
-        setIsLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [farmId]);
-
-  return { revenue, isLoading };
 }
 
 export default function BankReportScreen() {

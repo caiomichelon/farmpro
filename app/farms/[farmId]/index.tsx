@@ -189,6 +189,20 @@ export default function FarmHomeScreen() {
           <FadeSlideIn delay={235}>
             <Pressable
               style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
+              onPress={() => router.push(`/farms/${farmId}/meta`)}
+            >
+              <View style={[styles.employeesMarker, { backgroundColor: colors.success }]} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.employeesTitle}>🐷 Cofrinho da meta</Text>
+                <Text style={styles.employeesSubtitle}>Acompanhe o resultado até bater a meta</Text>
+              </View>
+              <Text style={styles.employeesChevron}>→</Text>
+            </Pressable>
+          </FadeSlideIn>
+
+          <FadeSlideIn delay={260}>
+            <Pressable
+              style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
               onPress={() => router.push(`/farms/${farmId}/exportar`)}
             >
               <View style={[styles.employeesMarker, { backgroundColor: colors.textMuted }]} />

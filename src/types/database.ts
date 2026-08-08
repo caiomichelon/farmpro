@@ -70,6 +70,10 @@ export type Farm = {
    * capturar a posição atual em Clima → "Ativar alertas de clima". */
   latitude: number | null;
   longitude: number | null;
+  /** Meta financeira opcional (o "cofrinho") — nula até o usuário definir
+   * em Meta → "Definir meta". */
+  goal_name: string | null;
+  goal_amount: number | null;
   created_at: string;
   created_by: string;
 };

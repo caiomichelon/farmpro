@@ -101,11 +101,24 @@ export function useFarms() {
     [reload]
   );
 
-  return { farms, isLoading, error, reload, createFarm, updateFarmLocation };
+  const updateFarmGoal = useCallback(
+    async (farmId: string, goalName: string | null, goalAmount: number | null) => {
+      const { error: updateError } = await supabase
+        .from('farms')
+        .update({ goal_name: goalName, goal_amount: goalAmount })
+        .eq('id', farmId);
+      if (updateError) return { error: updateError.message };
+      await reload();
+      return { error: null };
+    },
+    [reload]
+  );
+
+  return { farms, isLoading, error, reload, createFarm, updateFarmLocation, updateFarmGoal };
 }
 
 export function useFarm(farmId: string | undefined) {
-  const { farms, isLoading, error, reload, updateFarmLocation } = useFarms();
+  const { farms, isLoading, error, reload, updateFarmLocation, updateFarmGoal } = useFarms();
   const farm = farms.find((f) => f.id === farmId);
-  return { farm, isLoading, error, reload, updateFarmLocation };
+  return { farm, isLoading, error, reload, updateFarmLocation, updateFarmGoal };
 }
