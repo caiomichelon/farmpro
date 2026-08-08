@@ -28,6 +28,13 @@ export default function PecuariaHomeScreen() {
             onPress={() => router.push(`/farms/${farmId}/pecuaria/cria`)}
           />
         </FadeSlideIn>
+        <FadeSlideIn delay={140}>
+          <AreaCard
+            title="Estoque"
+            description="Ração, núcleo/sal mineral e medicamentos — entradas, saídas e alerta de estoque baixo."
+            onPress={() => router.push(`/farms/${farmId}/pecuaria/estoque`)}
+          />
+        </FadeSlideIn>
       </View>
     </SafeAreaView>
   );

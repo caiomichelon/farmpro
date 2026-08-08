@@ -36,6 +36,8 @@ export default function PecuariaLayout() {
       <Stack.Screen name="corte/importar" options={modalOptions} />
       <Stack.Screen name="corte/lote/[lotId]/animais/importar" options={modalOptions} />
       <Stack.Screen name="cria/importar" options={modalOptions} />
+      <Stack.Screen name="estoque/novo-item" options={modalOptions} />
+      <Stack.Screen name="estoque/item/[itemId]/nova-movimentacao" options={modalOptions} />
     </Stack>
   );
 }

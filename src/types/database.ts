@@ -459,6 +459,41 @@ export type CattleFieldCollection = {
   created_at: string;
 };
 
+export type CattleInventoryCategory = 'racao' | 'nucleo_mineral' | 'medicamento' | 'outro';
+export type CattleInventoryUnit = 'kg' | 'saco' | 'litro' | 'dose' | 'unidade';
+export type CattleInventoryMovementType = 'entrada' | 'saida';
+
+/** Item de estoque da pecuária (ração, núcleo/sal mineral, medicamento
+ * veterinário) — a quantidade atual não fica aqui, é calculada a partir do
+ * estoque inicial + movimentações (ver useCattleInventoryItems). */
+export type CattleInventoryItem = {
+  id: string;
+  farm_id: string;
+  name: string;
+  category: CattleInventoryCategory;
+  unit: CattleInventoryUnit;
+  initial_quantity: number;
+  /** Abaixo disso, o item entra em alerta de estoque baixo. Null = sem alerta. */
+  min_quantity: number | null;
+  unit_cost: number | null;
+  notes: string | null;
+  created_at: string;
+};
+
+/** Entrada (compra) ou saída (consumo) de um item de estoque — a saída
+ * pode opcionalmente indicar pra qual lote foi (ex.: ração consumida pelo
+ * Lote 5). */
+export type CattleInventoryMovement = {
+  id: string;
+  item_id: string;
+  type: CattleInventoryMovementType;
+  quantity: number;
+  lot_id: string | null;
+  notes: string | null;
+  moved_at: string;
+  created_at: string;
+};
+
 /**
  * Preparação para o futuro — ainda sem gateway de pagamento integrado.
  * Ver supabase/migrations/0002_subscriptions_placeholder.sql.
@@ -725,6 +760,18 @@ export interface Database {
           status: CattleFieldCollectionStatus;
         };
         Update: Partial<CattleFieldCollection>;
+        Relationships: [];
+      };
+      cattle_inventory_items: {
+        Row: CattleInventoryItem;
+        Insert: Partial<CattleInventoryItem> & { farm_id: string; name: string; category: CattleInventoryCategory; unit: CattleInventoryUnit };
+        Update: Partial<CattleInventoryItem>;
+        Relationships: [];
+      };
+      cattle_inventory_movements: {
+        Row: CattleInventoryMovement;
+        Insert: Partial<CattleInventoryMovement> & { item_id: string; type: CattleInventoryMovementType; quantity: number };
+        Update: Partial<CattleInventoryMovement>;
         Relationships: [];
       };
     };

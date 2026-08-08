@@ -1,4 +1,10 @@
-import type { CattleFieldCollectionCategory, CattleFieldCollectionStatus, CattleLotStatus } from '../types/database';
+import type {
+  CattleFieldCollectionCategory,
+  CattleFieldCollectionStatus,
+  CattleInventoryCategory,
+  CattleInventoryUnit,
+  CattleLotStatus,
+} from '../types/database';
 
 export const CATTLE_LOT_STATUS_LABELS: Record<CattleLotStatus, string> = {
   ativo: 'Ativo',
@@ -48,6 +54,30 @@ export const CATTLE_FIELD_COLLECTION_STATUS_COLOR_KEY: Record<
   nao_realizada: 'textMuted',
   ausencia_gado: 'pecuaria',
 };
+
+export const CATTLE_INVENTORY_CATEGORY_LABELS: Record<CattleInventoryCategory, string> = {
+  racao: 'Ração',
+  nucleo_mineral: 'Núcleo/Sal mineral',
+  medicamento: 'Medicamento veterinário',
+  outro: 'Outro',
+};
+
+export const CATTLE_INVENTORY_CATEGORY_OPTIONS = Object.entries(CATTLE_INVENTORY_CATEGORY_LABELS).map(
+  ([value, label]) => ({ value: value as CattleInventoryCategory, label })
+);
+
+export const CATTLE_INVENTORY_UNIT_LABELS: Record<CattleInventoryUnit, string> = {
+  kg: 'kg',
+  saco: 'saco',
+  litro: 'litro',
+  dose: 'dose',
+  unidade: 'unidade',
+};
+
+export const CATTLE_INVENTORY_UNIT_OPTIONS = Object.entries(CATTLE_INVENTORY_UNIT_LABELS).map(([value, label]) => ({
+  value: value as CattleInventoryUnit,
+  label,
+}));
 
 /** Escore de condição corporal (ECC) — escala 1 a 5 usada em bovinos de corte. */
 export const BODY_CONDITION_SCORE_OPTIONS = [
