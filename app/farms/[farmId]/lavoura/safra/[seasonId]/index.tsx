@@ -69,6 +69,11 @@ export default function SeasonDetailScreen() {
           subtitle="Lançamentos por dia e vendas para tradings/cerealistas"
           onPress={() => router.push(`/farms/${farmId}/lavoura/safra/${seasonId}/colheita`)}
         />
+        <NavRow
+          title="Aplicação de defensivo"
+          subtitle="Receituário — produto, dose e carência"
+          onPress={() => router.push(`/farms/${farmId}/lavoura/safra/${seasonId}/defensivos`)}
+        />
       </View>
     </SafeAreaView>
   );

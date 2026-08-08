@@ -144,6 +144,23 @@ export type ProductionCost = {
   created_at: string;
 };
 
+/** Aplicação de defensivo (receituário) — registro agronômico/legal,
+ * separado do lançamento de custo. */
+export type PesticideApplication = {
+  id: string;
+  plot_season_id: string;
+  product_name: string;
+  target_pest: string | null;
+  dose_per_hectare: number;
+  dose_unit: string;
+  area_hectares: number;
+  applied_at: string;
+  pre_harvest_interval_days: number | null;
+  applicator_name: string | null;
+  notes: string | null;
+  created_at: string;
+};
+
 /** Um lançamento de colheita (diário) de uma safra. */
 export type HarvestEntry = {
   id: string;
@@ -737,6 +754,17 @@ export interface Database {
           total_cost: number;
         };
         Update: Partial<ProductionCost>;
+        Relationships: [];
+      };
+      pesticide_applications: {
+        Row: PesticideApplication;
+        Insert: Partial<PesticideApplication> & {
+          plot_season_id: string;
+          product_name: string;
+          dose_per_hectare: number;
+          area_hectares: number;
+        };
+        Update: Partial<PesticideApplication>;
         Relationships: [];
       };
       harvest_entries: {
