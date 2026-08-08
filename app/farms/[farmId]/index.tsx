@@ -261,6 +261,20 @@ export default function FarmHomeScreen() {
             </Pressable>
           </FadeSlideIn>
 
+          <FadeSlideIn delay={360}>
+            <Pressable
+              style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
+              onPress={() => router.push(`/farms/${farmId}/tarefas`)}
+            >
+              <View style={[styles.employeesMarker, { backgroundColor: colors.funcionarios }]} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.employeesTitle}>✅ Tarefas do dia</Text>
+                <Text style={styles.employeesSubtitle}>Crie, atribua e acompanhe o que precisa ser feito</Text>
+              </View>
+              <Text style={styles.employeesChevron}>→</Text>
+            </Pressable>
+          </FadeSlideIn>
+
           <FadeSlideIn delay={260}>
             <Pressable
               style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}

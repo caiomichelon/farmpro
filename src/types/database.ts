@@ -551,6 +551,20 @@ export type RainReading = {
   created_at: string;
 };
 
+/** Tarefa do dia — o gerente cria e (opcionalmente) atribui a um
+ * funcionário; risca quando termina. */
+export type EmployeeTask = {
+  id: string;
+  farm_id: string;
+  employee_id: string | null;
+  title: string;
+  notes: string | null;
+  due_date: string;
+  done_at: string | null;
+  created_by: string | null;
+  created_at: string;
+};
+
 export type CattleInventoryCategory = 'racao' | 'nucleo_mineral' | 'medicamento' | 'outro';
 export type CattleInventoryUnit = 'kg' | 'saco' | 'litro' | 'dose' | 'unidade';
 export type CattleInventoryMovementType = 'entrada' | 'saida';
@@ -909,6 +923,12 @@ export interface Database {
         Row: RainReading;
         Insert: Partial<RainReading> & { farm_id: string; reading_date: string; mm: number };
         Update: Partial<RainReading>;
+        Relationships: [];
+      };
+      employee_tasks: {
+        Row: EmployeeTask;
+        Insert: Partial<EmployeeTask> & { farm_id: string; title: string };
+        Update: Partial<EmployeeTask>;
         Relationships: [];
       };
       cattle_inventory_items: {
