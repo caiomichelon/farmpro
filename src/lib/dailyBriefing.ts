@@ -13,6 +13,7 @@ export interface BriefingInput {
   alerts: BriefingAlertInput[];
   readyLotNames: string[];
   upcomingCalvings: { identification: string; daysUntil: number }[];
+  sellRecommendations: { lotName: string; marginPct: number }[];
 }
 
 function todayLabel(): string {
@@ -20,7 +21,7 @@ function todayLabel(): string {
 }
 
 export function buildBriefingText(input: BriefingInput): string {
-  const { farmName, alerts, readyLotNames, upcomingCalvings } = input;
+  const { farmName, alerts, readyLotNames, upcomingCalvings, sellRecommendations } = input;
   const parts: string[] = [];
 
   parts.push(`Bom dia! Aqui está o boletim de hoje, ${todayLabel()}, da ${farmName}.`);
@@ -55,6 +56,14 @@ export function buildBriefingText(input: BriefingInput): string {
       `${readyLotNames.length === 1 ? 'O lote' : 'Os lotes'} ${readyLotNames.join(', ')} ${
         readyLotNames.length === 1 ? 'está pronto' : 'estão prontos'
       } pra abate.`
+    );
+  }
+
+  if (sellRecommendations.length > 0) {
+    parts.push(
+      `Boa notícia: hoje é um bom dia pra vender. ${sellRecommendations
+        .map((r) => `${r.lotName}, com margem de ${r.marginPct.toFixed(0)} por cento`)
+        .join('. ')}.`
     );
   }
 

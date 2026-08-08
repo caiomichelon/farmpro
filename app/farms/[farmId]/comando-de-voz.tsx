@@ -8,8 +8,10 @@ import { Button } from '../../../src/components/Button';
 import { Card } from '../../../src/components/Card';
 import { ScreenHeader } from '../../../src/components/ScreenHeader';
 import { TextField } from '../../../src/components/TextField';
+import { getCommodityQuotes } from '../../../src/data/commodities';
 import { useCattleLots } from '../../../src/hooks/useCattleLots';
 import { useFarmAlerts } from '../../../src/hooks/useFarmAlerts';
+import { buildSellRecommendations } from '../../../src/lib/sellRecommendation';
 import { parseVoiceCommand } from '../../../src/lib/voiceCommands';
 import { spacing, typography, useColors, type Colors } from '../../../src/theme';
 
@@ -34,9 +36,16 @@ export default function VoiceCommandScreen() {
   const [heard, setHeard] = useState('');
   const [reply, setReply] = useState('');
   const [isListening, setIsListening] = useState(false);
+  const [boiGordoPrice, setBoiGordoPrice] = useState(0);
   const recognitionRef = useRef<any>(null);
 
   const SpeechRecognitionClass = useMemo(() => getBrowserSpeechRecognition(), []);
+
+  useEffect(() => {
+    getCommodityQuotes().then((quotes) => {
+      setBoiGordoPrice(quotes.find((q) => q.id === 'boi-gordo')?.price ?? 0);
+    });
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -56,7 +65,11 @@ export default function VoiceCommandScreen() {
     setHeard(text);
     const weatherRiskTitles = alerts.filter((a) => a.category === 'clima').map((a) => a.title);
     const readyLotNames = lots.filter((l) => l.status === 'ativo' && l.readiness === 'pronto').map((l) => l.name);
-    const result = parseVoiceCommand(text, { readyLotNames, weatherRiskTitles, findLot });
+    const sellRecommendations = buildSellRecommendations(
+      lots.filter((l) => l.status === 'ativo'),
+      boiGordoPrice
+    ).map((r) => ({ lotName: r.lotName, marginPct: r.marginPct }));
+    const result = parseVoiceCommand(text, { readyLotNames, weatherRiskTitles, sellRecommendations, findLot });
     setReply(result.reply);
     Speech.speak(result.reply, { language: 'pt-BR' });
     if (result.navigateTo) {
@@ -138,6 +151,7 @@ export default function VoiceCommandScreen() {
         <Text style={styles.examplesTitle}>Exemplos de comando</Text>
         <Text style={styles.exampleItem}>"Como tá o clima?"</Text>
         <Text style={styles.exampleItem}>"Quais lotes estão prontos pra abate?"</Text>
+        <Text style={styles.exampleItem}>"Vale a pena vender hoje?"</Text>
         <Text style={styles.exampleItem}>"Quantas cabeças tem o lote 3?"</Text>
         <Text style={styles.exampleItem}>"Abre o boletim de hoje"</Text>
         <Text style={styles.exampleItem}>"Gera o relatório pro banco"</Text>

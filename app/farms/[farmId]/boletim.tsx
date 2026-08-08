@@ -7,11 +7,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../../src/components/Button';
 import { Card } from '../../../src/components/Card';
 import { ScreenHeader } from '../../../src/components/ScreenHeader';
+import { getCommodityQuotes } from '../../../src/data/commodities';
 import { useBreedingCows } from '../../../src/hooks/useBreedingCows';
 import { useCattleLots } from '../../../src/hooks/useCattleLots';
 import { useFarm } from '../../../src/hooks/useFarms';
 import { useFarmAlerts } from '../../../src/hooks/useFarmAlerts';
 import { buildBriefingText } from '../../../src/lib/dailyBriefing';
+import { buildSellRecommendations } from '../../../src/lib/sellRecommendation';
 import { spacing, typography, useColors, type Colors } from '../../../src/theme';
 
 function daysUntil(isoDate: string): number {
@@ -30,6 +32,13 @@ export default function DailyBriefingScreen() {
   const { lots, isLoading: lotsLoading } = useCattleLots(farmId);
   const { cows, isLoading: cowsLoading } = useBreedingCows(farmId);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [boiGordoPrice, setBoiGordoPrice] = useState(0);
+
+  useEffect(() => {
+    getCommodityQuotes().then((quotes) => {
+      setBoiGordoPrice(quotes.find((q) => q.id === 'boi-gordo')?.price ?? 0);
+    });
+  }, []);
 
   const isLoading = farmLoading || alertsLoading || lotsLoading || cowsLoading || !farm;
 
@@ -38,6 +47,10 @@ export default function DailyBriefingScreen() {
     .filter((c) => c.isPregnant && c.expectedCalvingDate)
     .map((c) => ({ identification: c.identification, daysUntil: daysUntil(c.expectedCalvingDate as string) }))
     .filter((c) => c.daysUntil >= 0);
+  const sellRecommendations = buildSellRecommendations(
+    lots.filter((l) => l.status === 'ativo'),
+    boiGordoPrice
+  );
 
   const briefingText = isLoading
     ? ''
@@ -46,6 +59,7 @@ export default function DailyBriefingScreen() {
         alerts: alerts.map((a) => ({ title: a.title, severity: a.severity })),
         readyLotNames,
         upcomingCalvings,
+        sellRecommendations: sellRecommendations.map((r) => ({ lotName: r.lotName, marginPct: r.marginPct })),
       });
 
   useEffect(() => {

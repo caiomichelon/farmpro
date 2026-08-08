@@ -9,6 +9,7 @@
 export interface VoiceCommandContext {
   readyLotNames: string[];
   weatherRiskTitles: string[];
+  sellRecommendations: { lotName: string; marginPct: number }[];
   findLot: (spokenText: string) => { name: string; currentHeadCount: number; latestWeightKg: number } | null;
 }
 
@@ -37,6 +38,17 @@ export function parseVoiceCommand(rawText: string, ctx: VoiceCommandContext): Vo
       return { reply: 'Sem riscos de clima previstos nos próximos dias.', navigateTo: 'clima' };
     }
     return { reply: `Atenção: ${ctx.weatherRiskTitles.join('. ')}.`, navigateTo: 'clima' };
+  }
+
+  if (includesAny(text, ['vender', 'venda', 'vale a pena'])) {
+    if (ctx.sellRecommendations.length === 0) {
+      return { reply: 'Nenhum lote com margem boa o suficiente pra vender hoje.' };
+    }
+    return {
+      reply: `Hoje vale a pena vender: ${ctx.sellRecommendations
+        .map((r) => `${r.lotName}, margem de ${r.marginPct.toFixed(0)} por cento`)
+        .join('. ')}.`,
+    };
   }
 
   if (includesAny(text, ['relatorio', 'banco', 'financiamento'])) {

@@ -1,5 +1,5 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -11,12 +11,14 @@ import { FinancialSummary } from '../../../../../src/components/FinancialSummary
 import { ScreenHeader } from '../../../../../src/components/ScreenHeader';
 import { StatGrid } from '../../../../../src/components/StatGrid';
 import { CATTLE_LOT_STATUS_LABELS } from '../../../../../src/data/cattleOptions';
+import { getCommodityQuotes } from '../../../../../src/data/commodities';
 import {
   CATTLE_LOT_READINESS_LABELS,
   useCattleLots,
   type CattleLotReadiness,
   type CattleLotSummary,
 } from '../../../../../src/hooks/useCattleLots';
+import { buildSellRecommendations } from '../../../../../src/lib/sellRecommendation';
 import { radius, spacing, typography, useColors, type Colors } from '../../../../../src/theme';
 
 const READINESS_COLOR_KEY: Record<CattleLotReadiness, 'success' | 'pecuaria' | 'textMuted'> = {
@@ -30,6 +32,7 @@ export default function CorteHomeScreen() {
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const { lots, isLoading, error, reload } = useCattleLots(farmId);
+  const [boiGordoPrice, setBoiGordoPrice] = useState(0);
 
   // "Novo lote" é uma rota separada — refaz a busca ao voltar pra cá.
   useFocusEffect(
@@ -37,6 +40,12 @@ export default function CorteHomeScreen() {
       reload();
     }, [reload])
   );
+
+  useEffect(() => {
+    getCommodityQuotes().then((quotes) => {
+      setBoiGordoPrice(quotes.find((q) => q.id === 'boi-gordo')?.price ?? 0);
+    });
+  }, []);
 
   const activeLots = lots.filter((l) => l.status === 'ativo');
   const totalHead = activeLots.reduce((sum, l) => sum + l.currentHeadCount, 0);
@@ -47,6 +56,7 @@ export default function CorteHomeScreen() {
   const readyLots = activeLots.filter((l) => l.readiness === 'pronto');
   const totalCost = activeLots.reduce((sum, l) => sum + l.totalCost, 0);
   const totalRevenue = activeLots.reduce((sum, l) => sum + l.projectedRevenue, 0);
+  const sellRecommendations = buildSellRecommendations(activeLots, boiGordoPrice);
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -94,6 +104,25 @@ export default function CorteHomeScreen() {
                   </Text>
                   <Text style={styles.readyBannerChevron}>→</Text>
                 </Pressable>
+              ) : null}
+
+              {sellRecommendations.length > 0 ? (
+                <View style={styles.sellBanner}>
+                  <Text style={styles.sellBannerTitle}>💰 Hoje é um bom dia pra vender</Text>
+                  {sellRecommendations.map((rec) => (
+                    <Pressable
+                      key={rec.lotId}
+                      style={({ pressed }) => [styles.sellBannerRow, pressed && styles.rowPressed]}
+                      onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${rec.lotId}`)}
+                    >
+                      <Text style={styles.sellBannerRowText}>
+                        Lote {rec.lotName}: margem de {rec.marginPct.toFixed(0)}% na arroba (custo{' '}
+                        {rec.costPerArroba.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} × cotação{' '}
+                        {rec.currentPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
               ) : null}
 
               <FinancialSummary cost={totalCost} revenue={totalRevenue} margin={totalRevenue - totalCost} />
@@ -251,6 +280,25 @@ function createStyles(colors: Colors) {
     readyBannerChevron: {
       ...typography.heading,
       color: colors.success,
+    },
+    sellBanner: {
+      backgroundColor: colors.accent + '1A',
+      borderWidth: 1,
+      borderColor: colors.accent,
+      borderRadius: radius.md,
+      padding: spacing.md,
+      gap: spacing.xs,
+    },
+    sellBannerTitle: {
+      ...typography.bodyMedium,
+      color: colors.accent,
+    },
+    sellBannerRow: {
+      paddingVertical: 2,
+    },
+    sellBannerRowText: {
+      ...typography.caption,
+      color: colors.textPrimary,
     },
     linksRow: {
       flexDirection: 'row',
