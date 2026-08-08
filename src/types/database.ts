@@ -264,6 +264,43 @@ export type BreedingCowCost = {
   created_at: string;
 };
 
+export type PregnancyDiagnosisResult = 'positivo' | 'negativo' | 'reabsorcao';
+
+/** Diagnóstico de gestação (DG) — confirma ou descarta a prenhez de uma
+ * inseminação, normalmente feito ~30 dias depois por palpação/ultrassom. */
+export type PregnancyDiagnosis = {
+  id: string;
+  insemination_id: string;
+  diagnosis_date: string;
+  result: PregnancyDiagnosisResult;
+  method: string | null;
+  notes: string | null;
+  created_at: string;
+};
+
+/** Desmame de um parto — peso e data em que o(s) bezerro(s) foram
+ * desmamados, base do "peso de desmame" (KPI zootécnico padrão). */
+export type Weaning = {
+  id: string;
+  calving_id: string;
+  weaning_date: string;
+  weight_kg: number | null;
+  notes: string | null;
+  created_at: string;
+};
+
+/** Pesagem/escore de condição corporal (ECC) da própria matriz — nutrição
+ * afeta reprodução diretamente. */
+export type CowWeighing = {
+  id: string;
+  cow_id: string;
+  weighed_at: string;
+  weight_kg: number;
+  body_condition_score: number | null;
+  notes: string | null;
+  created_at: string;
+};
+
 /** Ficha completa de um funcionário — separado por setor. */
 export type Employee = {
   id: string;
@@ -541,6 +578,24 @@ export interface Database {
         Row: Calving;
         Insert: Partial<Calving> & { cow_id: string };
         Update: Partial<Calving>;
+        Relationships: [];
+      };
+      pregnancy_diagnoses: {
+        Row: PregnancyDiagnosis;
+        Insert: Partial<PregnancyDiagnosis> & { insemination_id: string; result: PregnancyDiagnosisResult };
+        Update: Partial<PregnancyDiagnosis>;
+        Relationships: [];
+      };
+      weanings: {
+        Row: Weaning;
+        Insert: Partial<Weaning> & { calving_id: string };
+        Update: Partial<Weaning>;
+        Relationships: [];
+      };
+      cow_weighings: {
+        Row: CowWeighing;
+        Insert: Partial<CowWeighing> & { cow_id: string; weight_kg: number };
+        Update: Partial<CowWeighing>;
         Relationships: [];
       };
       employees: {

@@ -9,13 +9,33 @@ import type { BreedingCow } from '../types/database';
  * disso é sinal de repetição de cio ou problema reprodutivo. */
 const ATTENTION_THRESHOLD_DAYS = 90;
 
-export type ReproductiveStatus = 'prenha' | 'vazia' | 'vazia_atencao' | 'nunca_coberta';
+/** Janela mínima pra fazer diagnóstico de gestação por ultrassom/palpação —
+ * antes disso não dá pra confirmar, então a matriz fica "aguardando DG". */
+const DIAGNOSIS_WINDOW_DAYS = 35;
+
+export type ReproductiveStatus =
+  | 'aguardando_dg'
+  | 'prenha_confirmada'
+  | 'prenha_presumida'
+  | 'vazia'
+  | 'vazia_atencao'
+  | 'nunca_coberta';
 
 export const REPRODUCTIVE_STATUS_LABELS: Record<ReproductiveStatus, string> = {
-  prenha: 'Prenha',
+  aguardando_dg: 'Aguardando DG',
+  prenha_confirmada: 'Prenha (DG confirmado)',
+  prenha_presumida: 'Prenha (sem DG)',
   vazia: 'Vazia',
   vazia_atencao: 'Vazia há muito tempo',
   nunca_coberta: 'Nunca coberta',
+};
+
+export type CowCategory = 'novilha' | 'primipara' | 'multipara';
+
+export const COW_CATEGORY_LABELS: Record<CowCategory, string> = {
+  novilha: 'Novilha',
+  primipara: 'Primípara',
+  multipara: 'Multípara',
 };
 
 export interface BreedingCowSummary extends BreedingCow {
@@ -24,10 +44,15 @@ export interface BreedingCowSummary extends BreedingCow {
   expectedCalvingDate: string | null;
   isPregnant: boolean;
   reproductiveStatus: ReproductiveStatus;
-  /** Dias desde o último parto/inseminação sem nova prenhez — null se
+  /** Dias desde o último parto/DG negativo sem nova prenhez — null se
    * prenha ou nunca coberta. */
   daysEmpty: number | null;
   totalCost: number;
+  category: CowCategory;
+  /** Média de dias entre partos consecutivos — null com menos de 2 partos. */
+  avgCalvingIntervalDays: number | null;
+  latestWeightKg: number | null;
+  latestBodyConditionScore: number | null;
 }
 
 function daysBetween(a: string, b: string) {
@@ -43,6 +68,7 @@ async function withSummary(cows: BreedingCow[]): Promise<BreedingCowSummary[]> {
     { data: calvings, error: calvingsError },
     { data: inseminations, error: inseminationsError },
     { data: costs, error: costsError },
+    { data: weighings, error: weighingsError },
   ] = await Promise.all([
     supabase
       .from('calvings')
@@ -55,33 +81,78 @@ async function withSummary(cows: BreedingCow[]): Promise<BreedingCowSummary[]> {
       .in('cow_id', cowIds)
       .order('insemination_date', { ascending: false }),
     supabase.from('breeding_cow_costs').select('cow_id, amount').in('cow_id', cowIds),
+    supabase
+      .from('cow_weighings')
+      .select('cow_id, weighed_at, weight_kg, body_condition_score')
+      .in('cow_id', cowIds)
+      .order('weighed_at', { ascending: false }),
   ]);
 
   if (calvingsError) throw calvingsError;
   if (inseminationsError) throw inseminationsError;
   if (costsError) throw costsError;
+  if (weighingsError) throw weighingsError;
+
+  const inseminationIds = (inseminations ?? []).map((i) => i.id);
+  const { data: diagnoses, error: diagnosesError } =
+    inseminationIds.length > 0
+      ? await supabase
+          .from('pregnancy_diagnoses')
+          .select('insemination_id, diagnosis_date, result')
+          .in('insemination_id', inseminationIds)
+          .order('diagnosis_date', { ascending: false })
+      : { data: [], error: null };
+  if (diagnosesError) throw diagnosesError;
 
   return cows.map((cow) => {
     const cowCalvings = (calvings ?? []).filter((c) => c.cow_id === cow.id);
     const cowInseminations = (inseminations ?? []).filter((i) => i.cow_id === cow.id);
     const lastInsemination = cowInseminations[0];
-    const lastCalving = cowCalvings[0];
-    const isPregnant = Boolean(lastInsemination) && !cowCalvings.some((c) => c.insemination_id === lastInsemination.id);
+    const lastDiagnosis = lastInsemination
+      ? (diagnoses ?? []).find((d) => d.insemination_id === lastInsemination.id)
+      : undefined;
+    const matchingCalving = lastInsemination
+      ? cowCalvings.find((c) => c.insemination_id === lastInsemination.id)
+      : undefined;
     const totalCost = (costs ?? []).filter((c) => c.cow_id === cow.id).reduce((sum, c) => sum + Number(c.amount), 0);
+    const cowWeighings = (weighings ?? []).filter((w) => w.cow_id === cow.id);
+    const latestWeighing = cowWeighings[0];
 
     let reproductiveStatus: ReproductiveStatus;
+    let isPregnant: boolean;
     let daysEmpty: number | null = null;
 
-    if (isPregnant) {
-      reproductiveStatus = 'prenha';
-    } else if (!lastInsemination) {
+    if (!lastInsemination) {
       reproductiveStatus = 'nunca_coberta';
-    } else {
-      // Não prenha e já foi coberta antes: o último evento (parto, se
-      // teve, senão a própria inseminação) marca o início da janela vazia.
-      const referenceDate = lastCalving?.calving_date ?? lastInsemination.insemination_date;
-      daysEmpty = daysBetween(referenceDate, today);
+      isPregnant = false;
+    } else if (matchingCalving) {
+      isPregnant = false;
+      daysEmpty = daysBetween(matchingCalving.calving_date, today);
       reproductiveStatus = daysEmpty > ATTENTION_THRESHOLD_DAYS ? 'vazia_atencao' : 'vazia';
+    } else if (lastDiagnosis?.result === 'negativo' || lastDiagnosis?.result === 'reabsorcao') {
+      isPregnant = false;
+      daysEmpty = daysBetween(lastDiagnosis.diagnosis_date, today);
+      reproductiveStatus = daysEmpty > ATTENTION_THRESHOLD_DAYS ? 'vazia_atencao' : 'vazia';
+    } else if (lastDiagnosis?.result === 'positivo') {
+      isPregnant = true;
+      reproductiveStatus = 'prenha_confirmada';
+    } else {
+      // Sem diagnóstico ainda pra essa inseminação.
+      const daysSinceInsemination = daysBetween(lastInsemination.insemination_date, today);
+      isPregnant = true;
+      reproductiveStatus = daysSinceInsemination < DIAGNOSIS_WINDOW_DAYS ? 'aguardando_dg' : 'prenha_presumida';
+    }
+
+    const category: CowCategory = cowCalvings.length === 0 ? 'novilha' : cowCalvings.length === 1 ? 'primipara' : 'multipara';
+
+    let avgCalvingIntervalDays: number | null = null;
+    if (cowCalvings.length >= 2) {
+      const sortedAsc = [...cowCalvings].sort((a, b) => new Date(a.calving_date).getTime() - new Date(b.calving_date).getTime());
+      const intervals: number[] = [];
+      for (let i = 1; i < sortedAsc.length; i++) {
+        intervals.push(daysBetween(sortedAsc[i - 1].calving_date, sortedAsc[i].calving_date));
+      }
+      avgCalvingIntervalDays = intervals.reduce((sum, v) => sum + v, 0) / intervals.length;
     }
 
     return {
@@ -93,6 +164,12 @@ async function withSummary(cows: BreedingCow[]): Promise<BreedingCowSummary[]> {
       reproductiveStatus,
       daysEmpty,
       totalCost,
+      category,
+      avgCalvingIntervalDays,
+      latestWeightKg: latestWeighing ? Number(latestWeighing.weight_kg) : null,
+      latestBodyConditionScore: latestWeighing?.body_condition_score !== undefined && latestWeighing?.body_condition_score !== null
+        ? Number(latestWeighing.body_condition_score)
+        : null,
     };
   });
 }

@@ -1,5 +1,5 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -8,7 +8,9 @@ import { Card } from '../../../../../src/components/Card';
 import { EmptyState } from '../../../../../src/components/EmptyState';
 import { ScreenHeader } from '../../../../../src/components/ScreenHeader';
 import { StatGrid } from '../../../../../src/components/StatGrid';
+import { TextField } from '../../../../../src/components/TextField';
 import {
+  COW_CATEGORY_LABELS,
   REPRODUCTIVE_STATUS_LABELS,
   useBreedingCows,
   type BreedingCowSummary,
@@ -16,8 +18,10 @@ import {
 } from '../../../../../src/hooks/useBreedingCows';
 import { radius, spacing, typography, useColors, type Colors } from '../../../../../src/theme';
 
-const STATUS_COLOR_KEY: Record<ReproductiveStatus, 'pecuaria' | 'textMuted' | 'danger'> = {
-  prenha: 'pecuaria',
+const STATUS_COLOR_KEY: Record<ReproductiveStatus, 'pecuaria' | 'textMuted' | 'danger' | 'warning'> = {
+  aguardando_dg: 'warning',
+  prenha_confirmada: 'pecuaria',
+  prenha_presumida: 'pecuaria',
   vazia: 'textMuted',
   vazia_atencao: 'danger',
   nunca_coberta: 'textMuted',
@@ -28,6 +32,7 @@ export default function CriaHomeScreen() {
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const { cows, isLoading, error, reload } = useBreedingCows(farmId);
+  const [search, setSearch] = useState('');
 
   // "Nova matriz" é uma rota separada — refaz a busca ao voltar pra cá.
   useFocusEffect(
@@ -42,6 +47,15 @@ export default function CriaHomeScreen() {
   const pregnancyRate = cows.length > 0 ? (pregnantCount / cows.length) * 100 : 0;
   const totalCost = cows.reduce((sum, c) => sum + c.totalCost, 0);
   const costPerCalf = totalCalves > 0 ? totalCost / totalCalves : null;
+  const intervalCows = cows.filter((c) => c.avgCalvingIntervalDays !== null);
+  const avgHerdCalvingInterval =
+    intervalCows.length > 0
+      ? intervalCows.reduce((sum, c) => sum + (c.avgCalvingIntervalDays ?? 0), 0) / intervalCows.length
+      : null;
+
+  const filteredCows = search.trim()
+    ? cows.filter((c) => c.identification.toLowerCase().includes(search.trim().toLowerCase()))
+    : cows;
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -64,7 +78,7 @@ export default function CriaHomeScreen() {
         <ActivityIndicator style={styles.loading} color={colors.pecuaria} />
       ) : (
         <FlatList
-          data={cows}
+          data={filteredCows}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           ListHeaderComponent={
@@ -75,6 +89,10 @@ export default function CriaHomeScreen() {
                   { label: 'Prenhas agora', value: String(pregnantCount) },
                   { label: 'Bezerros até hoje', value: String(totalCalves) },
                   { label: 'Taxa de prenhez', value: `${pregnancyRate.toFixed(0)}%` },
+                  {
+                    label: 'Intervalo entre partos',
+                    value: avgHerdCalvingInterval !== null ? `${Math.round(avgHerdCalvingInterval)} dias` : '—',
+                  },
                 ]}
               />
 
@@ -122,6 +140,8 @@ export default function CriaHomeScreen() {
                   <Text style={styles.link}>Atenção</Text>
                 </Pressable>
               </View>
+
+              <TextField label="Buscar matriz" value={search} onChangeText={setSearch} placeholder="Digite a identificação" />
             </View>
           }
           ListEmptyComponent={<EmptyState text="Nenhuma matriz cadastrada ainda. Comece criando a primeira." />}
@@ -160,10 +180,15 @@ function CowCard({
           {cow.calfCount} {cow.calfCount === 1 ? 'bezerro' : 'bezerros'}
         </Text>
       </View>
-      <View style={[styles.statusBadge, { backgroundColor: statusColor + '22' }]}>
-        <Text style={[styles.statusBadgeText, { color: statusColor }]}>
-          {REPRODUCTIVE_STATUS_LABELS[cow.reproductiveStatus]}
-        </Text>
+      <View style={styles.cardBadgesRow}>
+        <View style={[styles.statusBadge, { backgroundColor: statusColor + '22' }]}>
+          <Text style={[styles.statusBadgeText, { color: statusColor }]}>
+            {REPRODUCTIVE_STATUS_LABELS[cow.reproductiveStatus]}
+          </Text>
+        </View>
+        <View style={styles.categoryBadge}>
+          <Text style={styles.categoryBadgeText}>{COW_CATEGORY_LABELS[cow.category]}</Text>
+        </View>
       </View>
     </Card>
   );
@@ -268,6 +293,11 @@ function createStyles(colors: Colors) {
       ...typography.captionMedium,
       color: colors.pecuaria,
     },
+    cardBadgesRow: {
+      flexDirection: 'row',
+      gap: spacing.xs,
+      flexWrap: 'wrap',
+    },
     statusBadge: {
       alignSelf: 'flex-start',
       borderRadius: radius.sm,
@@ -276,6 +306,17 @@ function createStyles(colors: Colors) {
     },
     statusBadgeText: {
       ...typography.captionMedium,
+    },
+    categoryBadge: {
+      alignSelf: 'flex-start',
+      backgroundColor: colors.surfaceAlt,
+      borderRadius: radius.sm,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: 2,
+    },
+    categoryBadgeText: {
+      ...typography.captionMedium,
+      color: colors.textSecondary,
     },
     headerLinks: {
       flexDirection: 'row',

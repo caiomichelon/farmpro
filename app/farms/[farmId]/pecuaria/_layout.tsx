@@ -29,6 +29,9 @@ export default function PecuariaLayout() {
       <Stack.Screen name="cria/nova-matriz" options={modalOptions} />
       <Stack.Screen name="cria/matriz/[cowId]/nova-inseminacao" options={modalOptions} />
       <Stack.Screen name="cria/matriz/[cowId]/novo-parto" options={modalOptions} />
+      <Stack.Screen name="cria/matriz/[cowId]/diagnostico" options={modalOptions} />
+      <Stack.Screen name="cria/matriz/[cowId]/desmame" options={modalOptions} />
+      <Stack.Screen name="cria/matriz/[cowId]/nova-pesagem" options={modalOptions} />
       <Stack.Screen name="corte/importar" options={modalOptions} />
       <Stack.Screen name="corte/lote/[lotId]/animais/importar" options={modalOptions} />
       <Stack.Screen name="cria/importar" options={modalOptions} />
