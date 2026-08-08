@@ -294,6 +294,20 @@ export default function FarmHomeScreen() {
             </Pressable>
           </FadeSlideIn>
 
+          <FadeSlideIn delay={405}>
+            <Pressable
+              style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
+              onPress={() => router.push(`/farms/${farmId}/diaristas`)}
+            >
+              <View style={[styles.employeesMarker, { backgroundColor: colors.accent }]} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.employeesTitle}>👷 Diaristas</Text>
+                <Text style={styles.employeesSubtitle}>Mão de obra avulsa, sem cadastro fixo</Text>
+              </View>
+              <Text style={styles.employeesChevron}>→</Text>
+            </Pressable>
+          </FadeSlideIn>
+
           <FadeSlideIn delay={260}>
             <Pressable
               style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}

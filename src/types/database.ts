@@ -161,6 +161,21 @@ export type PesticideApplication = {
   created_at: string;
 };
 
+/** Diarista avulso — registro rápido de um dia de trabalho de alguém sem
+ * vínculo fixo de funcionário. */
+export type CasualLaborer = {
+  id: string;
+  farm_id: string;
+  worker_name: string;
+  work_date: string;
+  sector: 'geral' | 'lavoura' | 'corte' | 'cria';
+  task_description: string | null;
+  amount_paid: number;
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+};
+
 /** Um lançamento de colheita (diário) de uma safra. */
 export type HarvestEntry = {
   id: string;
@@ -765,6 +780,15 @@ export interface Database {
           area_hectares: number;
         };
         Update: Partial<PesticideApplication>;
+        Relationships: [];
+      };
+      casual_laborers: {
+        Row: CasualLaborer;
+        Insert: Partial<CasualLaborer> & {
+          farm_id: string;
+          worker_name: string;
+        };
+        Update: Partial<CasualLaborer>;
         Relationships: [];
       };
       harvest_entries: {
