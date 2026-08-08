@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import {
@@ -10,7 +10,7 @@ import {
   type ImportResult,
   type ParsedSheet,
 } from '../lib/spreadsheetImport';
-import { colors, radius, spacing, typography } from '../theme';
+import { radius, spacing, typography, useColors, type Colors } from '../theme';
 import { Button } from './Button';
 import { Card } from './Card';
 import { ChipSelect } from './ChipSelect';
@@ -31,6 +31,8 @@ type Step = 'pick' | 'map' | 'preview' | 'done';
 const NONE = '__none__';
 
 export function ImportWizard({ table, fields, accentColor, fixedValues, onDone }: ImportWizardProps) {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [step, setStep] = useState<Step>('pick');
   const [sheet, setSheet] = useState<ParsedSheet | null>(null);
   const [mapping, setMapping] = useState<Record<string, number | null>>({});
@@ -238,7 +240,8 @@ export function ImportWizard({ table, fields, accentColor, fixedValues, onDone }
   return null;
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
   stepContainer: {
     paddingHorizontal: spacing.xl,
     paddingBottom: spacing.xxxl,
@@ -280,4 +283,5 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.danger,
   },
-});
+  });
+}

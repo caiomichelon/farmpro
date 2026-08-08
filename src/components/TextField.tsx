@@ -1,6 +1,7 @@
+import { useMemo } from 'react';
 import { StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
 
-import { colors, radius, spacing, typography } from '../theme';
+import { radius, spacing, typography, useColors, type Colors } from '../theme';
 
 interface TextFieldProps extends TextInputProps {
   label: string;
@@ -8,6 +9,9 @@ interface TextFieldProps extends TextInputProps {
 }
 
 export function TextField({ label, error, style, ...inputProps }: TextFieldProps) {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
@@ -21,29 +25,31 @@ export function TextField({ label, error, style, ...inputProps }: TextFieldProps
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    gap: spacing.xs,
-  },
-  label: {
-    ...typography.captionMedium,
-    color: colors.textSecondary,
-  },
-  input: {
-    ...typography.body,
-    height: 48,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-    paddingHorizontal: spacing.md,
-    color: colors.textPrimary,
-  },
-  inputError: {
-    borderColor: colors.danger,
-  },
-  error: {
-    ...typography.caption,
-    color: colors.danger,
-  },
-});
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
+    container: {
+      gap: spacing.xs,
+    },
+    label: {
+      ...typography.captionMedium,
+      color: colors.textSecondary,
+    },
+    input: {
+      ...typography.body,
+      height: 48,
+      borderRadius: radius.md,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surface,
+      paddingHorizontal: spacing.md,
+      color: colors.textPrimary,
+    },
+    inputError: {
+      borderColor: colors.danger,
+    },
+    error: {
+      ...typography.caption,
+      color: colors.danger,
+    },
+  });
+}

@@ -1,6 +1,7 @@
+import { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors, radius, spacing, typography } from '../theme';
+import { radius, spacing, typography, useColors, type Colors } from '../theme';
 
 interface SectorButtonProps {
   title: string;
@@ -11,6 +12,9 @@ interface SectorButtonProps {
 }
 
 export function SectorButton({ title, subtitle, color, backgroundColor, onPress }: SectorButtonProps) {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <Pressable
       onPress={onPress}
@@ -23,29 +27,31 @@ export function SectorButton({ title, subtitle, color, backgroundColor, onPress 
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
-    minHeight: 132,
-    justifyContent: 'flex-end',
-  },
-  pressed: {
-    opacity: 0.85,
-  },
-  marker: {
-    width: 28,
-    height: 4,
-    borderRadius: radius.full,
-    marginBottom: spacing.md,
-  },
-  title: {
-    ...typography.heading,
-    marginBottom: spacing.xs / 2,
-  },
-  subtitle: {
-    ...typography.caption,
-    color: colors.textSecondary,
-  },
-});
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      borderRadius: radius.lg,
+      padding: spacing.lg,
+      minHeight: 132,
+      justifyContent: 'flex-end',
+    },
+    pressed: {
+      opacity: 0.85,
+    },
+    marker: {
+      width: 28,
+      height: 4,
+      borderRadius: radius.full,
+      marginBottom: spacing.md,
+    },
+    title: {
+      ...typography.heading,
+      marginBottom: spacing.xs / 2,
+    },
+    subtitle: {
+      ...typography.caption,
+      color: colors.textSecondary,
+    },
+  });
+}

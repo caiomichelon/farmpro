@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Easing, StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
 
 import { getCommodityQuotes, type CommodityQuote } from '../data/commodities';
-import { colors, spacing, typography } from '../theme';
+import { spacing, typography, useColors, type Colors } from '../theme';
 
 const PIXELS_PER_SECOND = 36;
 
@@ -12,6 +12,8 @@ const PIXELS_PER_SECOND = 36;
  * src/data/commodities.ts para o que falta pra virar tempo real.
  */
 export function CommodityTicker() {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [quotes, setQuotes] = useState<CommodityQuote[]>([]);
   const [rowWidth, setRowWidth] = useState(0);
   const translateX = useRef(new Animated.Value(0)).current;
@@ -47,24 +49,32 @@ export function CommodityTicker() {
   return (
     <View style={styles.container}>
       <Animated.View style={[styles.track, { transform: [{ translateX }] }]}>
-        <QuoteRow quotes={quotes} onLayout={handleFirstRowLayout} />
-        <QuoteRow quotes={quotes} />
+        <QuoteRow quotes={quotes} onLayout={handleFirstRowLayout} styles={styles} />
+        <QuoteRow quotes={quotes} styles={styles} />
       </Animated.View>
     </View>
   );
 }
 
-function QuoteRow({ quotes, onLayout }: { quotes: CommodityQuote[]; onLayout?: (e: LayoutChangeEvent) => void }) {
+function QuoteRow({
+  quotes,
+  onLayout,
+  styles,
+}: {
+  quotes: CommodityQuote[];
+  onLayout?: (e: LayoutChangeEvent) => void;
+  styles: ReturnType<typeof createStyles>;
+}) {
   return (
     <View style={styles.row} onLayout={onLayout}>
       {quotes.map((quote) => (
-        <QuoteItem key={quote.id} quote={quote} />
+        <QuoteItem key={quote.id} quote={quote} styles={styles} />
       ))}
     </View>
   );
 }
 
-function QuoteItem({ quote }: { quote: CommodityQuote }) {
+function QuoteItem({ quote, styles }: { quote: CommodityQuote; styles: ReturnType<typeof createStyles> }) {
   const isUp = quote.changePercent >= 0;
   return (
     <View style={styles.item}>
@@ -80,40 +90,42 @@ function QuoteItem({ quote }: { quote: CommodityQuote }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    height: 40,
-    backgroundColor: colors.primaryDark,
-    overflow: 'hidden',
-    justifyContent: 'center',
-  },
-  track: {
-    flexDirection: 'row',
-  },
-  row: {
-    flexDirection: 'row',
-  },
-  item: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    paddingHorizontal: spacing.lg,
-    gap: spacing.xs,
-  },
-  label: {
-    ...typography.captionMedium,
-    color: colors.textInverse,
-    opacity: 0.7,
-  },
-  price: {
-    ...typography.captionMedium,
-    color: colors.textInverse,
-  },
-  unit: {
-    ...typography.caption,
-    color: colors.textInverse,
-    opacity: 0.6,
-  },
-  change: {
-    ...typography.captionMedium,
-  },
-});
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
+    container: {
+      height: 40,
+      backgroundColor: colors.primaryDark,
+      overflow: 'hidden',
+      justifyContent: 'center',
+    },
+    track: {
+      flexDirection: 'row',
+    },
+    row: {
+      flexDirection: 'row',
+    },
+    item: {
+      flexDirection: 'row',
+      alignItems: 'baseline',
+      paddingHorizontal: spacing.lg,
+      gap: spacing.xs,
+    },
+    label: {
+      ...typography.captionMedium,
+      color: colors.textInverse,
+      opacity: 0.7,
+    },
+    price: {
+      ...typography.captionMedium,
+      color: colors.textInverse,
+    },
+    unit: {
+      ...typography.caption,
+      color: colors.textInverse,
+      opacity: 0.6,
+    },
+    change: {
+      ...typography.captionMedium,
+    },
+  });
+}

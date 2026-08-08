@@ -1,8 +1,9 @@
+import { useMemo } from 'react';
 import { StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
-import { colors, spacing, typography } from '../theme';
+import { spacing, typography, useColors, type Colors } from '../theme';
 
 /**
  * Fase 1 do modo offline: o app hoje não guarda escrita pra sincronizar
@@ -13,6 +14,8 @@ import { colors, spacing, typography } from '../theme';
  * campos continuam preenchidos até salvar com sucesso.
  */
 export function OfflineBanner() {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const isConnected = useNetworkStatus();
   if (isConnected) return null;
 
@@ -23,15 +26,17 @@ export function OfflineBanner() {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    backgroundColor: colors.warning,
-  },
-  text: {
-    ...typography.captionMedium,
-    color: colors.textInverse,
-    textAlign: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-  },
-});
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
+    safeArea: {
+      backgroundColor: colors.warning,
+    },
+    text: {
+      ...typography.captionMedium,
+      color: colors.textInverse,
+      textAlign: 'center',
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.sm,
+    },
+  });
+}

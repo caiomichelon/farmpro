@@ -26,9 +26,27 @@ export type CattleAnimalStatus = 'ativo' | 'vendido' | 'abatido' | 'morto';
 export type CattleAnimalSex = 'macho' | 'femea';
 export type CattleHealthEventType = 'vacina' | 'tratamento' | 'doenca' | 'outro';
 
+/** Chaves de preferência de alerta — usadas em Ajustes → Notificações pra
+ * ligar/desligar cada tipo de alerta inteligente mostrado na home da fazenda. */
+export type AlertPreferenceKey = 'documentos' | 'mortalidade' | 'peso_lote' | 'financeiro_safra';
+export type AlertPreferences = Partial<Record<AlertPreferenceKey, boolean>>;
+
 export type Profile = {
   id: string;
   full_name: string | null;
+  email: string | null;
+  alert_preferences: AlertPreferences;
+  created_at: string;
+};
+
+/** Convite por código pra entrar numa fazenda já existente (multiusuário). */
+export type FarmInvite = {
+  id: string;
+  farm_id: string;
+  code: string;
+  role: FarmRole;
+  created_by: string;
+  expires_at: string;
   created_at: string;
 };
 
@@ -362,6 +380,12 @@ export interface Database {
         Update: Partial<FarmMember>;
         Relationships: [];
       };
+      farm_invites: {
+        Row: FarmInvite;
+        Insert: Partial<FarmInvite> & { farm_id: string; code: string; created_by: string };
+        Update: Partial<FarmInvite>;
+        Relationships: [];
+      };
       plots: {
         Row: Plot;
         Insert: Partial<Plot> & { farm_id: string; name: string; area_hectares: number; type: PlotType };
@@ -541,7 +565,12 @@ export interface Database {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      join_farm_by_code: {
+        Args: { invite_code: string };
+        Returns: { result_farm_id: string; result_farm_name: string }[];
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };

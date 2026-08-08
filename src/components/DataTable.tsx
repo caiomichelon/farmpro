@@ -1,6 +1,7 @@
+import { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { colors, radius, spacing, typography } from '../theme';
+import { radius, spacing, typography, useColors, type Colors } from '../theme';
 
 export interface DataTableColumn<T> {
   key: string;
@@ -19,6 +20,9 @@ interface DataTableProps<T> {
 /** Tabela/planilha com rolagem horizontal — para listas com várias colunas
  * de informação (ex.: todos os animais ou todas as matrizes de uma vez). */
 export function DataTable<T>({ columns, data, keyExtractor, onRowPress }: DataTableProps<T>) {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator style={styles.outer}>
       <View style={styles.table}>
@@ -59,41 +63,43 @@ export function DataTable<T>({ columns, data, keyExtractor, onRowPress }: DataTa
   );
 }
 
-const styles = StyleSheet.create({
-  outer: {
-    flexGrow: 0,
-  },
-  table: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    overflow: 'hidden',
-  },
-  row: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  headerRow: {
-    backgroundColor: colors.surfaceAlt,
-  },
-  dataRow: {
-    backgroundColor: colors.surface,
-  },
-  rowPressed: {
-    opacity: 0.7,
-  },
-  cell: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    justifyContent: 'center',
-  },
-  headerText: {
-    ...typography.captionMedium,
-    color: colors.textSecondary,
-  },
-  cellText: {
-    ...typography.captionMedium,
-    color: colors.textPrimary,
-  },
-});
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
+    outer: {
+      flexGrow: 0,
+    },
+    table: {
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.md,
+      overflow: 'hidden',
+    },
+    row: {
+      flexDirection: 'row',
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    headerRow: {
+      backgroundColor: colors.surfaceAlt,
+    },
+    dataRow: {
+      backgroundColor: colors.surface,
+    },
+    rowPressed: {
+      opacity: 0.7,
+    },
+    cell: {
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+      justifyContent: 'center',
+    },
+    headerText: {
+      ...typography.captionMedium,
+      color: colors.textSecondary,
+    },
+    cellText: {
+      ...typography.captionMedium,
+      color: colors.textPrimary,
+    },
+  });
+}

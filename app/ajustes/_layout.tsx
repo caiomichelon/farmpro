@@ -3,8 +3,8 @@ import { Redirect, Stack } from 'expo-router';
 import { useAuth } from '../../src/context/AuthContext';
 import { useColors } from '../../src/theme';
 
-/** Protege todas as rotas de /farms — sem sessão, volta pro login. */
-export default function FarmsLayout() {
+/** Protege todas as rotas de /ajustes — sem sessão, volta pro login. */
+export default function AjustesLayout() {
   const { session, isLoading } = useAuth();
   const colors = useColors();
 
@@ -18,9 +18,6 @@ export default function FarmsLayout() {
         contentStyle: { backgroundColor: colors.background },
         animation: 'slide_from_right',
       }}
-    >
-      <Stack.Screen name="[farmId]/exportar" options={{ animation: 'slide_from_bottom' }} />
-      <Stack.Screen name="[farmId]/membros" options={{ animation: 'slide_from_bottom' }} />
-    </Stack>
+    />
   );
 }

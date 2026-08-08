@@ -1,13 +1,17 @@
 import { Link, router } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '../../src/components/Button';
 import { TextField } from '../../src/components/TextField';
 import { useAuth } from '../../src/context/AuthContext';
-import { colors, spacing, typography } from '../../src/theme';
+import { useT } from '../../src/i18n';
+import { spacing, typography, useColors, type Colors } from '../../src/theme';
 
 export default function SignupScreen() {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const t = useT();
   const { signUp } = useAuth();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -42,11 +46,9 @@ export default function SignupScreen() {
     return (
       <View style={styles.container}>
         <View style={styles.content}>
-          <Text style={styles.title}>Quase lá</Text>
-          <Text style={styles.subtitle}>
-            Enviamos um e-mail de confirmação para {email}. Confirme para poder entrar.
-          </Text>
-          <Button label="Voltar para o login" onPress={() => router.replace('/auth/login')} />
+          <Text style={styles.title}>{t('auth.signup.confirmTitle')}</Text>
+          <Text style={styles.subtitle}>{t('auth.signup.confirmSubtitle', { email })}</Text>
+          <Button label={t('auth.signup.backToLogin')} onPress={() => router.replace('/auth/login')} />
         </View>
       </View>
     );
@@ -55,13 +57,13 @@ export default function SignupScreen() {
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={styles.content}>
-        <Text style={styles.title}>Criar conta</Text>
-        <Text style={styles.subtitle}>Comece a usar o FarmPro</Text>
+        <Text style={styles.title}>{t('auth.signup.title')}</Text>
+        <Text style={styles.subtitle}>{t('auth.signup.subtitle')}</Text>
 
         <View style={styles.form}>
-          <TextField label="Nome completo" value={fullName} onChangeText={setFullName} placeholder="Seu nome" />
+          <TextField label={t('auth.signup.fullName')} value={fullName} onChangeText={setFullName} placeholder={t('auth.signup.fullNamePlaceholder')} />
           <TextField
-            label="E-mail"
+            label={t('auth.signup.email')}
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
@@ -69,15 +71,15 @@ export default function SignupScreen() {
             placeholder="voce@email.com"
           />
           <TextField
-            label="Senha"
+            label={t('auth.signup.password')}
             value={password}
             onChangeText={setPassword}
             secureTextEntry
-            placeholder="Mínimo de 6 caracteres"
+            placeholder={t('auth.signup.passwordPlaceholder')}
           />
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <Button
-            label="Criar conta"
+            label={t('auth.signup.submit')}
             onPress={handleSubmit}
             loading={isSubmitting}
             disabled={!email || !password || !fullName}
@@ -85,9 +87,9 @@ export default function SignupScreen() {
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Já tem conta?</Text>
+          <Text style={styles.footerText}>{t('auth.signup.hasAccount')}</Text>
           <Link href="/auth/login" style={styles.footerLink}>
-            Entrar
+            {t('auth.signup.signIn')}
           </Link>
         </View>
       </View>
@@ -95,44 +97,46 @@ export default function SignupScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: spacing.xl,
-    gap: spacing.xl,
-  },
-  title: {
-    ...typography.displayMd,
-    color: colors.textPrimary,
-  },
-  subtitle: {
-    ...typography.body,
-    color: colors.textSecondary,
-    marginTop: -spacing.lg,
-  },
-  form: {
-    gap: spacing.lg,
-  },
-  error: {
-    ...typography.caption,
-    color: colors.danger,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: spacing.xs,
-  },
-  footerText: {
-    ...typography.body,
-    color: colors.textSecondary,
-  },
-  footerLink: {
-    ...typography.bodyMedium,
-    color: colors.primary,
-  },
-});
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    content: {
+      flex: 1,
+      justifyContent: 'center',
+      paddingHorizontal: spacing.xl,
+      gap: spacing.xl,
+    },
+    title: {
+      ...typography.displayMd,
+      color: colors.textPrimary,
+    },
+    subtitle: {
+      ...typography.body,
+      color: colors.textSecondary,
+      marginTop: -spacing.lg,
+    },
+    form: {
+      gap: spacing.lg,
+    },
+    error: {
+      ...typography.caption,
+      color: colors.danger,
+    },
+    footer: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      gap: spacing.xs,
+    },
+    footerText: {
+      ...typography.body,
+      color: colors.textSecondary,
+    },
+    footerLink: {
+      ...typography.bodyMedium,
+      color: colors.primary,
+    },
+  });
+}

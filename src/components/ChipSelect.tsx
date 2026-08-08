@@ -1,6 +1,7 @@
+import { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { colors, radius, spacing, typography } from '../theme';
+import { radius, spacing, typography, useColors, type Colors } from '../theme';
 
 interface ChipSelectProps<T extends string> {
   label: string;
@@ -15,8 +16,12 @@ export function ChipSelect<T extends string>({
   options,
   value,
   onChange,
-  accentColor = colors.primary,
+  accentColor,
 }: ChipSelectProps<T>) {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const activeAccent = accentColor ?? colors.primary;
+
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
@@ -29,7 +34,7 @@ export function ChipSelect<T extends string>({
               onPress={() => onChange(option.value)}
               style={[
                 styles.chip,
-                selected && { backgroundColor: accentColor, borderColor: accentColor },
+                selected && { backgroundColor: activeAccent, borderColor: activeAccent },
               ]}
             >
               <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{option.label}</Text>
@@ -41,31 +46,33 @@ export function ChipSelect<T extends string>({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    gap: spacing.xs,
-  },
-  label: {
-    ...typography.captionMedium,
-    color: colors.textSecondary,
-  },
-  row: {
-    gap: spacing.sm,
-    paddingVertical: 2,
-  },
-  chip: {
-    borderRadius: radius.full,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  chipText: {
-    ...typography.captionMedium,
-    color: colors.textSecondary,
-  },
-  chipTextSelected: {
-    color: colors.textInverse,
-  },
-});
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
+    container: {
+      gap: spacing.xs,
+    },
+    label: {
+      ...typography.captionMedium,
+      color: colors.textSecondary,
+    },
+    row: {
+      gap: spacing.sm,
+      paddingVertical: 2,
+    },
+    chip: {
+      borderRadius: radius.full,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surface,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+    },
+    chipText: {
+      ...typography.captionMedium,
+      color: colors.textSecondary,
+    },
+    chipTextSelected: {
+      color: colors.textInverse,
+    },
+  });
+}

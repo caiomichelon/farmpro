@@ -1,8 +1,9 @@
 import { router } from 'expo-router';
+import { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { colors, spacing, typography } from '../theme';
+import { spacing, typography, useColors, type Colors } from '../theme';
 
 interface ModulePlaceholderProps {
   title: string;
@@ -12,6 +13,9 @@ interface ModulePlaceholderProps {
 
 /** Tela provisória para módulos ainda não construídos (Lavoura, Pecuária...). */
 export function ModulePlaceholder({ title, description, accentColor }: ModulePlaceholderProps) {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <SafeAreaView style={styles.container}>
       <Pressable onPress={() => router.back()} hitSlop={12}>
@@ -26,32 +30,34 @@ export function ModulePlaceholder({ title, description, accentColor }: ModulePla
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.lg,
-  },
-  backLink: {
-    ...typography.captionMedium,
-    color: colors.textSecondary,
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    gap: spacing.md,
-  },
-  marker: {
-    width: 32,
-    height: 4,
-    borderRadius: 999,
-  },
-  title: {
-    ...typography.displayMd,
-  },
-  description: {
-    ...typography.body,
-    color: colors.textSecondary,
-  },
-});
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+      paddingHorizontal: spacing.xl,
+      paddingTop: spacing.lg,
+    },
+    backLink: {
+      ...typography.captionMedium,
+      color: colors.textSecondary,
+    },
+    content: {
+      flex: 1,
+      justifyContent: 'center',
+      gap: spacing.md,
+    },
+    marker: {
+      width: 32,
+      height: 4,
+      borderRadius: 999,
+    },
+    title: {
+      ...typography.displayMd,
+    },
+    description: {
+      ...typography.body,
+      color: colors.textSecondary,
+    },
+  });
+}

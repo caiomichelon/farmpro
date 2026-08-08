@@ -2,11 +2,14 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { getDocumentAlertStatus } from '../lib/documentAlerts';
 import { supabase } from '../lib/supabase';
+import type { AlertPreferenceKey } from '../types/database';
+import { useProfile } from './useProfile';
 
 export type AlertSeverity = 'danger' | 'warning';
 
 export interface FarmAlert {
   id: string;
+  category: AlertPreferenceKey;
   severity: AlertSeverity;
   title: string;
   description: string;
@@ -20,6 +23,7 @@ export interface FarmAlert {
  * caindo entre pesagens, e safra dando prejuízo.
  */
 export function useFarmAlerts(farmId: string | undefined) {
+  const { isAlertEnabled } = useProfile();
   const [alerts, setAlerts] = useState<FarmAlert[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -45,6 +49,7 @@ export function useFarmAlerts(farmId: string | undefined) {
       if (expired.length > 0) {
         result.push({
           id: 'docs-vencidos',
+          category: 'documentos',
           severity: 'danger',
           title: `${expired.length} ${expired.length === 1 ? 'documento vencido' : 'documentos vencidos'}`,
           description: [...new Set(expired.map((d) => d.employees?.full_name).filter(Boolean))].join(', '),
@@ -54,6 +59,7 @@ export function useFarmAlerts(farmId: string | undefined) {
       if (expiringSoon.length > 0) {
         result.push({
           id: 'docs-vencendo',
+          category: 'documentos',
           severity: 'warning',
           title: `${expiringSoon.length} ${expiringSoon.length === 1 ? 'documento vence' : 'documentos vencem'} em breve`,
           description: [...new Set(expiringSoon.map((d) => d.employees?.full_name).filter(Boolean))].join(', '),
@@ -94,6 +100,7 @@ export function useFarmAlerts(farmId: string | undefined) {
           if (rate > 0 && rate > farmAvgMortality * 1.5) {
             result.push({
               id: `mortalidade-${lot.id}`,
+              category: 'mortalidade',
               severity: 'danger',
               title: `Lote ${lot.name}: mortalidade acima da média`,
               description: `${rate.toFixed(1)}% neste lote, contra ${farmAvgMortality.toFixed(1)}% da média da fazenda.`,
@@ -108,6 +115,7 @@ export function useFarmAlerts(farmId: string | undefined) {
             if (Number(last.avg_weight_kg) < Number(prev.avg_weight_kg)) {
               result.push({
                 id: `peso-${lot.id}`,
+                category: 'peso_lote',
                 severity: 'warning',
                 title: `Lote ${lot.name}: peso caiu na última pesagem`,
                 description: `${Number(prev.avg_weight_kg).toFixed(0)} kg → ${Number(last.avg_weight_kg).toFixed(0)} kg`,
@@ -146,6 +154,7 @@ export function useFarmAlerts(farmId: string | undefined) {
               const plot = plots.find((p) => p.id === season.plot_id);
               result.push({
                 id: `prejuizo-${season.id}`,
+                category: 'financeiro_safra',
                 severity: 'warning',
                 title: `Safra ${season.season_label} no prejuízo`,
                 description: `${plot?.name ?? 'Talhão'}: custo de ${cost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} contra receita de ${revenue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}.`,
@@ -161,10 +170,11 @@ export function useFarmAlerts(farmId: string | undefined) {
     } finally {
       // danger primeiro
       result.sort((a, b) => (a.severity === b.severity ? 0 : a.severity === 'danger' ? -1 : 1));
-      setAlerts(result);
+      // Respeita o que foi desligado em Ajustes → Notificações.
+      setAlerts(result.filter((alert) => isAlertEnabled(alert.category)));
       setIsLoading(false);
     }
-  }, [farmId]);
+  }, [farmId, isAlertEnabled]);
 
   useEffect(() => {
     reload();
