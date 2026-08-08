@@ -9,7 +9,13 @@ import { EmptyState } from '../../../../../../../src/components/EmptyState';
 import { FinancialSummary } from '../../../../../../../src/components/FinancialSummary';
 import { ScreenHeader } from '../../../../../../../src/components/ScreenHeader';
 import { TextField } from '../../../../../../../src/components/TextField';
-import { CATTLE_LOT_STATUS_LABELS } from '../../../../../../../src/data/cattleOptions';
+import {
+  CATTLE_FIELD_COLLECTION_CATEGORY_LABELS,
+  CATTLE_FIELD_COLLECTION_STATUS_COLOR_KEY,
+  CATTLE_FIELD_COLLECTION_STATUS_LABELS,
+  CATTLE_LOT_STATUS_LABELS,
+} from '../../../../../../../src/data/cattleOptions';
+import { useCattleFieldCollections } from '../../../../../../../src/hooks/useCattleFieldCollections';
 import { CATTLE_LOT_READINESS_LABELS, useCattleLot, type CattleLotReadiness } from '../../../../../../../src/hooks/useCattleLots';
 import { useCattleLotWeighings } from '../../../../../../../src/hooks/useCattleLotWeighings';
 import { useCattleMortalityEvents } from '../../../../../../../src/hooks/useCattleMortality';
@@ -30,17 +36,20 @@ export default function LotDetailScreen() {
   const { weighings, reload: reloadWeighings } = useCattleLotWeighings(lotId);
   const { events: mortalityEvents, totalDeaths, reload: reloadMortality } = useCattleMortalityEvents(lotId);
   const { slaughters, reload: reloadSlaughters } = useCattleSlaughters(lotId);
+  const { collections, reload: reloadCollections } = useCattleFieldCollections(lotId);
   const [isEditingTarget, setIsEditingTarget] = useState(false);
 
-  // Pesagem, mortalidade e abate são cadastrados em rotas separadas — refaz
-  // tudo ao voltar pra esta tela, senão fica com dado velho até um refresh.
+  // Pesagem, mortalidade, abate e coleta de campo são cadastrados em rotas
+  // separadas — refaz tudo ao voltar pra esta tela, senão fica com dado
+  // velho até um refresh.
   useFocusEffect(
     useCallback(() => {
       reloadLot();
       reloadWeighings();
       reloadMortality();
       reloadSlaughters();
-    }, [reloadLot, reloadWeighings, reloadMortality, reloadSlaughters])
+      reloadCollections();
+    }, [reloadLot, reloadWeighings, reloadMortality, reloadSlaughters, reloadCollections])
   );
 
   if (isLoading || !lot) {
@@ -68,7 +77,7 @@ export default function LotDetailScreen() {
           {lot.kgToTarget !== null ? (
             <Text style={styles.readinessSubtext}>
               {lot.kgToTarget > 0
-                ? `Faltam ${lot.kgToTarget.toFixed(0)} kg pra meta de ${Number(lot.target_slaughter_weight_kg).toFixed(0)} kg`
+                ? `Faltam ${lot.kgToTarget.toFixed(0)} kg pra meta de ${Number(lot.target_slaughter_weight_kg).toFixed(0)} kg${lot.estimatedExitDate ? ` · previsão: ${formatDate(lot.estimatedExitDate)}` : ''}`
                 : `${Math.abs(lot.kgToTarget).toFixed(0)} kg acima da meta de ${Number(lot.target_slaughter_weight_kg).toFixed(0)} kg`}
             </Text>
           ) : (
@@ -124,6 +133,43 @@ export default function LotDetailScreen() {
           </View>
           <Text style={styles.animalsRowChevron}>→</Text>
         </Pressable>
+
+        <Section title="Coletas de campo" subtitle="Checagens de pasto/curral com foto e localização" styles={styles}>
+          {collections.length === 0 ? (
+            <EmptyState text="Nenhuma coleta registrada ainda." />
+          ) : (
+            collections.slice(0, 5).map((c) => {
+              const statusColor = colors[CATTLE_FIELD_COLLECTION_STATUS_COLOR_KEY[c.status]];
+              return (
+                <Card key={c.id} style={styles.rowCard}>
+                  <View style={styles.rowTopRow}>
+                    {c.photo_url ? <Image source={{ uri: c.photo_url }} style={styles.rowThumbnail} /> : null}
+                    <View style={{ flex: 1, gap: 2 }}>
+                      <View style={styles.rowBetween}>
+                        <Text style={styles.rowValue}>{CATTLE_FIELD_COLLECTION_CATEGORY_LABELS[c.category]}</Text>
+                        <Text style={styles.rowDate}>{formatDateTime(c.collected_at)}</Text>
+                      </View>
+                      <Text style={[styles.collectionStatus, { color: statusColor }]}>
+                        {CATTLE_FIELD_COLLECTION_STATUS_LABELS[c.status]}
+                      </Text>
+                      {c.notes ? <Text style={styles.rowNotes}>{c.notes}</Text> : null}
+                      {c.latitude !== null && c.longitude !== null ? (
+                        <Text style={styles.rowNotes}>
+                          {c.latitude.toFixed(5)}, {c.longitude.toFixed(5)}
+                        </Text>
+                      ) : null}
+                    </View>
+                  </View>
+                </Card>
+              );
+            })
+          )}
+          <Button
+            label="+ Nova coleta"
+            variant="secondary"
+            onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${lotId}/nova-coleta`)}
+          />
+        </Section>
 
         <Section title="Pesagens do lote" subtitle="Histórico de peso e escore de condição corporal médios" styles={styles}>
           {weighings.length === 0 ? (
@@ -278,6 +324,11 @@ function formatDate(isoDate: string) {
   return `${day}/${month}/${year}`;
 }
 
+function formatDateTime(isoTimestamp: string) {
+  const date = new Date(isoTimestamp);
+  return date.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+
 function createStyles(colors: Colors) {
   return StyleSheet.create({
     container: {
@@ -387,6 +438,9 @@ function createStyles(colors: Colors) {
     rowNotes: {
       ...typography.caption,
       color: colors.textSecondary,
+    },
+    collectionStatus: {
+      ...typography.captionMedium,
     },
     animalsRow: {
       flexDirection: 'row',

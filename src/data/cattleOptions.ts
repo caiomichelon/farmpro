@@ -1,9 +1,52 @@
-import type { CattleLotStatus } from '../types/database';
+import type { CattleFieldCollectionCategory, CattleFieldCollectionStatus, CattleLotStatus } from '../types/database';
 
 export const CATTLE_LOT_STATUS_LABELS: Record<CattleLotStatus, string> = {
   ativo: 'Ativo',
   vendido: 'Vendido',
   abatido: 'Abatido',
+};
+
+export const CATTLE_FIELD_COLLECTION_CATEGORY_LABELS: Record<CattleFieldCollectionCategory, string> = {
+  suplementacao: 'Suplementação',
+  altura_forragem: 'Altura de forragem',
+  rebanho: 'Rebanho',
+  aguada: 'Aguada',
+  sanidade: 'Sanidade',
+  cerca: 'Cerca',
+};
+
+export const CATTLE_FIELD_COLLECTION_CATEGORY_OPTIONS = Object.entries(CATTLE_FIELD_COLLECTION_CATEGORY_LABELS).map(
+  ([value, label]) => ({ value: value as CattleFieldCollectionCategory, label })
+);
+
+export const CATTLE_FIELD_COLLECTION_STATUS_LABELS: Record<CattleFieldCollectionStatus, string> = {
+  dentro_padrao: 'Dentro do padrão',
+  fora_padrao: 'Fora do padrão',
+  atencao: 'Atenção',
+  acima_padrao: 'Acima do padrão',
+  nao_realizada: 'Não realizada',
+  ausencia_gado: 'Ausência de gado',
+};
+
+export const CATTLE_FIELD_COLLECTION_STATUS_OPTIONS = Object.entries(CATTLE_FIELD_COLLECTION_STATUS_LABELS).map(
+  ([value, label]) => ({ value: value as CattleFieldCollectionStatus, label })
+);
+
+/** Cor semântica de cada situação — usada no painel de campo (bolinha) e no
+ * chip de status. "warning" e "accent" do tema são tons quase idênticos
+ * (propositalmente, pra não competir com as cores de setor), então aqui
+ * evitamos usar os dois juntos — cada situação precisa ficar diferenciável
+ * numa bolinha de 16px. */
+export const CATTLE_FIELD_COLLECTION_STATUS_COLOR_KEY: Record<
+  CattleFieldCollectionStatus,
+  'success' | 'danger' | 'warning' | 'primary' | 'pecuaria' | 'textMuted'
+> = {
+  dentro_padrao: 'success',
+  fora_padrao: 'danger',
+  atencao: 'warning',
+  acima_padrao: 'primary',
+  nao_realizada: 'textMuted',
+  ausencia_gado: 'pecuaria',
 };
 
 /** Escore de condição corporal (ECC) — escala 1 a 5 usada em bovinos de corte. */

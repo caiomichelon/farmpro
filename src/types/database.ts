@@ -426,6 +426,39 @@ export type CattleAnimalMovement = {
   created_at: string;
 };
 
+export type CattleFieldCollectionCategory =
+  | 'suplementacao'
+  | 'altura_forragem'
+  | 'rebanho'
+  | 'aguada'
+  | 'sanidade'
+  | 'cerca';
+
+export type CattleFieldCollectionStatus =
+  | 'dentro_padrao'
+  | 'fora_padrao'
+  | 'atencao'
+  | 'acima_padrao'
+  | 'nao_realizada'
+  | 'ausencia_gado';
+
+/** Checagem rápida de campo de um lote (categoria + situação), com foto e
+ * GPS como evidência de que o funcionário passou lá — inspirado em apps de
+ * monitoramento de pasto já usados no setor. */
+export type CattleFieldCollection = {
+  id: string;
+  lot_id: string;
+  category: CattleFieldCollectionCategory;
+  status: CattleFieldCollectionStatus;
+  notes: string | null;
+  photo_url: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  location_accuracy_m: number | null;
+  collected_at: string;
+  created_at: string;
+};
+
 /**
  * Preparação para o futuro — ainda sem gateway de pagamento integrado.
  * Ver supabase/migrations/0002_subscriptions_placeholder.sql.
@@ -682,6 +715,16 @@ export interface Database {
         Row: CattleAnimalMovement;
         Insert: Partial<CattleAnimalMovement> & { animal_id: string; to_lot_id: string };
         Update: Partial<CattleAnimalMovement>;
+        Relationships: [];
+      };
+      cattle_field_collections: {
+        Row: CattleFieldCollection;
+        Insert: Partial<CattleFieldCollection> & {
+          lot_id: string;
+          category: CattleFieldCollectionCategory;
+          status: CattleFieldCollectionStatus;
+        };
+        Update: Partial<CattleFieldCollection>;
         Relationships: [];
       };
     };

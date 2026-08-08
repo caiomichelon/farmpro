@@ -21,6 +21,7 @@ export default function PecuariaLayout() {
       <Stack.Screen name="corte/novo-lote" options={modalOptions} />
       <Stack.Screen name="corte/lote/[lotId]/animais/novo-animal" options={modalOptions} />
       <Stack.Screen name="corte/lote/[lotId]/nova-pesagem" options={modalOptions} />
+      <Stack.Screen name="corte/lote/[lotId]/nova-coleta" options={modalOptions} />
       <Stack.Screen name="corte/lote/[lotId]/mortalidade" options={modalOptions} />
       <Stack.Screen name="corte/lote/[lotId]/abate" options={modalOptions} />
       <Stack.Screen name="corte/animal/[animalId]/nova-pesagem" options={modalOptions} />

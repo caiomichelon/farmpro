@@ -18,6 +18,7 @@ function buildColumns(): DataTableColumn<CattleLotSummary>[] {
     { key: 'weight', label: 'Peso médio', width: 110, render: (l) => `${l.latestWeightKg.toFixed(0)} kg` },
     { key: 'gmd', label: 'GMD', width: 110, render: (l) => (l.gmdKgPerDay !== null ? `${l.gmdKgPerDay.toFixed(2)} kg/dia` : '—') },
     { key: 'mortality', label: 'Mortalidade', width: 110, render: (l) => `${l.mortalityRatePct.toFixed(1)}%` },
+    { key: 'exitDate', label: 'Previsão de saída', width: 130, render: (l) => (l.estimatedExitDate ? formatDate(l.estimatedExitDate) : '—') },
     { key: 'entry', label: 'Entrada', width: 110, render: (l) => formatDate(l.entry_date) },
   ];
 }

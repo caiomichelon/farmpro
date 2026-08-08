@@ -25,6 +25,9 @@ export interface CattleLotSummary extends CattleLot {
   /** kg que faltam pra bater a meta — null se não tem meta definida, 0 ou
    * negativo quando já bateu (ou passou) o peso alvo. */
   kgToTarget: number | null;
+  /** Data estimada (peso atual + GMD até bater a meta) — null se já está
+   * pronto, sem meta definida, ou sem GMD conhecido ainda pra projetar. */
+  estimatedExitDate: string | null;
   totalCost: number;
   costPerHead: number;
   /** Custo lançado dividido pelas @ estimadas no peso atual — quanto mais
@@ -38,6 +41,12 @@ export interface CattleLotSummary extends CattleLot {
 
 function daysBetween(a: string, b: string) {
   return Math.max(1, Math.round((new Date(b).getTime() - new Date(a).getTime()) / 86_400_000));
+}
+
+function addDays(isoDate: string, days: number): string {
+  const date = new Date(isoDate);
+  date.setDate(date.getDate() + days);
+  return date.toISOString().slice(0, 10);
 }
 
 async function withSummary(lots: CattleLot[]): Promise<CattleLotSummary[]> {
@@ -100,6 +109,11 @@ async function withSummary(lots: CattleLot[]): Promise<CattleLotSummary[]> {
     const projectedMargin = projectedRevenue - totalCost;
     const costPerArroba = estimatedArrobas > 0 ? totalCost / estimatedArrobas : null;
 
+    const estimatedExitDate =
+      kgToTarget !== null && kgToTarget > 0 && gmdKgPerDay !== null && gmdKgPerDay > 0
+        ? addDays(today, Math.ceil(kgToTarget / gmdKgPerDay))
+        : null;
+
     return {
       ...lot,
       currentHeadCount,
@@ -110,6 +124,7 @@ async function withSummary(lots: CattleLot[]): Promise<CattleLotSummary[]> {
       daysInLot,
       readiness,
       kgToTarget,
+      estimatedExitDate,
       totalCost,
       costPerHead: currentHeadCount > 0 ? totalCost / currentHeadCount : 0,
       costPerArroba,
