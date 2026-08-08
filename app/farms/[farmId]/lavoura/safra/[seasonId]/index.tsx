@@ -1,7 +1,9 @@
 import { router, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BreakEvenCard } from '../../../../../../src/components/BreakEvenCard';
 import { ScreenHeader } from '../../../../../../src/components/ScreenHeader';
 import { SEASON_STATUS_LABELS } from '../../../../../../src/data/seasonStatus';
 import { usePlotSeason } from '../../../../../../src/hooks/usePlotSeasons';
@@ -10,6 +12,7 @@ import { colors, radius, spacing, typography } from '../../../../../../src/theme
 export default function SeasonDetailScreen() {
   const { farmId, seasonId } = useLocalSearchParams<{ farmId: string; seasonId: string }>();
   const { season, isLoading } = usePlotSeason(seasonId);
+  const [targetMarginPct, setTargetMarginPct] = useState('20');
 
   if (isLoading || !season) {
     return (
@@ -45,6 +48,16 @@ export default function SeasonDetailScreen() {
             value={season.yieldPerHectare !== null ? `${season.yieldPerHectare.toFixed(1)} sc/ha` : '—'}
           />
         </View>
+
+        {season.totalHarvestedSacas > 0 ? (
+          <BreakEvenCard
+            totalCost={season.totalCost}
+            quantity={season.totalHarvestedSacas}
+            unitLabel="sc"
+            targetMarginPct={targetMarginPct}
+            onChangeTargetMarginPct={setTargetMarginPct}
+          />
+        ) : null}
 
         <NavRow
           title="Custo de produção"

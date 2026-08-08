@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BreakEvenCard } from '../../../../../../../src/components/BreakEvenCard';
 import { Button } from '../../../../../../../src/components/Button';
 import { Card } from '../../../../../../../src/components/Card';
 import { EmptyState } from '../../../../../../../src/components/EmptyState';
@@ -41,6 +42,7 @@ export default function CowDetailScreen() {
 
   const [diagnosesByInsemination, setDiagnosesByInsemination] = useState<Record<string, PregnancyDiagnosis>>({});
   const [weaningByCalving, setWeaningByCalving] = useState<Record<string, Weaning>>({});
+  const [targetMarginPct, setTargetMarginPct] = useState('20');
 
   useEffect(() => {
     if (inseminations.length === 0) return;
@@ -143,6 +145,16 @@ export default function CowDetailScreen() {
             onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/matriz/${cowId}/custos`)}
           />
         </Card>
+
+        {cow.calfCount > 0 ? (
+          <BreakEvenCard
+            totalCost={cow.totalCost}
+            quantity={cow.calfCount}
+            unitLabel="bezerro"
+            targetMarginPct={targetMarginPct}
+            onChangeTargetMarginPct={setTargetMarginPct}
+          />
+        ) : null}
 
         <Section title="Inseminações" styles={styles}>
           {inseminations.length === 0 ? (

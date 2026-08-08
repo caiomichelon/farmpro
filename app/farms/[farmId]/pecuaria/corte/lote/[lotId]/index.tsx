@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BreakEvenCard } from '../../../../../../../src/components/BreakEvenCard';
 import { Button } from '../../../../../../../src/components/Button';
 import { Card } from '../../../../../../../src/components/Card';
 import { EmptyState } from '../../../../../../../src/components/EmptyState';
@@ -16,6 +17,7 @@ import {
   CATTLE_LOT_STATUS_LABELS,
 } from '../../../../../../../src/data/cattleOptions';
 import { useCattleFieldCollections } from '../../../../../../../src/hooks/useCattleFieldCollections';
+import { calculateBreakEven } from '../../../../../../../src/lib/breakEven';
 import { CATTLE_LOT_READINESS_LABELS, useCattleLot, type CattleLotReadiness } from '../../../../../../../src/hooks/useCattleLots';
 import { useCattleLotWeighings } from '../../../../../../../src/hooks/useCattleLotWeighings';
 import { useCattleMortalityEvents } from '../../../../../../../src/hooks/useCattleMortality';
@@ -38,6 +40,7 @@ export default function LotDetailScreen() {
   const { slaughters, reload: reloadSlaughters } = useCattleSlaughters(lotId);
   const { collections, reload: reloadCollections } = useCattleFieldCollections(lotId);
   const [isEditingTarget, setIsEditingTarget] = useState(false);
+  const [targetMarginPct, setTargetMarginPct] = useState('20');
 
   // Pesagem, mortalidade, abate e coleta de campo são cadastrados em rotas
   // separadas — refaz tudo ao voltar pra esta tela, senão fica com dado
@@ -116,6 +119,13 @@ export default function LotDetailScreen() {
             Receita estimada: {lot.estimatedArrobas.toFixed(1)} @ (peso atual × {Number(lot.estimated_carcass_yield_pct).toFixed(0)}%
             de rendimento ÷ 15 kg) — vira valor real só depois do abate.
           </Text>
+          <BreakEvenCard
+            totalCost={lot.totalCost}
+            quantity={lot.estimatedArrobas}
+            unitLabel="@"
+            targetMarginPct={targetMarginPct}
+            onChangeTargetMarginPct={setTargetMarginPct}
+          />
           <Button
             label="+ Lançar custo"
             variant="secondary"
