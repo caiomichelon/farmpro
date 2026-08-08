@@ -264,6 +264,10 @@ export type BreedingCow = {
   identification: string;
   birth_date: string | null;
   notes: string | null;
+  /** Mãe desta matriz, se ela também estiver cadastrada no rebanho — base
+   * da genealogia leve (o pai/sêmen fica por inseminação, em
+   * inseminations.sire_or_semen). */
+  dam_id: string | null;
   created_at: string;
 };
 

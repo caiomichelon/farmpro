@@ -205,7 +205,7 @@ export function useBreedingCows(farmId: string | undefined) {
   }, [reload]);
 
   const createCow = useCallback(
-    async (input: { identification: string; birth_date?: string; notes?: string }) => {
+    async (input: { identification: string; birth_date?: string; notes?: string; dam_id?: string }) => {
       if (!farmId) return { error: 'Fazenda não encontrada.' };
 
       const { error: insertError } = await supabase.from('breeding_cows').insert({
@@ -213,6 +213,7 @@ export function useBreedingCows(farmId: string | undefined) {
         identification: input.identification,
         birth_date: input.birth_date || null,
         notes: input.notes || null,
+        dam_id: input.dam_id || null,
       });
 
       if (insertError) return { error: insertError.message };
@@ -257,4 +258,40 @@ export function useBreedingCow(cowId: string | undefined) {
   }, [reload]);
 
   return { cow, isLoading, error, reload };
+}
+
+/** Genealogia leve de uma matriz — mãe (se cadastrada) e filhas que também
+ * viraram matriz no rebanho. O pai/sêmen fica por inseminação
+ * (inseminations.sire_or_semen), não aqui. */
+export function useCowGenealogy(cow: BreedingCow | null | undefined) {
+  const [dam, setDam] = useState<BreedingCow | null>(null);
+  const [daughters, setDaughters] = useState<BreedingCow[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!cow) {
+      setDam(null);
+      setDaughters([]);
+      setIsLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setIsLoading(true);
+    Promise.all([
+      cow.dam_id
+        ? supabase.from('breeding_cows').select('*').eq('id', cow.dam_id).maybeSingle()
+        : Promise.resolve({ data: null }),
+      supabase.from('breeding_cows').select('*').eq('dam_id', cow.id).order('identification', { ascending: true }),
+    ]).then(([damResult, daughtersResult]) => {
+      if (cancelled) return;
+      setDam((damResult.data as BreedingCow | null) ?? null);
+      setDaughters((daughtersResult.data as BreedingCow[] | null) ?? []);
+      setIsLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [cow]);
+
+  return { dam, daughters, isLoading };
 }

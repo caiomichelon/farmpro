@@ -4,21 +4,27 @@ import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-na
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../../../src/components/Button';
+import { ChipSelect } from '../../../../../src/components/ChipSelect';
 import { ScreenHeader } from '../../../../../src/components/ScreenHeader';
 import { TextField } from '../../../../../src/components/TextField';
 import { useBreedingCows } from '../../../../../src/hooks/useBreedingCows';
 import { spacing, useColors, type Colors } from '../../../../../src/theme';
 
+const NO_DAM = '__nenhuma__';
+
 export default function NewCowScreen() {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
-  const { createCow } = useBreedingCows(farmId);
+  const { cows, createCow } = useBreedingCows(farmId);
 
   const [identification, setIdentification] = useState('');
   const [birthDate, setBirthDate] = useState('');
+  const [damId, setDamId] = useState<string>(NO_DAM);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const damOptions = [{ value: NO_DAM, label: 'Nenhuma / não sei' }, ...cows.map((c) => ({ value: c.id, label: c.identification }))];
 
   async function handleSubmit() {
     if (!identification.trim()) {
@@ -29,6 +35,7 @@ export default function NewCowScreen() {
     const { error: createError } = await createCow({
       identification: identification.trim(),
       birth_date: parseDate(birthDate) ?? undefined,
+      dam_id: damId === NO_DAM ? undefined : damId,
     });
     setIsSubmitting(false);
     if (createError) {
@@ -56,6 +63,9 @@ export default function NewCowScreen() {
             placeholder="DD/MM/AAAA (opcional)"
             keyboardType="numbers-and-punctuation"
           />
+          {cows.length > 0 ? (
+            <ChipSelect label="Mãe (opcional)" options={damOptions} value={damId} onChange={setDamId} accentColor={colors.pecuaria} />
+          ) : null}
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <Button label="Salvar matriz" onPress={handleSubmit} loading={isSubmitting} disabled={!identification} />
         </View>

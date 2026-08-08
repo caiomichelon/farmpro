@@ -16,6 +16,7 @@ import {
   COW_CATEGORY_LABELS,
   REPRODUCTIVE_STATUS_LABELS,
   useBreedingCow,
+  useCowGenealogy,
   type ReproductiveStatus,
 } from '../../../../../../../src/hooks/useBreedingCows';
 import { fetchWeaningsByCalvingIds } from '../../../../../../../src/hooks/useWeanings';
@@ -36,6 +37,7 @@ export default function CowDetailScreen() {
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId, cowId } = useLocalSearchParams<{ farmId: string; cowId: string }>();
   const { cow, isLoading, reload: reloadCow } = useBreedingCow(cowId);
+  const { dam, daughters } = useCowGenealogy(cow);
   const { inseminations, reload: reloadInseminations } = useInseminations(cowId);
   const { calvings, reload: reloadCalvings } = useCalvings(cowId);
   const { weighings, reload: reloadWeighings } = useCowWeighings(cowId);
@@ -156,6 +158,31 @@ export default function CowDetailScreen() {
           />
         ) : null}
 
+        {dam || daughters.length > 0 ? (
+          <Section title="🧬 Genealogia" styles={styles}>
+            {dam ? (
+              <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/matriz/${dam.id}`)}>
+                <Card style={styles.rowCard}>
+                  <Text style={styles.rowNotes}>Mãe</Text>
+                  <Text style={styles.rowValue}>{dam.identification}</Text>
+                </Card>
+              </Pressable>
+            ) : null}
+            {daughters.length > 0 ? (
+              <View style={styles.rowCard}>
+                <Text style={styles.rowNotes}>
+                  {daughters.length === 1 ? 'Filha registrada como matriz' : 'Filhas registradas como matriz'}
+                </Text>
+                {daughters.map((d) => (
+                  <Pressable key={d.id} onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/matriz/${d.id}`)}>
+                    <Text style={[styles.rowValue, { color: colors.pecuaria }]}>{d.identification}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            ) : null}
+          </Section>
+        ) : null}
+
         <Section title="Inseminações" styles={styles}>
           {inseminations.length === 0 ? (
             <EmptyState text="Nenhuma inseminação registrada ainda." />
@@ -168,6 +195,7 @@ export default function CowDetailScreen() {
                     <Text style={styles.rowValue}>{i.method ?? 'Inseminação'}</Text>
                     <Text style={styles.rowDate}>{formatDate(i.insemination_date)}</Text>
                   </View>
+                  {i.sire_or_semen ? <Text style={styles.rowNotes}>Touro/sêmen: {i.sire_or_semen}</Text> : null}
                   {i.veterinarian ? <Text style={styles.rowNotes}>Veterinário: {i.veterinarian}</Text> : null}
                   {i.expected_calving_date ? (
                     <Text style={styles.rowNotes}>Previsão de parto: {formatDate(i.expected_calving_date)}</Text>
