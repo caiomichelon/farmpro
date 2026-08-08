@@ -143,6 +143,8 @@ export const pt = {
   'settings.notifications.troughDescription': 'Última leitura de nível de campo abaixo de 20%',
   'settings.notifications.briefing': 'Boletim diário',
   'settings.notifications.briefingDescription': 'Lembrete às 6h30 pra ouvir o resumo falado do dia',
+  'settings.notifications.closing': 'Fechamento do dia',
+  'settings.notifications.closingDescription': 'Lembrete às 18h pra conferir ponto pendente, coletas e alertas em aberto',
 
   'settings.language.subtitle': 'Escolha o idioma do app',
 
@@ -297,6 +299,8 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'settings.notifications.troughDescription': 'Latest field level reading below 20%',
   'settings.notifications.briefing': 'Daily briefing',
   'settings.notifications.briefingDescription': 'Reminder at 6:30am to listen to the spoken daily summary',
+  'settings.notifications.closing': 'Daily closing',
+  'settings.notifications.closingDescription': 'Reminder at 6pm to check pending clock-ins, field collections and open alerts',
 
   'settings.language.subtitle': 'Choose the app language',
 
@@ -448,6 +452,8 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'settings.notifications.troughDescription': 'Última lectura de nivel de campo por debajo del 20%',
   'settings.notifications.briefing': 'Boletín diario',
   'settings.notifications.briefingDescription': 'Recordatorio a las 6:30 para escuchar el resumen hablado del día',
+  'settings.notifications.closing': 'Cierre del día',
+  'settings.notifications.closingDescription': 'Recordatorio a las 18h para revisar fichajes pendientes, recolecciones y alertas abiertas',
 
   'settings.language.subtitle': 'Elige el idioma de la app',
 

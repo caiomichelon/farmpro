@@ -60,6 +60,11 @@ function buildItems(t: TFunction): { key: AlertPreferenceKey; title: string; des
       title: t('settings.notifications.briefing'),
       description: t('settings.notifications.briefingDescription'),
     },
+    {
+      key: 'fechamento_diario',
+      title: t('settings.notifications.closing'),
+      description: t('settings.notifications.closingDescription'),
+    },
   ];
 }
 

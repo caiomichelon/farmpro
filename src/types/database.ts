@@ -38,7 +38,8 @@ export type AlertPreferenceKey =
   | 'clima'
   | 'abigeato'
   | 'cocho_baixo'
-  | 'boletim_diario';
+  | 'boletim_diario'
+  | 'fechamento_diario';
 export type AlertPreferences = Partial<Record<AlertPreferenceKey, boolean>>;
 
 export type Profile = {

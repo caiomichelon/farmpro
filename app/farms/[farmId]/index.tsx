@@ -11,6 +11,7 @@ import { useFarm } from '../../../src/hooks/useFarms';
 import { useFarmAlerts } from '../../../src/hooks/useFarmAlerts';
 import { useSyncCattleNotifications } from '../../../src/hooks/useSyncCattleNotifications';
 import { useSyncDailyBriefingNotification } from '../../../src/hooks/useSyncDailyBriefingNotification';
+import { useSyncEndOfDayNotification } from '../../../src/hooks/useSyncEndOfDayNotification';
 import { useSyncWeatherNotifications } from '../../../src/hooks/useSyncWeatherNotifications';
 import { useT } from '../../../src/i18n';
 import { radius, spacing, typography, useColors, type Colors } from '../../../src/theme';
@@ -25,6 +26,7 @@ export default function FarmHomeScreen() {
   useSyncCattleNotifications(farmId);
   useSyncWeatherNotifications(farmId);
   useSyncDailyBriefingNotification(farmId);
+  useSyncEndOfDayNotification(farmId);
 
   return (
     <View style={styles.container}>
@@ -171,6 +173,20 @@ export default function FarmHomeScreen() {
           </FadeSlideIn>
 
           <FadeSlideIn delay={210}>
+            <Pressable
+              style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
+              onPress={() => router.push(`/farms/${farmId}/fechamento`)}
+            >
+              <View style={[styles.employeesMarker, { backgroundColor: colors.funcionarios }]} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.employeesTitle}>🌙 Fechamento do dia</Text>
+                <Text style={styles.employeesSubtitle}>Ponto, coletas e alertas antes de encerrar</Text>
+              </View>
+              <Text style={styles.employeesChevron}>→</Text>
+            </Pressable>
+          </FadeSlideIn>
+
+          <FadeSlideIn delay={235}>
             <Pressable
               style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
               onPress={() => router.push(`/farms/${farmId}/exportar`)}
