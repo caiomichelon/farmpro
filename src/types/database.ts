@@ -555,6 +555,29 @@ export type RainReading = {
   created_at: string;
 };
 
+/** Equipamento/maquinário da fazenda (trator, implemento) — farm-wide,
+ * não é por setor. */
+export type Equipment = {
+  id: string;
+  farm_id: string;
+  name: string;
+  notes: string | null;
+  created_at: string;
+};
+
+/** Manutenção registrada de um equipamento — revisão, troca de óleo etc.,
+ * com data prevista da próxima pra avisar quando vencer. */
+export type EquipmentMaintenance = {
+  id: string;
+  equipment_id: string;
+  maintenance_type: string;
+  performed_at: string;
+  next_due_date: string | null;
+  cost: number | null;
+  notes: string | null;
+  created_at: string;
+};
+
 /** Tarefa do dia — o gerente cria e (opcionalmente) atribui a um
  * funcionário; risca quando termina. */
 export type EmployeeTask = {
@@ -933,6 +956,18 @@ export interface Database {
         Row: EmployeeTask;
         Insert: Partial<EmployeeTask> & { farm_id: string; title: string };
         Update: Partial<EmployeeTask>;
+        Relationships: [];
+      };
+      equipment: {
+        Row: Equipment;
+        Insert: Partial<Equipment> & { farm_id: string; name: string };
+        Update: Partial<Equipment>;
+        Relationships: [];
+      };
+      equipment_maintenance: {
+        Row: EquipmentMaintenance;
+        Insert: Partial<EquipmentMaintenance> & { equipment_id: string; maintenance_type: string };
+        Update: Partial<EquipmentMaintenance>;
         Relationships: [];
       };
       cattle_inventory_items: {
