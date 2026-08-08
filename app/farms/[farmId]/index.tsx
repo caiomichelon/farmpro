@@ -11,6 +11,7 @@ import { useFarm } from '../../../src/hooks/useFarms';
 import { useFarmAlerts } from '../../../src/hooks/useFarmAlerts';
 import { useSyncCattleNotifications } from '../../../src/hooks/useSyncCattleNotifications';
 import { useSyncDailyBriefingNotification } from '../../../src/hooks/useSyncDailyBriefingNotification';
+import { useSyncDailyPhotoReminder } from '../../../src/hooks/useSyncDailyPhotoReminder';
 import { useSyncEndOfDayNotification } from '../../../src/hooks/useSyncEndOfDayNotification';
 import { useSyncWeatherNotifications } from '../../../src/hooks/useSyncWeatherNotifications';
 import { useT } from '../../../src/i18n';
@@ -27,6 +28,7 @@ export default function FarmHomeScreen() {
   useSyncWeatherNotifications(farmId);
   useSyncDailyBriefingNotification(farmId);
   useSyncEndOfDayNotification(farmId);
+  useSyncDailyPhotoReminder(farmId);
 
   return (
     <View style={styles.container}>

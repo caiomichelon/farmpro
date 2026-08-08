@@ -145,6 +145,8 @@ export const pt = {
   'settings.notifications.briefingDescription': 'Lembrete às 6h30 pra ouvir o resumo falado do dia',
   'settings.notifications.closing': 'Fechamento do dia',
   'settings.notifications.closingDescription': 'Lembrete às 18h pra conferir ponto pendente, coletas e alertas em aberto',
+  'settings.notifications.dailyPhoto': 'Foto diária',
+  'settings.notifications.dailyPhotoDescription': 'Lembrete às 8h pra tirar a foto do dia dos lotes',
 
   'settings.language.subtitle': 'Escolha o idioma do app',
 
@@ -301,6 +303,8 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'settings.notifications.briefingDescription': 'Reminder at 6:30am to listen to the spoken daily summary',
   'settings.notifications.closing': 'Daily closing',
   'settings.notifications.closingDescription': 'Reminder at 6pm to check pending clock-ins, field collections and open alerts',
+  'settings.notifications.dailyPhoto': 'Daily photo',
+  'settings.notifications.dailyPhotoDescription': 'Reminder at 8am to take the lots\' daily photo',
 
   'settings.language.subtitle': 'Choose the app language',
 
@@ -454,6 +458,8 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'settings.notifications.briefingDescription': 'Recordatorio a las 6:30 para escuchar el resumen hablado del día',
   'settings.notifications.closing': 'Cierre del día',
   'settings.notifications.closingDescription': 'Recordatorio a las 18h para revisar fichajes pendientes, recolecciones y alertas abiertas',
+  'settings.notifications.dailyPhoto': 'Foto diaria',
+  'settings.notifications.dailyPhotoDescription': 'Recordatorio a las 8h para tomar la foto diaria de los lotes',
 
   'settings.language.subtitle': 'Elige el idioma de la app',
 

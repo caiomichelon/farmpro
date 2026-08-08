@@ -39,7 +39,8 @@ export type AlertPreferenceKey =
   | 'abigeato'
   | 'cocho_baixo'
   | 'boletim_diario'
-  | 'fechamento_diario';
+  | 'fechamento_diario'
+  | 'foto_diaria';
 export type AlertPreferences = Partial<Record<AlertPreferenceKey, boolean>>;
 
 export type Profile = {
@@ -497,6 +498,15 @@ export type CattleFieldCollection = {
   created_at: string;
 };
 
+/** Foto diária do lote — registro visual simples, sem categoria/status,
+ * pra virar um timelapse do lote com o tempo. */
+export type CattleLotPhoto = {
+  id: string;
+  lot_id: string;
+  photo_url: string;
+  taken_at: string;
+};
+
 export type CattleInventoryCategory = 'racao' | 'nucleo_mineral' | 'medicamento' | 'outro';
 export type CattleInventoryUnit = 'kg' | 'saco' | 'litro' | 'dose' | 'unidade';
 export type CattleInventoryMovementType = 'entrada' | 'saida';
@@ -837,6 +847,12 @@ export interface Database {
           status: CattleFieldCollectionStatus;
         };
         Update: Partial<CattleFieldCollection>;
+        Relationships: [];
+      };
+      cattle_lot_photos: {
+        Row: CattleLotPhoto;
+        Insert: Partial<CattleLotPhoto> & { lot_id: string; photo_url: string };
+        Update: Partial<CattleLotPhoto>;
         Relationships: [];
       };
       cattle_inventory_items: {

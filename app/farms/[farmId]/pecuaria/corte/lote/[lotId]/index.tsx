@@ -174,6 +174,11 @@ export default function LotDetailScreen() {
             variant="secondary"
             onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${lotId}/nova-coleta`)}
           />
+          <Button
+            label="📸 Foto diária"
+            variant="ghost"
+            onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${lotId}/foto-diaria`)}
+          />
         </Section>
 
         <Section title="Pesagens do lote" subtitle="Histórico de peso e escore de condição corporal médios" styles={styles}>

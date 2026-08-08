@@ -65,6 +65,11 @@ function buildItems(t: TFunction): { key: AlertPreferenceKey; title: string; des
       title: t('settings.notifications.closing'),
       description: t('settings.notifications.closingDescription'),
     },
+    {
+      key: 'foto_diaria',
+      title: t('settings.notifications.dailyPhoto'),
+      description: t('settings.notifications.dailyPhotoDescription'),
+    },
   ];
 }
 
