@@ -80,6 +80,10 @@ export default function LavouraHomeScreen() {
                   <Pressable onPress={() => router.push(`/farms/${farmId}/lavoura/comparativo-regional`)} hitSlop={8}>
                     <Text style={styles.link}>🌎 Comparativo regional</Text>
                   </Pressable>
+                  <Text style={styles.linkDivider}>·</Text>
+                  <Pressable onPress={() => router.push(`/farms/${farmId}/lavoura/calda`)} hitSlop={8}>
+                    <Text style={styles.link}>🧪 Calculadora de calda</Text>
+                  </Pressable>
                 </View>
               </View>
             </FadeSlideIn>
