@@ -202,6 +202,11 @@ export default function LotDetailScreen() {
             variant="secondary"
             onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${lotId}/nova-pesagem`)}
           />
+          <Button
+            label="📊 Você, no passado"
+            variant="ghost"
+            onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${lotId}/comparativo`)}
+          />
         </Section>
 
         <Section title="Mortalidade" subtitle={`${totalDeaths} baixas registradas`} styles={styles}>
