@@ -40,6 +40,7 @@ export function useEmployeeDocuments(employeeId: string | undefined) {
       issue_date?: string;
       expiry_date?: string;
       notes?: string;
+      photo_url?: string;
     }) => {
       if (!employeeId) return { error: 'Funcionário não encontrado.' };
 
@@ -50,6 +51,7 @@ export function useEmployeeDocuments(employeeId: string | undefined) {
         issue_date: input.issue_date || null,
         expiry_date: input.expiry_date || null,
         notes: input.notes || null,
+        photo_url: input.photo_url || null,
       });
 
       if (insertError) return { error: insertError.message };

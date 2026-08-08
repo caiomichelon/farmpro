@@ -1,16 +1,18 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CommodityTicker } from '../../../src/components/CommodityTicker';
 import { SectorButton } from '../../../src/components/SectorButton';
 import { SummaryStat } from '../../../src/components/SummaryStat';
 import { useFarm } from '../../../src/hooks/useFarms';
-import { colors, spacing, typography } from '../../../src/theme';
+import { useFarmAlerts } from '../../../src/hooks/useFarmAlerts';
+import { colors, radius, spacing, typography } from '../../../src/theme';
 
 export default function FarmHomeScreen() {
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const { farm, isLoading } = useFarm(farmId);
+  const { alerts } = useFarmAlerts(farmId);
 
   return (
     <View style={styles.container}>
@@ -36,46 +38,77 @@ export default function FarmHomeScreen() {
           )}
         </View>
 
-        <View style={styles.sectorsRow}>
-          <SectorButton
-            title="Lavoura"
-            subtitle="Talhões, safras e custos"
-            color={colors.lavoura}
-            backgroundColor={colors.lavouraLight}
-            onPress={() => router.push(`/farms/${farmId}/lavoura`)}
-          />
-          <SectorButton
-            title="Pecuária"
-            subtitle="Corte e cria"
-            color={colors.pecuaria}
-            backgroundColor={colors.pecuariaLight}
-            onPress={() => router.push(`/farms/${farmId}/pecuaria`)}
-          />
-        </View>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          {alerts.length > 0 ? (
+            <View style={styles.alertsSection}>
+              <Text style={styles.alertsTitle}>
+                {alerts.some((a) => a.severity === 'danger') ? '⚠ ' : ''}Alertas ({alerts.length})
+              </Text>
+              {alerts.slice(0, 4).map((alert) => (
+                <Pressable
+                  key={alert.id}
+                  style={({ pressed }) => [
+                    styles.alertCard,
+                    alert.severity === 'danger' ? styles.alertCardDanger : styles.alertCardWarning,
+                    pressed && styles.employeesRowPressed,
+                  ]}
+                  onPress={() => router.push(alert.href as never)}
+                >
+                  <Text
+                    style={[
+                      styles.alertTitle,
+                      { color: alert.severity === 'danger' ? colors.danger : colors.warning },
+                    ]}
+                  >
+                    {alert.title}
+                  </Text>
+                  {alert.description ? <Text style={styles.alertDescription}>{alert.description}</Text> : null}
+                </Pressable>
+              ))}
+            </View>
+          ) : null}
 
-        <Pressable
-          style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
-          onPress={() => router.push(`/farms/${farmId}/funcionarios`)}
-        >
-          <View style={[styles.employeesMarker, { backgroundColor: colors.funcionarios }]} />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.employeesTitle}>Funcionários</Text>
-            <Text style={styles.employeesSubtitle}>Ficha, ponto digital e produtividade</Text>
+          <View style={styles.sectorsRow}>
+            <SectorButton
+              title="Lavoura"
+              subtitle="Talhões, safras e custos"
+              color={colors.lavoura}
+              backgroundColor={colors.lavouraLight}
+              onPress={() => router.push(`/farms/${farmId}/lavoura`)}
+            />
+            <SectorButton
+              title="Pecuária"
+              subtitle="Corte e cria"
+              color={colors.pecuaria}
+              backgroundColor={colors.pecuariaLight}
+              onPress={() => router.push(`/farms/${farmId}/pecuaria`)}
+            />
           </View>
-          <Text style={styles.employeesChevron}>→</Text>
-        </Pressable>
 
-        <Pressable
-          style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
-          onPress={() => router.push(`/farms/${farmId}/exportar`)}
-        >
-          <View style={[styles.employeesMarker, { backgroundColor: colors.textMuted }]} />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.employeesTitle}>Exportar dados</Text>
-            <Text style={styles.employeesSubtitle}>Tudo da fazenda num Excel (.xlsx)</Text>
-          </View>
-          <Text style={styles.employeesChevron}>→</Text>
-        </Pressable>
+          <Pressable
+            style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
+            onPress={() => router.push(`/farms/${farmId}/funcionarios`)}
+          >
+            <View style={[styles.employeesMarker, { backgroundColor: colors.funcionarios }]} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.employeesTitle}>Funcionários</Text>
+              <Text style={styles.employeesSubtitle}>Ficha, ponto digital e produtividade</Text>
+            </View>
+            <Text style={styles.employeesChevron}>→</Text>
+          </Pressable>
+
+          <Pressable
+            style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
+            onPress={() => router.push(`/farms/${farmId}/exportar`)}
+          >
+            <View style={[styles.employeesMarker, { backgroundColor: colors.textMuted }]} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.employeesTitle}>Exportar dados</Text>
+              <Text style={styles.employeesSubtitle}>Tudo da fazenda num Excel (.xlsx)</Text>
+            </View>
+            <Text style={styles.employeesChevron}>→</Text>
+          </Pressable>
+        </ScrollView>
       </SafeAreaView>
     </View>
   );
@@ -109,6 +142,39 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.xl,
+  },
+  scrollContent: {
+    paddingBottom: spacing.xl,
+  },
+  alertsSection: {
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.lg,
+    gap: spacing.sm,
+  },
+  alertsTitle: {
+    ...typography.captionMedium,
+    color: colors.textSecondary,
+  },
+  alertCard: {
+    borderRadius: radius.md,
+    borderWidth: 1,
+    padding: spacing.md,
+    gap: 2,
+  },
+  alertCardDanger: {
+    backgroundColor: colors.dangerLight,
+    borderColor: colors.danger,
+  },
+  alertCardWarning: {
+    backgroundColor: colors.warningLight,
+    borderColor: colors.warning,
+  },
+  alertTitle: {
+    ...typography.bodyMedium,
+  },
+  alertDescription: {
+    ...typography.caption,
+    color: colors.textSecondary,
   },
   sectorsRow: {
     flexDirection: 'row',

@@ -1,12 +1,13 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Image, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../../../../src/components/Button';
 import { Card } from '../../../../../../src/components/Card';
 import { ChipSelect } from '../../../../../../src/components/ChipSelect';
 import { EmptyState } from '../../../../../../src/components/EmptyState';
+import { PhotoPicker } from '../../../../../../src/components/PhotoPicker';
 import { ScreenHeader } from '../../../../../../src/components/ScreenHeader';
 import { TextField } from '../../../../../../src/components/TextField';
 import { COMMON_DOCUMENT_TYPES } from '../../../../../../src/data/employeeOptions';
@@ -70,15 +71,20 @@ function DocumentRow({ document }: { document: EmployeeDocument }) {
   return (
     <Card style={styles.card}>
       <View style={styles.cardTopRow}>
-        <Text style={styles.cardTitle}>{document.document_type}</Text>
-        <View style={[styles.statusBadge, { backgroundColor: colorSet.bg }]}>
-          <Text style={[styles.statusBadgeText, { color: colorSet.text }]}>{DOCUMENT_ALERT_LABELS[status]}</Text>
+        {document.photo_url ? <Image source={{ uri: document.photo_url }} style={styles.rowThumbnail} /> : null}
+        <View style={{ flex: 1 }}>
+          <View style={styles.cardTitleRow}>
+            <Text style={styles.cardTitle}>{document.document_type}</Text>
+            <View style={[styles.statusBadge, { backgroundColor: colorSet.bg }]}>
+              <Text style={[styles.statusBadgeText, { color: colorSet.text }]}>{DOCUMENT_ALERT_LABELS[status]}</Text>
+            </View>
+          </View>
+          {document.expiry_date ? (
+            <Text style={styles.cardMeta}>Validade: {formatDate(document.expiry_date)}</Text>
+          ) : null}
+          {document.document_number ? <Text style={styles.cardMeta}>Nº {document.document_number}</Text> : null}
         </View>
       </View>
-      {document.expiry_date ? (
-        <Text style={styles.cardMeta}>Validade: {formatDate(document.expiry_date)}</Text>
-      ) : null}
-      {document.document_number ? <Text style={styles.cardMeta}>Nº {document.document_number}</Text> : null}
     </Card>
   );
 }
@@ -92,11 +98,13 @@ function NewDocumentForm({
     document_type: string;
     document_number?: string;
     expiry_date?: string;
+    photo_url?: string;
   }) => Promise<string | null>;
 }) {
   const [documentType, setDocumentType] = useState('');
   const [documentNumber, setDocumentNumber] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -110,6 +118,7 @@ function NewDocumentForm({
       document_type: documentType.trim(),
       document_number: documentNumber.trim() || undefined,
       expiry_date: parseDate(expiryDate) ?? undefined,
+      photo_url: photoUrl ?? undefined,
     });
     setIsSubmitting(false);
     if (createError) setError(createError);
@@ -127,6 +136,13 @@ function NewDocumentForm({
       <TextField label="Tipo (ou digite outro)" value={documentType} onChangeText={setDocumentType} placeholder="Ex.: ASO" />
       <TextField label="Número" value={documentNumber} onChangeText={setDocumentNumber} placeholder="Opcional" />
       <TextField label="Data de validade" value={expiryDate} onChangeText={setExpiryDate} placeholder="DD/MM/AAAA (opcional)" keyboardType="numbers-and-punctuation" />
+      <PhotoPicker
+        label="Foto do documento (opcional)"
+        photoUrl={photoUrl}
+        onChange={setPhotoUrl}
+        folder="employee-documents"
+        accentColor={colors.funcionarios}
+      />
       {error ? <Text style={styles.error}>{error}</Text> : null}
       <View style={styles.formActions}>
         <Button label="Cancelar" variant="ghost" onPress={onCancel} style={{ flex: 1 }} />
@@ -166,9 +182,20 @@ const styles = StyleSheet.create({
   },
   cardTopRow: {
     flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.md,
+  },
+  cardTitleRow: {
+    flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     gap: spacing.sm,
+  },
+  rowThumbnail: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.sm,
+    backgroundColor: colors.surfaceAlt,
   },
   cardTitle: {
     ...typography.bodyMedium,

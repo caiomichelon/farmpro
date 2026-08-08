@@ -243,6 +243,7 @@ export type EmployeeDocument = {
   issue_date: string | null;
   expiry_date: string | null;
   notes: string | null;
+  photo_url: string | null;
   created_at: string;
 };
 
@@ -305,6 +306,7 @@ export type CattleAnimalHealthEvent = {
   event_type: CattleHealthEventType;
   description: string;
   notes: string | null;
+  photo_url: string | null;
   created_at: string;
 };
 

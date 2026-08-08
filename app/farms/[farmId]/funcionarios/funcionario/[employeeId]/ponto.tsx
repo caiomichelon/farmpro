@@ -1,12 +1,13 @@
 import { useLocalSearchParams } from 'expo-router';
 import * as Location from 'expo-location';
 import { useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../../../../src/components/Button';
 import { Card } from '../../../../../../src/components/Card';
 import { EmptyState } from '../../../../../../src/components/EmptyState';
+import { LocationMap } from '../../../../../../src/components/LocationMap';
 import { ScreenHeader } from '../../../../../../src/components/ScreenHeader';
 import { TIME_ENTRY_TYPE_LABELS } from '../../../../../../src/data/employeeOptions';
 import { useTimeEntries } from '../../../../../../src/hooks/useTimeEntries';
@@ -18,6 +19,16 @@ export default function TimeClockScreen() {
   const { entries, todaysEntries, nextEntryType, isLoading, error, createEntry } = useTimeEntries(employeeId);
   const [isPunching, setIsPunching] = useState(false);
   const [punchError, setPunchError] = useState<string | null>(null);
+  const [showMap, setShowMap] = useState(false);
+
+  const mapPoints = entries
+    .filter((e) => e.latitude != null && e.longitude != null)
+    .slice(0, 20)
+    .map((e) => ({
+      latitude: e.latitude as number,
+      longitude: e.longitude as number,
+      label: `${TIME_ENTRY_TYPE_LABELS[e.entry_type]} — ${formatDateTime(e.recorded_at)}`,
+    }));
 
   async function handlePunch() {
     if (!nextEntryType) return;
@@ -75,7 +86,20 @@ export default function TimeClockScreen() {
         {punchError ? <Text style={styles.error}>{punchError}</Text> : null}
       </View>
 
-      <Text style={styles.historyTitle}>Histórico</Text>
+      <View style={styles.historyHeaderRow}>
+        <Text style={styles.historyTitle}>Histórico</Text>
+        {mapPoints.length > 0 ? (
+          <Pressable onPress={() => setShowMap((v) => !v)} hitSlop={8}>
+            <Text style={styles.mapToggle}>{showMap ? 'Ocultar mapa' : 'Ver mapa'}</Text>
+          </Pressable>
+        ) : null}
+      </View>
+
+      {showMap && mapPoints.length > 0 ? (
+        <View style={styles.mapContainer}>
+          <LocationMap points={mapPoints} />
+        </View>
+      ) : null}
 
       {isLoading ? (
         <ActivityIndicator style={styles.loading} color={colors.funcionarios} />
@@ -154,11 +178,24 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.textSecondary,
   },
+  historyHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: spacing.xl,
+    marginTop: spacing.xl,
+    marginBottom: spacing.md,
+  },
   historyTitle: {
     ...typography.subheading,
     color: colors.textPrimary,
-    paddingHorizontal: spacing.xl,
-    marginTop: spacing.xl,
+  },
+  mapToggle: {
+    ...typography.captionMedium,
+    color: colors.funcionarios,
+  },
+  mapContainer: {
+    marginHorizontal: spacing.xl,
     marginBottom: spacing.md,
   },
   loading: {
