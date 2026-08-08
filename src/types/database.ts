@@ -75,6 +75,17 @@ export type Farm = {
    * em Meta → "Definir meta". */
   goal_name: string | null;
   goal_amount: number | null;
+  /** Cofre da fazenda / modo sucessão — sucessor designado, contato de
+   * emergência e notas importantes, pra alguém de confiança conseguir
+   * tocar a fazenda numa emergência. Tudo opcional até o usuário
+   * preencher em "Cofre da fazenda". */
+  successor_name: string | null;
+  successor_relationship: string | null;
+  successor_phone: string | null;
+  emergency_contact_name: string | null;
+  emergency_contact_phone: string | null;
+  vault_notes: string | null;
+  vault_updated_at: string | null;
   created_at: string;
   created_by: string;
 };
