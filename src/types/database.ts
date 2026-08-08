@@ -322,6 +322,20 @@ export type Employee = {
   created_at: string;
 };
 
+export type EmployeeMessageSender = 'funcionario' | 'gerente';
+
+/** Mensagem de chat entre funcionário e gerente — sem login separado pro
+ * funcionário, "sender" é só a etiqueta de quem está escrevendo naquele
+ * momento (mesmo padrão do ponto digital: dispositivo compartilhado). */
+export type EmployeeMessage = {
+  id: string;
+  employee_id: string;
+  sender: EmployeeMessageSender;
+  body: string;
+  read_at: string | null;
+  created_at: string;
+};
+
 /** Documento de um funcionário — base dos alertas de documentação. */
 export type EmployeeDocument = {
   id: string;
@@ -732,6 +746,12 @@ export interface Database {
         Row: EmployeeDocument;
         Insert: Partial<EmployeeDocument> & { employee_id: string; document_type: string };
         Update: Partial<EmployeeDocument>;
+        Relationships: [];
+      };
+      employee_messages: {
+        Row: EmployeeMessage;
+        Insert: Partial<EmployeeMessage> & { employee_id: string; sender: EmployeeMessageSender; body: string };
+        Update: Partial<EmployeeMessage>;
         Relationships: [];
       };
       time_entries: {

@@ -28,16 +28,16 @@ export default function EmployeesHomeScreen() {
   );
 
   const totalAlerts = employees.reduce((sum, e) => sum + e.expiredDocumentCount + e.expiringSoonDocumentCount, 0);
+  const totalUnread = employees.reduce((sum, e) => sum + e.unreadMessageCount, 0);
+  const subtitleParts = [`${employees.length} ${employees.length === 1 ? 'funcionário' : 'funcionários'}`];
+  if (totalAlerts > 0) subtitleParts.push(`${totalAlerts} ${totalAlerts === 1 ? 'alerta de documento' : 'alertas de documento'}`);
+  if (totalUnread > 0) subtitleParts.push(`${totalUnread} ${totalUnread === 1 ? 'mensagem não lida' : 'mensagens não lidas'}`);
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScreenHeader
         title="Funcionários"
-        subtitle={
-          totalAlerts > 0
-            ? `${employees.length} ${employees.length === 1 ? 'funcionário' : 'funcionários'} · ${totalAlerts} ${totalAlerts === 1 ? 'alerta de documento' : 'alertas de documento'}`
-            : `${employees.length} ${employees.length === 1 ? 'funcionário' : 'funcionários'}`
-        }
+        subtitle={subtitleParts.join(' · ')}
         right={
           <View style={styles.headerLinks}>
             <Pressable onPress={() => router.push(`/farms/${farmId}/funcionarios/planilha`)} hitSlop={12}>
@@ -96,6 +96,7 @@ export default function EmployeesHomeScreen() {
 
 function EmployeeCard({ employee, onPress }: { employee: EmployeeSummary; onPress: () => void }) {
   const hasAlert = employee.expiredDocumentCount > 0 || employee.expiringSoonDocumentCount > 0;
+  const hasUnread = employee.unreadMessageCount > 0;
 
   return (
     <Card onPress={onPress} style={styles.card}>
@@ -104,13 +105,22 @@ function EmployeeCard({ employee, onPress }: { employee: EmployeeSummary; onPres
           <Text style={styles.cardTitle}>{employee.full_name}</Text>
           <Text style={styles.cardSubtitle}>{employee.role}</Text>
         </View>
-        {hasAlert ? (
-          <View style={styles.alertBadge}>
-            <Text style={styles.alertBadgeText}>
-              {employee.expiredDocumentCount > 0 ? 'Doc. vencido' : 'Doc. vence em breve'}
-            </Text>
-          </View>
-        ) : null}
+        <View style={styles.badgeStack}>
+          {hasAlert ? (
+            <View style={styles.alertBadge}>
+              <Text style={styles.alertBadgeText}>
+                {employee.expiredDocumentCount > 0 ? 'Doc. vencido' : 'Doc. vence em breve'}
+              </Text>
+            </View>
+          ) : null}
+          {hasUnread ? (
+            <View style={styles.messageBadge}>
+              <Text style={styles.messageBadgeText}>
+                {employee.unreadMessageCount} {employee.unreadMessageCount === 1 ? 'mensagem' : 'mensagens'}
+              </Text>
+            </View>
+          ) : null}
+        </View>
       </View>
       <View style={styles.sectorBadge}>
         <Text style={styles.sectorBadgeText}>{EMPLOYEE_SECTOR_LABELS[employee.sector]}</Text>
@@ -162,6 +172,10 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginTop: 2,
   },
+  badgeStack: {
+    alignItems: 'flex-end',
+    gap: spacing.xs,
+  },
   alertBadge: {
     backgroundColor: colors.dangerLight,
     borderRadius: radius.sm,
@@ -171,6 +185,16 @@ const styles = StyleSheet.create({
   alertBadgeText: {
     ...typography.caption,
     color: colors.danger,
+  },
+  messageBadge: {
+    backgroundColor: colors.funcionariosLight,
+    borderRadius: radius.sm,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+  },
+  messageBadgeText: {
+    ...typography.caption,
+    color: colors.funcionarios,
   },
   sectorBadge: {
     alignSelf: 'flex-start',

@@ -64,6 +64,12 @@ export default function EmployeeDetailScreen() {
           subtitle="Histórico de atividades realizadas"
           onPress={() => router.push(`/farms/${farmId}/funcionarios/funcionario/${employeeId}/produtividade`)}
         />
+        <NavRow
+          title="Mensagens"
+          subtitle={employee.unreadMessageCount > 0 ? `${employee.unreadMessageCount} mensagem(ns) não lida(s)` : 'Converse com o funcionário'}
+          accent={employee.unreadMessageCount > 0}
+          onPress={() => router.push(`/farms/${farmId}/funcionarios/funcionario/${employeeId}/mensagens`)}
+        />
       </View>
     </SafeAreaView>
   );

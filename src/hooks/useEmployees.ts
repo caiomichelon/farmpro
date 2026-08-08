@@ -7,20 +7,26 @@ import type { Employee, EmployeeCostType, EmployeeSector } from '../types/databa
 export interface EmployeeSummary extends Employee {
   expiredDocumentCount: number;
   expiringSoonDocumentCount: number;
+  unreadMessageCount: number;
 }
 
 async function withDocumentAlerts(employees: Employee[]): Promise<EmployeeSummary[]> {
   if (employees.length === 0) return [];
 
-  const { data: documents, error } = await supabase
-    .from('employee_documents')
-    .select('employee_id, expiry_date')
-    .in(
-      'employee_id',
-      employees.map((e) => e.id)
-    );
+  const employeeIds = employees.map((e) => e.id);
 
-  if (error) throw error;
+  const [{ data: documents, error: docsError }, { data: unreadMessages, error: messagesError }] = await Promise.all([
+    supabase.from('employee_documents').select('employee_id, expiry_date').in('employee_id', employeeIds),
+    supabase
+      .from('employee_messages')
+      .select('employee_id')
+      .in('employee_id', employeeIds)
+      .eq('sender', 'funcionario')
+      .is('read_at', null),
+  ]);
+
+  if (docsError) throw docsError;
+  if (messagesError) throw messagesError;
 
   return employees.map((employee) => {
     const employeeDocs = (documents ?? []).filter((d) => d.employee_id === employee.id);
@@ -30,6 +36,7 @@ async function withDocumentAlerts(employees: Employee[]): Promise<EmployeeSummar
       ...employee,
       expiredDocumentCount: statuses.filter((s) => s === 'vencido').length,
       expiringSoonDocumentCount: statuses.filter((s) => s === 'vence_em_breve').length,
+      unreadMessageCount: (unreadMessages ?? []).filter((m) => m.employee_id === employee.id).length,
     };
   });
 }
