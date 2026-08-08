@@ -90,6 +90,12 @@ export type Farm = {
    * fazenda entram na média regional que outras fazendas veem (nunca
    * expostos linha a linha, só agregados). */
   benchmark_opt_in: boolean;
+  /** Práticas usadas pela fazenda — base da estimativa educativa de
+   * crédito de carbono (não substitui auditoria de certificadora). */
+  carbon_uses_no_till: boolean;
+  carbon_uses_cover_crop: boolean;
+  carbon_uses_rotational_grazing: boolean;
+  carbon_uses_manure_management: boolean;
   created_at: string;
   created_by: string;
 };

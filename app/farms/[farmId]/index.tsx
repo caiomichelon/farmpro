@@ -233,6 +233,20 @@ export default function FarmHomeScreen() {
             </Pressable>
           </FadeSlideIn>
 
+          <FadeSlideIn delay={310}>
+            <Pressable
+              style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
+              onPress={() => router.push(`/farms/${farmId}/carbono`)}
+            >
+              <View style={[styles.employeesMarker, { backgroundColor: colors.success }]} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.employeesTitle}>🌱 Estimativa de carbono</Text>
+                <Text style={styles.employeesSubtitle}>Potencial de crédito a partir das práticas da fazenda</Text>
+              </View>
+              <Text style={styles.employeesChevron}>→</Text>
+            </Pressable>
+          </FadeSlideIn>
+
           <FadeSlideIn delay={260}>
             <Pressable
               style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}

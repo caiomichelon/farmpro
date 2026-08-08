@@ -147,6 +147,24 @@ export function useFarms() {
     [reload]
   );
 
+  const updateFarmCarbonPractices = useCallback(
+    async (
+      farmId: string,
+      input: {
+        carbon_uses_no_till: boolean;
+        carbon_uses_cover_crop: boolean;
+        carbon_uses_rotational_grazing: boolean;
+        carbon_uses_manure_management: boolean;
+      }
+    ) => {
+      const { error: updateError } = await supabase.from('farms').update(input).eq('id', farmId);
+      if (updateError) return { error: updateError.message };
+      await reload();
+      return { error: null };
+    },
+    [reload]
+  );
+
   return {
     farms,
     isLoading,
@@ -157,6 +175,7 @@ export function useFarms() {
     updateFarmGoal,
     updateFarmVault,
     updateFarmBenchmarkOptIn,
+    updateFarmCarbonPractices,
   };
 }
 
@@ -170,7 +189,18 @@ export function useFarm(farmId: string | undefined) {
     updateFarmGoal,
     updateFarmVault,
     updateFarmBenchmarkOptIn,
+    updateFarmCarbonPractices,
   } = useFarms();
   const farm = farms.find((f) => f.id === farmId);
-  return { farm, isLoading, error, reload, updateFarmLocation, updateFarmGoal, updateFarmVault, updateFarmBenchmarkOptIn };
+  return {
+    farm,
+    isLoading,
+    error,
+    reload,
+    updateFarmLocation,
+    updateFarmGoal,
+    updateFarmVault,
+    updateFarmBenchmarkOptIn,
+    updateFarmCarbonPractices,
+  };
 }
