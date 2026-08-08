@@ -176,6 +176,19 @@ export type CasualLaborer = {
   created_at: string;
 };
 
+/** Fornecedor / contato útil da fazenda (loja agropecuária, veterinário,
+ * mecânico, transportadora, comprador etc.). */
+export type Supplier = {
+  id: string;
+  farm_id: string;
+  name: string;
+  category: 'agropecuaria' | 'veterinario' | 'mecanico' | 'transportadora' | 'comprador' | 'outro';
+  phone: string | null;
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+};
+
 /** Um lançamento de colheita (diário) de uma safra. */
 export type HarvestEntry = {
   id: string;
@@ -789,6 +802,15 @@ export interface Database {
           worker_name: string;
         };
         Update: Partial<CasualLaborer>;
+        Relationships: [];
+      };
+      suppliers: {
+        Row: Supplier;
+        Insert: Partial<Supplier> & {
+          farm_id: string;
+          name: string;
+        };
+        Update: Partial<Supplier>;
         Relationships: [];
       };
       harvest_entries: {

@@ -308,6 +308,20 @@ export default function FarmHomeScreen() {
             </Pressable>
           </FadeSlideIn>
 
+          <FadeSlideIn delay={420}>
+            <Pressable
+              style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
+              onPress={() => router.push(`/farms/${farmId}/fornecedores`)}
+            >
+              <View style={[styles.employeesMarker, { backgroundColor: colors.primary }]} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.employeesTitle}>📇 Fornecedores</Text>
+                <Text style={styles.employeesSubtitle}>Agropecuária, veterinário, mecânico e mais</Text>
+              </View>
+              <Text style={styles.employeesChevron}>→</Text>
+            </Pressable>
+          </FadeSlideIn>
+
           <FadeSlideIn delay={260}>
             <Pressable
               style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
