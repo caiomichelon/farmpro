@@ -36,6 +36,7 @@ export default function TimeClockScreen() {
   const columns = useMemo(() => buildColumns(), []);
   const [isPunching, setIsPunching] = useState(false);
   const [punchError, setPunchError] = useState<string | null>(null);
+  const [punchQueuedMessage, setPunchQueuedMessage] = useState<string | null>(null);
   const [showMap, setShowMap] = useState(false);
 
   const mapPoints = entries
@@ -51,6 +52,7 @@ export default function TimeClockScreen() {
     if (!nextEntryType) return;
     setIsPunching(true);
     setPunchError(null);
+    setPunchQueuedMessage(null);
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
@@ -59,13 +61,14 @@ export default function TimeClockScreen() {
       }
 
       const position = await Location.getCurrentPositionAsync({});
-      const { error: createError } = await createEntry({
+      const { error: createError, queued } = await createEntry({
         entry_type: nextEntryType,
         latitude: position.coords.latitude,
         longitude: position.coords.longitude,
         location_accuracy_m: position.coords.accuracy ?? undefined,
       });
       if (createError) setPunchError(createError);
+      else if (queued) setPunchQueuedMessage('Sem sinal — ponto guardado no aparelho, vai sincronizar sozinho.');
     } catch {
       setPunchError('Não foi possível obter sua localização agora. Tente novamente.');
     } finally {
@@ -101,6 +104,7 @@ export default function TimeClockScreen() {
           <Text style={styles.doneText}>Todas as batidas de hoje já foram registradas.</Text>
         )}
         {punchError ? <Text style={styles.error}>{punchError}</Text> : null}
+        {punchQueuedMessage ? <Text style={styles.queued}>{punchQueuedMessage}</Text> : null}
       </View>
 
       <View style={styles.historyHeaderRow}>
@@ -208,5 +212,9 @@ const styles = StyleSheet.create({
   },
   error: {
     color: colors.danger,
+  },
+  queued: {
+    ...typography.caption,
+    color: colors.warning,
   },
 });

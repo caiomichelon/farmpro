@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CommodityTicker } from '../../../src/components/CommodityTicker';
 import { FadeSlideIn } from '../../../src/components/FadeSlideIn';
+import { OfflineSyncBanner } from '../../../src/components/OfflineSyncBanner';
 import { SectorButton } from '../../../src/components/SectorButton';
 import { SummaryStat } from '../../../src/components/SummaryStat';
 import { useFarm } from '../../../src/hooks/useFarms';
@@ -55,6 +56,8 @@ export default function FarmHomeScreen() {
         </View>
 
         <ScrollView contentContainerStyle={styles.scrollContent}>
+          <OfflineSyncBanner />
+
           {alerts.length > 0 ? (
             <View style={styles.alertsSection}>
               <Text style={styles.alertsTitle}>

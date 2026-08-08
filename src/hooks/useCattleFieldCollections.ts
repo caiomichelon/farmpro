@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { enqueueMutation, isLikelyNetworkError } from '../lib/offlineQueue';
 import { supabase } from '../lib/supabase';
 import type { CattleFieldCollection, CattleFieldCollectionCategory, CattleFieldCollectionStatus } from '../types/database';
 
@@ -48,7 +49,7 @@ export function useCattleFieldCollections(lotId: string | undefined) {
     }) => {
       if (!lotId) return { error: 'Lote não encontrado.' };
 
-      const { error: insertError } = await supabase.from('cattle_field_collections').insert({
+      const payload = {
         lot_id: lotId,
         category: input.category,
         status: input.status,
@@ -59,12 +60,26 @@ export function useCattleFieldCollections(lotId: string | undefined) {
         location_accuracy_m: input.location_accuracy_m ?? null,
         head_count: input.head_count ?? null,
         level_pct: input.level_pct ?? null,
-      });
+      };
 
-      if (insertError) return { error: insertError.message };
+      try {
+        const { error: insertError } = await supabase.from('cattle_field_collections').insert(payload);
+        if (insertError) {
+          // Sem sinal no pasto — guarda localmente pra sincronizar depois,
+          // em vez de perder a coleta.
+          if (isLikelyNetworkError(insertError.message)) {
+            await enqueueMutation('cattle_field_collections', payload);
+            return { error: null, queued: true };
+          }
+          return { error: insertError.message };
+        }
+      } catch {
+        await enqueueMutation('cattle_field_collections', payload);
+        return { error: null, queued: true };
+      }
 
       await reload();
-      return { error: null };
+      return { error: null, queued: false };
     },
     [lotId, reload]
   );

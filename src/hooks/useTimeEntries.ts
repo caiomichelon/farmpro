@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import { supabase } from '../lib/supabase';
 import { TIME_ENTRY_SEQUENCE } from '../data/employeeOptions';
+import { enqueueMutation, isLikelyNetworkError } from '../lib/offlineQueue';
+import { supabase } from '../lib/supabase';
 import type { TimeEntry, TimeEntryType } from '../types/database';
 
 function todayKey(isoTimestamp: string) {
@@ -49,19 +50,33 @@ export function useTimeEntries(employeeId: string | undefined) {
     }) => {
       if (!employeeId) return { error: 'Funcionário não encontrado.' };
 
-      const { error: insertError } = await supabase.from('time_entries').insert({
+      const payload = {
         employee_id: employeeId,
         entry_type: input.entry_type,
         latitude: input.latitude ?? null,
         longitude: input.longitude ?? null,
         location_accuracy_m: input.location_accuracy_m ?? null,
         notes: input.notes || null,
-      });
+      };
 
-      if (insertError) return { error: insertError.message };
+      try {
+        const { error: insertError } = await supabase.from('time_entries').insert(payload);
+        if (insertError) {
+          // Sem sinal de internet — guarda localmente pra sincronizar
+          // depois, em vez de travar o registro do ponto.
+          if (isLikelyNetworkError(insertError.message)) {
+            await enqueueMutation('time_entries', payload);
+            return { error: null, queued: true };
+          }
+          return { error: insertError.message };
+        }
+      } catch {
+        await enqueueMutation('time_entries', payload);
+        return { error: null, queued: true };
+      }
 
       await reload();
-      return { error: null };
+      return { error: null, queued: false };
     },
     [employeeId, reload]
   );

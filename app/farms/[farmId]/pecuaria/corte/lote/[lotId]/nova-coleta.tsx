@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import * as Location from 'expo-location';
 import { useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../../../../../src/components/Button';
@@ -55,7 +55,7 @@ export default function NewFieldCollectionScreen() {
       // Sem localização disponível agora — segue sem ela.
     }
 
-    const { error: createError } = await createCollection({
+    const { error: createError, queued } = await createCollection({
       category,
       status,
       notes: notes.trim() || undefined,
@@ -70,6 +70,9 @@ export default function NewFieldCollectionScreen() {
     if (createError) {
       setError(createError);
       return;
+    }
+    if (queued) {
+      Alert.alert('Sem sinal', 'Coleta guardada no aparelho — vai sincronizar sozinha quando a conexão voltar.');
     }
     router.back();
   }
