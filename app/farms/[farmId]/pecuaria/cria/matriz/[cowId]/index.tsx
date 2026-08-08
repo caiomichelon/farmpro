@@ -1,5 +1,5 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -7,12 +7,25 @@ import { Button } from '../../../../../../../src/components/Button';
 import { Card } from '../../../../../../../src/components/Card';
 import { EmptyState } from '../../../../../../../src/components/EmptyState';
 import { ScreenHeader } from '../../../../../../../src/components/ScreenHeader';
-import { useBreedingCow } from '../../../../../../../src/hooks/useBreedingCows';
+import {
+  REPRODUCTIVE_STATUS_LABELS,
+  useBreedingCow,
+  type ReproductiveStatus,
+} from '../../../../../../../src/hooks/useBreedingCows';
 import { useCalvings } from '../../../../../../../src/hooks/useCalvings';
 import { useInseminations } from '../../../../../../../src/hooks/useInseminations';
-import { colors, radius, spacing, typography } from '../../../../../../../src/theme';
+import { radius, spacing, typography, useColors, type Colors } from '../../../../../../../src/theme';
+
+const STATUS_COLOR_KEY: Record<ReproductiveStatus, 'pecuaria' | 'textMuted' | 'danger'> = {
+  prenha: 'pecuaria',
+  vazia: 'textMuted',
+  vazia_atencao: 'danger',
+  nunca_coberta: 'textMuted',
+};
 
 export default function CowDetailScreen() {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId, cowId } = useLocalSearchParams<{ farmId: string; cowId: string }>();
   const { cow, isLoading, reload: reloadCow } = useBreedingCow(cowId);
   const { inseminations, reload: reloadInseminations } = useInseminations(cowId);
@@ -35,9 +48,8 @@ export default function CowDetailScreen() {
     );
   }
 
-  const lastInsemination = inseminations[0];
-  const hasOpenPregnancy =
-    lastInsemination && !calvings.some((c) => c.insemination_id === lastInsemination.id);
+  const statusColor = colors[STATUS_COLOR_KEY[cow.reproductiveStatus]];
+  const costPerCalf = cow.calfCount > 0 ? cow.totalCost / cow.calfCount : null;
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -47,14 +59,42 @@ export default function CowDetailScreen() {
       />
 
       <ScrollView contentContainerStyle={styles.content}>
-        {hasOpenPregnancy && lastInsemination.expected_calving_date ? (
-          <View style={styles.predictionCard}>
-            <Text style={styles.predictionLabel}>Previsão de parto</Text>
-            <Text style={styles.predictionValue}>{formatDate(lastInsemination.expected_calving_date)}</Text>
-          </View>
-        ) : null}
+        <View style={[styles.statusBadge, { backgroundColor: statusColor + '22', borderColor: statusColor }]}>
+          <Text style={[styles.statusText, { color: statusColor }]}>
+            {REPRODUCTIVE_STATUS_LABELS[cow.reproductiveStatus]}
+          </Text>
+          {cow.isPregnant && cow.expectedCalvingDate ? (
+            <Text style={styles.statusSubtext}>Previsão de parto: {formatDate(cow.expectedCalvingDate)}</Text>
+          ) : cow.daysEmpty !== null ? (
+            <Text style={styles.statusSubtext}>{cow.daysEmpty} dias sem prenhez nova</Text>
+          ) : null}
+        </View>
 
-        <Section title="Inseminações">
+        <Card style={styles.financialCard}>
+          <Text style={styles.financialTitle}>Custo</Text>
+          <View style={styles.financialRow}>
+            <View style={styles.financialCell}>
+              <Text style={styles.financialLabel}>Custo total</Text>
+              <Text style={[styles.financialValue, { color: colors.danger }]}>
+                {cow.totalCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+              </Text>
+            </View>
+            <View style={styles.financialDivider} />
+            <View style={styles.financialCell}>
+              <Text style={styles.financialLabel}>Custo por bezerro</Text>
+              <Text style={styles.financialValue}>
+                {costPerCalf !== null ? costPerCalf.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '—'}
+              </Text>
+            </View>
+          </View>
+          <Button
+            label="+ Lançar custo"
+            variant="secondary"
+            onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/matriz/${cowId}/custos`)}
+          />
+        </Card>
+
+        <Section title="Inseminações" styles={styles}>
           {inseminations.length === 0 ? (
             <EmptyState text="Nenhuma inseminação registrada ainda." />
           ) : (
@@ -78,7 +118,7 @@ export default function CowDetailScreen() {
           />
         </Section>
 
-        <Section title="Partos">
+        <Section title="Partos" styles={styles}>
           {calvings.length === 0 ? (
             <EmptyState text="Nenhum parto registrado ainda." />
           ) : (
@@ -104,7 +144,7 @@ export default function CowDetailScreen() {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, children, styles }: { title: string; children: React.ReactNode; styles: ReturnType<typeof createStyles> }) {
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{title}</Text>
@@ -118,61 +158,91 @@ function formatDate(isoDate: string) {
   return `${day}/${month}/${year}`;
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  loading: {
-    marginTop: spacing.xxl,
-  },
-  content: {
-    paddingHorizontal: spacing.xl,
-    paddingBottom: spacing.xxxl,
-    gap: spacing.xxl,
-  },
-  predictionCard: {
-    backgroundColor: colors.pecuariaLight,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
-  },
-  predictionLabel: {
-    ...typography.captionMedium,
-    color: colors.textSecondary,
-  },
-  predictionValue: {
-    ...typography.displayMd,
-    color: colors.pecuaria,
-    marginTop: 2,
-  },
-  section: {
-    gap: spacing.md,
-  },
-  sectionTitle: {
-    ...typography.subheading,
-    color: colors.textPrimary,
-  },
-  sectionBody: {
-    gap: spacing.md,
-  },
-  rowCard: {
-    gap: 2,
-  },
-  rowBetween: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  rowValue: {
-    ...typography.bodyMedium,
-    color: colors.textPrimary,
-  },
-  rowDate: {
-    ...typography.caption,
-    color: colors.textMuted,
-  },
-  rowNotes: {
-    ...typography.caption,
-    color: colors.textSecondary,
-  },
-});
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    loading: {
+      marginTop: spacing.xxl,
+    },
+    content: {
+      paddingHorizontal: spacing.xl,
+      paddingBottom: spacing.xxxl,
+      gap: spacing.xxl,
+    },
+    statusBadge: {
+      borderWidth: 1,
+      borderRadius: radius.lg,
+      padding: spacing.lg,
+      gap: 2,
+    },
+    statusText: {
+      ...typography.subheading,
+    },
+    statusSubtext: {
+      ...typography.caption,
+      color: colors.textSecondary,
+    },
+    financialCard: {
+      gap: spacing.md,
+    },
+    financialTitle: {
+      ...typography.captionMedium,
+      color: colors.textSecondary,
+    },
+    financialRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    financialCell: {
+      flex: 1,
+      gap: 2,
+    },
+    financialLabel: {
+      ...typography.caption,
+      color: colors.textMuted,
+    },
+    financialValue: {
+      ...typography.subheading,
+      color: colors.textPrimary,
+    },
+    financialDivider: {
+      width: 1,
+      height: 32,
+      backgroundColor: colors.border,
+      marginHorizontal: spacing.sm,
+    },
+    section: {
+      gap: spacing.md,
+    },
+    sectionTitle: {
+      ...typography.subheading,
+      color: colors.textPrimary,
+    },
+    sectionBody: {
+      gap: spacing.md,
+    },
+    rowCard: {
+      gap: 2,
+    },
+    rowBetween: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    rowValue: {
+      ...typography.bodyMedium,
+      color: colors.textPrimary,
+    },
+    rowDate: {
+      ...typography.caption,
+      color: colors.textMuted,
+    },
+    rowNotes: {
+      ...typography.caption,
+      color: colors.textSecondary,
+    },
+  });
+}

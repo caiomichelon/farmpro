@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -7,9 +7,11 @@ import { Button } from '../../../../../src/components/Button';
 import { ScreenHeader } from '../../../../../src/components/ScreenHeader';
 import { TextField } from '../../../../../src/components/TextField';
 import { useBreedingCows } from '../../../../../src/hooks/useBreedingCows';
-import { colors, spacing } from '../../../../../src/theme';
+import { spacing, useColors, type Colors } from '../../../../../src/theme';
 
 export default function NewCowScreen() {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const { createCow } = useBreedingCows(farmId);
 
@@ -69,19 +71,21 @@ function parseDate(input: string): string | null {
   return `${year}-${month}-${day}`;
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  flex: {
-    flex: 1,
-  },
-  form: {
-    paddingHorizontal: spacing.xl,
-    gap: spacing.lg,
-  },
-  error: {
-    color: colors.danger,
-  },
-});
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    flex: {
+      flex: 1,
+    },
+    form: {
+      paddingHorizontal: spacing.xl,
+      gap: spacing.lg,
+    },
+    error: {
+      color: colors.danger,
+    },
+  });
+}

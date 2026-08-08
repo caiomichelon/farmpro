@@ -251,6 +251,19 @@ export type Calving = {
   created_at: string;
 };
 
+export type BreedingCowCostCategory = 'racao' | 'sanidade' | 'mao_de_obra' | 'outro';
+
+/** Custo lançado numa matriz — ração, sanidade, mão de obra. */
+export type BreedingCowCost = {
+  id: string;
+  cow_id: string;
+  category: BreedingCowCostCategory;
+  description: string;
+  amount: number;
+  applied_at: string;
+  created_at: string;
+};
+
 /** Ficha completa de um funcionário — separado por setor. */
 export type Employee = {
   id: string;
@@ -510,6 +523,12 @@ export interface Database {
         Row: BreedingCow;
         Insert: Partial<BreedingCow> & { farm_id: string; identification: string };
         Update: Partial<BreedingCow>;
+        Relationships: [];
+      };
+      breeding_cow_costs: {
+        Row: BreedingCowCost;
+        Insert: Partial<BreedingCowCost> & { cow_id: string; description: string; amount: number };
+        Update: Partial<BreedingCowCost>;
         Relationships: [];
       };
       inseminations: {
