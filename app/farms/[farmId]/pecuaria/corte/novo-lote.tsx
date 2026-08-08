@@ -16,12 +16,14 @@ export default function NewLotScreen() {
   const [name, setName] = useState('');
   const [headCount, setHeadCount] = useState('');
   const [avgWeight, setAvgWeight] = useState('');
+  const [targetWeight, setTargetWeight] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit() {
     const headCountValue = Number(headCount);
     const avgWeightValue = Number(avgWeight.replace(',', '.'));
+    const targetWeightValue = targetWeight ? Number(targetWeight.replace(',', '.')) : undefined;
     if (!name.trim() || !headCountValue || headCountValue <= 0 || !avgWeightValue || avgWeightValue <= 0) {
       setError('Preencha o nome, o número de cabeças e o peso médio de entrada.');
       return;
@@ -32,6 +34,7 @@ export default function NewLotScreen() {
       name: name.trim(),
       entry_head_count: headCountValue,
       entry_avg_weight_kg: avgWeightValue,
+      target_slaughter_weight_kg: targetWeightValue,
     });
     setIsSubmitting(false);
 
@@ -60,6 +63,13 @@ export default function NewLotScreen() {
             value={avgWeight}
             onChangeText={setAvgWeight}
             placeholder="Ex.: 380"
+            keyboardType="decimal-pad"
+          />
+          <TextField
+            label="Meta de peso pra abate (kg)"
+            value={targetWeight}
+            onChangeText={setTargetWeight}
+            placeholder="Opcional — ex.: 540. Sem isso, não dá pra saber quando o lote fica pronto"
             keyboardType="decimal-pad"
           />
           {error ? <Text style={styles.error}>{error}</Text> : null}

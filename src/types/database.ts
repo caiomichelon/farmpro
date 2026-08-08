@@ -145,6 +145,24 @@ export type CattleLot = {
   entry_head_count: number;
   entry_avg_weight_kg: number;
   status: CattleLotStatus;
+  /** Meta de peso vivo (kg) pra considerar o lote pronto pra abate. Opcional. */
+  target_slaughter_weight_kg: number | null;
+  /** Rendimento de carcaça estimado (%) — usado só pra projeção financeira
+   * antes do abate de verdade (que tem seu próprio rendimento real). */
+  estimated_carcass_yield_pct: number;
+  created_at: string;
+};
+
+export type CattleLotCostCategory = 'racao' | 'sanidade' | 'frete' | 'mao_de_obra' | 'outro';
+
+/** Custo lançado num lote de corte — ração, sanidade, frete, mão de obra. */
+export type CattleLotCost = {
+  id: string;
+  lot_id: string;
+  category: CattleLotCostCategory;
+  description: string;
+  amount: number;
+  applied_at: string;
   created_at: string;
 };
 
@@ -451,6 +469,12 @@ export interface Database {
           entry_avg_weight_kg: number;
         };
         Update: Partial<CattleLot>;
+        Relationships: [];
+      };
+      cattle_lot_costs: {
+        Row: CattleLotCost;
+        Insert: Partial<CattleLotCost> & { lot_id: string; description: string; amount: number };
+        Update: Partial<CattleLotCost>;
         Relationships: [];
       };
       cattle_lot_weighings: {

@@ -1,25 +1,36 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../../../../../src/components/Button';
 import { Card } from '../../../../../../../src/components/Card';
 import { EmptyState } from '../../../../../../../src/components/EmptyState';
+import { FinancialSummary } from '../../../../../../../src/components/FinancialSummary';
 import { ScreenHeader } from '../../../../../../../src/components/ScreenHeader';
+import { TextField } from '../../../../../../../src/components/TextField';
 import { CATTLE_LOT_STATUS_LABELS } from '../../../../../../../src/data/cattleOptions';
-import { useCattleLot } from '../../../../../../../src/hooks/useCattleLots';
+import { CATTLE_LOT_READINESS_LABELS, useCattleLot, type CattleLotReadiness } from '../../../../../../../src/hooks/useCattleLots';
 import { useCattleLotWeighings } from '../../../../../../../src/hooks/useCattleLotWeighings';
 import { useCattleMortalityEvents } from '../../../../../../../src/hooks/useCattleMortality';
 import { useCattleSlaughters } from '../../../../../../../src/hooks/useCattleSlaughters';
-import { colors, radius, spacing, typography } from '../../../../../../../src/theme';
+import { radius, spacing, typography, useColors, type Colors } from '../../../../../../../src/theme';
+
+const READINESS_COLOR_KEY: Record<CattleLotReadiness, 'success' | 'pecuaria' | 'textMuted'> = {
+  pronto: 'success',
+  engordando: 'pecuaria',
+  recem_chegado: 'textMuted',
+};
 
 export default function LotDetailScreen() {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId, lotId } = useLocalSearchParams<{ farmId: string; lotId: string }>();
-  const { lot, isLoading, reload: reloadLot } = useCattleLot(lotId);
+  const { lot, isLoading, reload: reloadLot, updateTarget } = useCattleLot(lotId);
   const { weighings, reload: reloadWeighings } = useCattleLotWeighings(lotId);
   const { events: mortalityEvents, totalDeaths, reload: reloadMortality } = useCattleMortalityEvents(lotId);
   const { slaughters, reload: reloadSlaughters } = useCattleSlaughters(lotId);
+  const [isEditingTarget, setIsEditingTarget] = useState(false);
 
   // Pesagem, mortalidade e abate são cadastrados em rotas separadas — refaz
   // tudo ao voltar pra esta tela, senão fica com dado velho até um refresh.
@@ -40,6 +51,8 @@ export default function LotDetailScreen() {
     );
   }
 
+  const readinessColor = colors[READINESS_COLOR_KEY[lot.readiness]];
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScreenHeader
@@ -48,12 +61,58 @@ export default function LotDetailScreen() {
       />
 
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.summaryGrid}>
-          <SummaryStat label="Cabeças atuais" value={String(lot.currentHeadCount)} />
-          <SummaryStat label="Peso médio atual" value={`${lot.latestWeightKg.toFixed(0)} kg`} />
-          <SummaryStat label="GMD" value={lot.gmdKgPerDay !== null ? `${lot.gmdKgPerDay.toFixed(2)} kg/dia` : '—'} />
-          <SummaryStat label="Mortalidade" value={`${lot.mortalityRatePct.toFixed(1)}%`} />
+        <View style={[styles.readinessBadge, { backgroundColor: readinessColor + '22', borderColor: readinessColor }]}>
+          <Text style={[styles.readinessText, { color: readinessColor }]}>
+            {CATTLE_LOT_READINESS_LABELS[lot.readiness]}
+          </Text>
+          {lot.kgToTarget !== null ? (
+            <Text style={styles.readinessSubtext}>
+              {lot.kgToTarget > 0
+                ? `Faltam ${lot.kgToTarget.toFixed(0)} kg pra meta de ${Number(lot.target_slaughter_weight_kg).toFixed(0)} kg`
+                : `${Math.abs(lot.kgToTarget).toFixed(0)} kg acima da meta de ${Number(lot.target_slaughter_weight_kg).toFixed(0)} kg`}
+            </Text>
+          ) : (
+            <Text style={styles.readinessSubtext}>Sem meta de peso definida</Text>
+          )}
         </View>
+
+        {isEditingTarget ? (
+          <TargetWeightForm
+            initialTarget={lot.target_slaughter_weight_kg}
+            initialYield={lot.estimated_carcass_yield_pct}
+            onCancel={() => setIsEditingTarget(false)}
+            onSave={async (target, yieldPct) => {
+              const { error } = await updateTarget({
+                target_slaughter_weight_kg: target,
+                estimated_carcass_yield_pct: yieldPct,
+              });
+              if (!error) setIsEditingTarget(false);
+              return error;
+            }}
+          />
+        ) : (
+          <Button label="Editar meta e rendimento" variant="ghost" onPress={() => setIsEditingTarget(true)} />
+        )}
+
+        <View style={styles.summaryGrid}>
+          <SummaryStat label="Cabeças atuais" value={String(lot.currentHeadCount)} styles={styles} />
+          <SummaryStat label="Peso médio atual" value={`${lot.latestWeightKg.toFixed(0)} kg`} styles={styles} />
+          <SummaryStat label="GMD" value={lot.gmdKgPerDay !== null ? `${lot.gmdKgPerDay.toFixed(2)} kg/dia` : '—'} styles={styles} />
+          <SummaryStat label="Mortalidade" value={`${lot.mortalityRatePct.toFixed(1)}%`} styles={styles} />
+        </View>
+
+        <Section title="Resultado financeiro" subtitle="Custo lançado x receita projetada na cotação atual do boi gordo" styles={styles}>
+          <FinancialSummary cost={lot.totalCost} revenue={lot.projectedRevenue} margin={lot.projectedMargin} />
+          <Text style={styles.financialNote}>
+            Receita estimada: {lot.estimatedArrobas.toFixed(1)} @ (peso atual × {Number(lot.estimated_carcass_yield_pct).toFixed(0)}%
+            de rendimento ÷ 15 kg) — vira valor real só depois do abate.
+          </Text>
+          <Button
+            label="+ Lançar custo"
+            variant="secondary"
+            onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${lotId}/custos`)}
+          />
+        </Section>
 
         <Pressable
           style={({ pressed }) => [styles.animalsRow, pressed && styles.rowPressed]}
@@ -66,7 +125,7 @@ export default function LotDetailScreen() {
           <Text style={styles.animalsRowChevron}>→</Text>
         </Pressable>
 
-        <Section title="Pesagens do lote" subtitle="Histórico de peso e escore de condição corporal médios">
+        <Section title="Pesagens do lote" subtitle="Histórico de peso e escore de condição corporal médios" styles={styles}>
           {weighings.length === 0 ? (
             <EmptyState text="Nenhuma pesagem registrada ainda." />
           ) : (
@@ -89,7 +148,7 @@ export default function LotDetailScreen() {
           />
         </Section>
 
-        <Section title="Mortalidade" subtitle={`${totalDeaths} baixas registradas`}>
+        <Section title="Mortalidade" subtitle={`${totalDeaths} baixas registradas`} styles={styles}>
           {mortalityEvents.length === 0 ? (
             <EmptyState text="Nenhuma baixa registrada." />
           ) : (
@@ -110,7 +169,7 @@ export default function LotDetailScreen() {
           />
         </Section>
 
-        <Section title="Abate" subtitle="Registro por frigorífico">
+        <Section title="Abate" subtitle="Registro por frigorífico" styles={styles}>
           {slaughters.length === 0 ? (
             <EmptyState text="Nenhum abate registrado ainda." />
           ) : (
@@ -145,7 +204,47 @@ export default function LotDetailScreen() {
   );
 }
 
-function SummaryStat({ label, value }: { label: string; value: string }) {
+function TargetWeightForm({
+  initialTarget,
+  initialYield,
+  onCancel,
+  onSave,
+}: {
+  initialTarget: number | null;
+  initialYield: number;
+  onCancel: () => void;
+  onSave: (target: number | undefined, yieldPct: number | undefined) => Promise<string | null>;
+}) {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const [target, setTarget] = useState(initialTarget !== null ? String(initialTarget) : '');
+  const [yieldPct, setYieldPct] = useState(String(initialYield));
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function handleSubmit() {
+    setIsSubmitting(true);
+    const targetValue = target ? Number(target.replace(',', '.')) : undefined;
+    const yieldValue = yieldPct ? Number(yieldPct.replace(',', '.')) : undefined;
+    const saveError = await onSave(targetValue, yieldValue);
+    setIsSubmitting(false);
+    if (saveError) setError(saveError);
+  }
+
+  return (
+    <View style={styles.editForm}>
+      <TextField label="Meta de peso pra abate (kg)" value={target} onChangeText={setTarget} keyboardType="decimal-pad" placeholder="Ex.: 540" />
+      <TextField label="Rendimento de carcaça estimado (%)" value={yieldPct} onChangeText={setYieldPct} keyboardType="decimal-pad" placeholder="Ex.: 50" />
+      {error ? <Text style={styles.error}>{error}</Text> : null}
+      <View style={styles.editFormActions}>
+        <Button label="Cancelar" variant="ghost" onPress={onCancel} style={{ flex: 1 }} />
+        <Button label="Salvar" onPress={handleSubmit} loading={isSubmitting} style={{ flex: 1 }} />
+      </View>
+    </View>
+  );
+}
+
+function SummaryStat({ label, value, styles }: { label: string; value: string; styles: ReturnType<typeof createStyles> }) {
   return (
     <View style={styles.summaryCell}>
       <Text style={styles.summaryValue}>{value}</Text>
@@ -154,7 +253,17 @@ function SummaryStat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Section({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
+function Section({
+  title,
+  subtitle,
+  children,
+  styles,
+}: {
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+  styles: ReturnType<typeof createStyles>;
+}) {
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{title}</Text>
@@ -169,109 +278,142 @@ function formatDate(isoDate: string) {
   return `${day}/${month}/${year}`;
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  loading: {
-    marginTop: spacing.xxl,
-  },
-  content: {
-    paddingHorizontal: spacing.xl,
-    paddingBottom: spacing.xxxl,
-    gap: spacing.xxl,
-  },
-  summaryGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.md,
-  },
-  summaryCell: {
-    flexBasis: '47%',
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    padding: spacing.md,
-  },
-  summaryValue: {
-    ...typography.heading,
-    color: colors.textPrimary,
-  },
-  summaryLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  section: {
-    gap: spacing.md,
-  },
-  sectionTitle: {
-    ...typography.subheading,
-    color: colors.textPrimary,
-  },
-  sectionSubtitle: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: -spacing.sm,
-  },
-  sectionBody: {
-    gap: spacing.md,
-  },
-  rowCard: {
-    gap: 2,
-  },
-  rowTopRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.md,
-  },
-  rowThumbnail: {
-    width: 48,
-    height: 48,
-    borderRadius: radius.sm,
-    backgroundColor: colors.surfaceAlt,
-  },
-  rowBetween: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  rowValue: {
-    ...typography.bodyMedium,
-    color: colors.textPrimary,
-  },
-  rowDate: {
-    ...typography.caption,
-    color: colors.textMuted,
-  },
-  rowNotes: {
-    ...typography.caption,
-    color: colors.textSecondary,
-  },
-  animalsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    backgroundColor: colors.pecuariaLight,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
-  },
-  rowPressed: {
-    opacity: 0.8,
-  },
-  animalsRowTitle: {
-    ...typography.subheading,
-    color: colors.pecuaria,
-  },
-  animalsRowSubtitle: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  animalsRowChevron: {
-    ...typography.heading,
-    color: colors.pecuaria,
-  },
-});
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    loading: {
+      marginTop: spacing.xxl,
+    },
+    content: {
+      paddingHorizontal: spacing.xl,
+      paddingBottom: spacing.xxxl,
+      gap: spacing.xxl,
+    },
+    readinessBadge: {
+      borderWidth: 1,
+      borderRadius: radius.lg,
+      padding: spacing.lg,
+      gap: 2,
+    },
+    readinessText: {
+      ...typography.subheading,
+    },
+    readinessSubtext: {
+      ...typography.caption,
+      color: colors.textSecondary,
+    },
+    editForm: {
+      gap: spacing.md,
+      backgroundColor: colors.surfaceAlt,
+      borderRadius: radius.lg,
+      padding: spacing.lg,
+      marginTop: -spacing.lg,
+    },
+    editFormActions: {
+      flexDirection: 'row',
+      gap: spacing.md,
+    },
+    summaryGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.md,
+    },
+    summaryCell: {
+      flexBasis: '47%',
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.md,
+      padding: spacing.md,
+    },
+    summaryValue: {
+      ...typography.heading,
+      color: colors.textPrimary,
+    },
+    summaryLabel: {
+      ...typography.caption,
+      color: colors.textSecondary,
+      marginTop: 2,
+    },
+    financialNote: {
+      ...typography.caption,
+      color: colors.textMuted,
+    },
+    section: {
+      gap: spacing.md,
+    },
+    sectionTitle: {
+      ...typography.subheading,
+      color: colors.textPrimary,
+    },
+    sectionSubtitle: {
+      ...typography.caption,
+      color: colors.textSecondary,
+      marginTop: -spacing.sm,
+    },
+    sectionBody: {
+      gap: spacing.md,
+    },
+    rowCard: {
+      gap: 2,
+    },
+    rowTopRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: spacing.md,
+    },
+    rowThumbnail: {
+      width: 48,
+      height: 48,
+      borderRadius: radius.sm,
+      backgroundColor: colors.surfaceAlt,
+    },
+    rowBetween: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    rowValue: {
+      ...typography.bodyMedium,
+      color: colors.textPrimary,
+    },
+    rowDate: {
+      ...typography.caption,
+      color: colors.textMuted,
+    },
+    rowNotes: {
+      ...typography.caption,
+      color: colors.textSecondary,
+    },
+    animalsRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+      backgroundColor: colors.pecuariaLight,
+      borderRadius: radius.lg,
+      padding: spacing.lg,
+    },
+    rowPressed: {
+      opacity: 0.8,
+    },
+    animalsRowTitle: {
+      ...typography.subheading,
+      color: colors.pecuaria,
+    },
+    animalsRowSubtitle: {
+      ...typography.caption,
+      color: colors.textSecondary,
+      marginTop: 2,
+    },
+    animalsRowChevron: {
+      ...typography.heading,
+      color: colors.pecuaria,
+    },
+    error: {
+      color: colors.danger,
+    },
+  });
+}
