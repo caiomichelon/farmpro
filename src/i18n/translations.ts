@@ -109,7 +109,7 @@ export const pt = {
 
   'settings.notifications.subtitle': 'Quais alertas mostrar na home da fazenda',
   'settings.notifications.note':
-    'Isso controla os alertas dentro do app. Notificação push (fora do app) não funciona no Expo Go — só em build nativo — então por enquanto os avisos aparecem quando você abre a fazenda.',
+    'Isso controla os alertas dentro do app e os lembretes agendados no aparelho (vacina pendente, parto previsto). Notificação push de servidor não funciona no Expo Go — só em build nativo — mas os lembretes locais funcionam normalmente.',
   'settings.notifications.documents': 'Documentos de funcionários',
   'settings.notifications.documentsDescription': 'Documentos vencidos ou vencendo em breve',
   'settings.notifications.mortality': 'Mortalidade de lote',
@@ -118,6 +118,10 @@ export const pt = {
   'settings.notifications.weightDescription': 'Quando o peso médio cai entre uma pesagem e a seguinte',
   'settings.notifications.finance': 'Safra no prejuízo',
   'settings.notifications.financeDescription': 'Quando o custo de uma safra passa a receita já lançada',
+  'settings.notifications.vaccine': 'Vacina/tratamento pendente',
+  'settings.notifications.vaccineDescription': 'Dose vencida ou vencendo nos próximos dias — avisa também no aparelho',
+  'settings.notifications.calving': 'Parto previsto',
+  'settings.notifications.calvingDescription': 'Parto se aproximando ou já vencido — avisa também no aparelho',
 
   'settings.language.subtitle': 'Escolha o idioma do app',
 
@@ -238,7 +242,7 @@ export const en: Partial<Record<TranslationKey, string>> = {
 
   'settings.notifications.subtitle': 'Which alerts to show on the farm home screen',
   'settings.notifications.note':
-    'This controls in-app alerts. Push notifications (outside the app) don’t work in Expo Go — native build only — so for now alerts show up when you open the farm.',
+    'This controls in-app alerts and reminders scheduled on your device (pending vaccine, expected calving). Server push notifications don’t work in Expo Go — native build only — but local reminders work normally.',
   'settings.notifications.documents': 'Employee documents',
   'settings.notifications.documentsDescription': 'Documents expired or expiring soon',
   'settings.notifications.mortality': 'Lot mortality',
@@ -247,6 +251,10 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'settings.notifications.weightDescription': 'When average weight drops between weighings',
   'settings.notifications.finance': 'Season at a loss',
   'settings.notifications.financeDescription': 'When a season’s cost exceeds revenue already logged',
+  'settings.notifications.vaccine': 'Pending vaccine/treatment',
+  'settings.notifications.vaccineDescription': 'Dose overdue or due in the next few days — also alerts on your device',
+  'settings.notifications.calving': 'Expected calving',
+  'settings.notifications.calvingDescription': 'Calving coming up or already overdue — also alerts on your device',
 
   'settings.language.subtitle': 'Choose the app language',
 
@@ -364,7 +372,7 @@ export const es: Partial<Record<TranslationKey, string>> = {
 
   'settings.notifications.subtitle': 'Qué alertas mostrar en la pantalla principal de la finca',
   'settings.notifications.note':
-    'Esto controla las alertas dentro de la app. Las notificaciones push (fuera de la app) no funcionan en Expo Go — solo en build nativo — así que por ahora los avisos aparecen cuando abres la finca.',
+    'Esto controla las alertas dentro de la app y los recordatorios agendados en el celular (vacuna pendiente, parto previsto). Las notificaciones push de servidor no funcionan en Expo Go — solo en build nativo — pero los recordatorios locales funcionan normalmente.',
   'settings.notifications.documents': 'Documentos de empleados',
   'settings.notifications.documentsDescription': 'Documentos vencidos o por vencer',
   'settings.notifications.mortality': 'Mortalidad de lote',
@@ -373,6 +381,10 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'settings.notifications.weightDescription': 'Cuando el peso promedio baja entre una pesada y la siguiente',
   'settings.notifications.finance': 'Cosecha con pérdida',
   'settings.notifications.financeDescription': 'Cuando el costo de una cosecha supera el ingreso ya registrado',
+  'settings.notifications.vaccine': 'Vacuna/tratamiento pendiente',
+  'settings.notifications.vaccineDescription': 'Dosis vencida o por vencer en los próximos días — también avisa en el celular',
+  'settings.notifications.calving': 'Parto previsto',
+  'settings.notifications.calvingDescription': 'Parto por llegar o ya vencido — también avisa en el celular',
 
   'settings.language.subtitle': 'Elige el idioma de la app',
 

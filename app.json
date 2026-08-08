@@ -15,7 +15,8 @@
         {
           "locationAlwaysAndWhenInUsePermission": "O FarmPro usa sua localização para registrar onde o ponto foi batido."
         }
-      ]
+      ],
+      "expo-notifications"
     ],
     "ios": {
       "supportsTablet": true

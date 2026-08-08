@@ -139,6 +139,10 @@ export default function CriaHomeScreen() {
                 <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/atencao`)} hitSlop={8}>
                   <Text style={styles.link}>Atenção</Text>
                 </Pressable>
+                <Text style={styles.linkDivider}>·</Text>
+                <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/benchmarking`)} hitSlop={8}>
+                  <Text style={styles.link}>Benchmarking</Text>
+                </Pressable>
               </View>
 
               <TextField label="Buscar matriz" value={search} onChangeText={setSearch} placeholder="Digite a identificação" />

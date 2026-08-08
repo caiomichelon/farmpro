@@ -30,6 +30,16 @@ function buildItems(t: TFunction): { key: AlertPreferenceKey; title: string; des
       title: t('settings.notifications.finance'),
       description: t('settings.notifications.financeDescription'),
     },
+    {
+      key: 'vacina_pendente',
+      title: t('settings.notifications.vaccine'),
+      description: t('settings.notifications.vaccineDescription'),
+    },
+    {
+      key: 'parto_previsto',
+      title: t('settings.notifications.calving'),
+      description: t('settings.notifications.calvingDescription'),
+    },
   ];
 }
 

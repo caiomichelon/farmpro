@@ -108,6 +108,10 @@ export default function CorteHomeScreen() {
                 <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/financeiro`)} hitSlop={8}>
                   <Text style={styles.link}>Financeiro por lote</Text>
                 </Pressable>
+                <Text style={styles.linkDivider}>·</Text>
+                <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/benchmarking`)} hitSlop={8}>
+                  <Text style={styles.link}>Benchmarking</Text>
+                </Pressable>
               </View>
               <View style={styles.linksRow}>
                 <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/prontos-para-abate`)} hitSlop={8}>
@@ -125,6 +129,10 @@ export default function CorteHomeScreen() {
               <View style={styles.linksRow}>
                 <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/importar`)} hitSlop={8}>
                   <Text style={styles.link}>Importar lotes</Text>
+                </Pressable>
+                <Text style={styles.linkDivider}>·</Text>
+                <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/protocolos`)} hitSlop={8}>
+                  <Text style={styles.link}>Protocolos sanitários</Text>
                 </Pressable>
               </View>
             </View>

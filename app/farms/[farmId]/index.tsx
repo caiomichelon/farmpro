@@ -8,6 +8,7 @@ import { SectorButton } from '../../../src/components/SectorButton';
 import { SummaryStat } from '../../../src/components/SummaryStat';
 import { useFarm } from '../../../src/hooks/useFarms';
 import { useFarmAlerts } from '../../../src/hooks/useFarmAlerts';
+import { useSyncCattleNotifications } from '../../../src/hooks/useSyncCattleNotifications';
 import { useT } from '../../../src/i18n';
 import { radius, spacing, typography, useColors, type Colors } from '../../../src/theme';
 
@@ -18,6 +19,7 @@ export default function FarmHomeScreen() {
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const { farm, isLoading } = useFarm(farmId);
   const { alerts } = useFarmAlerts(farmId);
+  useSyncCattleNotifications(farmId);
 
   return (
     <View style={styles.container}>

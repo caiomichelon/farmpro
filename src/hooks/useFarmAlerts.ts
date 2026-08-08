@@ -126,6 +126,82 @@ export function useFarmAlerts(farmId: string | undefined) {
         }
       }
 
+      // ── Pecuária — vacinas pendentes e partos previstos ─────────────────
+      const today = new Date().toISOString().slice(0, 10);
+      const in7Days = new Date();
+      in7Days.setDate(in7Days.getDate() + 7);
+      const in7DaysStr = in7Days.toISOString().slice(0, 10);
+
+      const { data: healthEvents } = await supabase
+        .from('cattle_animal_health_events')
+        .select('next_due_date, cattle_animals!inner(farm_id)')
+        .eq('cattle_animals.farm_id', farmId)
+        .not('next_due_date', 'is', null)
+        .lte('next_due_date', in7DaysStr);
+
+      const pendingVaccines = (healthEvents ?? []) as unknown as { next_due_date: string }[];
+      const overdueVaccines = pendingVaccines.filter((e) => e.next_due_date < today);
+      const upcomingVaccines = pendingVaccines.filter((e) => e.next_due_date >= today);
+
+      if (overdueVaccines.length > 0) {
+        result.push({
+          id: 'vacina-vencida',
+          category: 'vacina_pendente',
+          severity: 'danger',
+          title: `${overdueVaccines.length} ${overdueVaccines.length === 1 ? 'vacina/tratamento vencido' : 'vacinas/tratamentos vencidos'}`,
+          description: 'Confira a planilha de vacinas pendentes do Corte.',
+          href: `/farms/${farmId}/pecuaria/corte/vacinas-pendentes`,
+        });
+      } else if (upcomingVaccines.length > 0) {
+        result.push({
+          id: 'vacina-proxima',
+          category: 'vacina_pendente',
+          severity: 'warning',
+          title: `${upcomingVaccines.length} ${upcomingVaccines.length === 1 ? 'vacina/tratamento vence' : 'vacinas/tratamentos vencem'} nos próximos 7 dias`,
+          description: 'Confira a planilha de vacinas pendentes do Corte.',
+          href: `/farms/${farmId}/pecuaria/corte/vacinas-pendentes`,
+        });
+      }
+
+      const { data: inseminations } = await supabase
+        .from('inseminations')
+        .select('id, expected_calving_date, breeding_cows!inner(farm_id)')
+        .eq('breeding_cows.farm_id', farmId)
+        .not('expected_calving_date', 'is', null)
+        .lte('expected_calving_date', in7DaysStr);
+
+      const dueInseminations = (inseminations ?? []) as unknown as { id: string; expected_calving_date: string }[];
+      if (dueInseminations.length > 0) {
+        const { data: calvings } = await supabase
+          .from('calvings')
+          .select('insemination_id')
+          .in('insemination_id', dueInseminations.map((i) => i.id));
+        const calvedIds = new Set((calvings ?? []).map((c) => c.insemination_id));
+        const pendingCalvings = dueInseminations.filter((i) => !calvedIds.has(i.id));
+        const overdueCalvings = pendingCalvings.filter((i) => i.expected_calving_date < today);
+        const upcomingCalvings = pendingCalvings.filter((i) => i.expected_calving_date >= today);
+
+        if (overdueCalvings.length > 0) {
+          result.push({
+            id: 'parto-vencido',
+            category: 'parto_previsto',
+            severity: 'danger',
+            title: `${overdueCalvings.length} ${overdueCalvings.length === 1 ? 'parto previsto já passou' : 'partos previstos já passaram'} da data`,
+            description: 'Confira a planilha de partos previstos da Cria.',
+            href: `/farms/${farmId}/pecuaria/cria/partos-previstos`,
+          });
+        } else if (upcomingCalvings.length > 0) {
+          result.push({
+            id: 'parto-proximo',
+            category: 'parto_previsto',
+            severity: 'warning',
+            title: `${upcomingCalvings.length} ${upcomingCalvings.length === 1 ? 'parto previsto' : 'partos previstos'} nos próximos 7 dias`,
+            description: 'Confira a planilha de partos previstos da Cria.',
+            href: `/farms/${farmId}/pecuaria/cria/partos-previstos`,
+          });
+        }
+      }
+
       // ── Lavoura — safra com prejuízo ────────────────────────────────────
       const { data: plots } = await supabase.from('plots').select('id, name').eq('farm_id', farmId).eq('type', 'lavoura');
       if (plots && plots.length > 0) {

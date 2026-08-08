@@ -28,7 +28,7 @@ export type CattleHealthEventType = 'vacina' | 'tratamento' | 'doenca' | 'outro'
 
 /** Chaves de preferência de alerta — usadas em Ajustes → Notificações pra
  * ligar/desligar cada tipo de alerta inteligente mostrado na home da fazenda. */
-export type AlertPreferenceKey = 'documentos' | 'mortalidade' | 'peso_lote' | 'financeiro_safra';
+export type AlertPreferenceKey = 'documentos' | 'mortalidade' | 'peso_lote' | 'financeiro_safra' | 'vacina_pendente' | 'parto_previsto';
 export type AlertPreferences = Partial<Record<AlertPreferenceKey, boolean>>;
 
 export type Profile = {
@@ -397,6 +397,21 @@ export type CattleAnimalHealthEvent = {
   photo_url: string | null;
   /** Data da próxima dose/retorno — opcional, base do alerta de "vacina pendente". */
   next_due_date: string | null;
+  /** Protocolo sanitário que originou este evento, se algum foi escolhido. */
+  protocol_id: string | null;
+  created_at: string;
+};
+
+/** Protocolo sanitário recorrente da fazenda (ex.: "Aftosa" a cada 180 dias) —
+ * usado pra sugerir/calcular a próxima dose automaticamente ao registrar um
+ * evento de saúde de um animal. */
+export type CattleHealthProtocol = {
+  id: string;
+  farm_id: string;
+  name: string;
+  event_type: CattleHealthEventType;
+  interval_days: number;
+  notes: string | null;
   created_at: string;
 };
 
@@ -655,6 +670,12 @@ export interface Database {
           description: string;
         };
         Update: Partial<CattleAnimalHealthEvent>;
+        Relationships: [];
+      };
+      cattle_health_protocols: {
+        Row: CattleHealthProtocol;
+        Insert: Partial<CattleHealthProtocol> & { farm_id: string; name: string; event_type: CattleHealthEventType; interval_days: number };
+        Update: Partial<CattleHealthProtocol>;
         Relationships: [];
       };
       cattle_animal_movements: {

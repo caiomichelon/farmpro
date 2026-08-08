@@ -27,6 +27,10 @@ export interface CattleLotSummary extends CattleLot {
   kgToTarget: number | null;
   totalCost: number;
   costPerHead: number;
+  /** Custo lançado dividido pelas @ estimadas no peso atual — quanto mais
+   * baixo, mais barato está saindo a arroba produzida deste lote. Null se
+   * ainda não há @ estimadas (ex.: peso zerado). */
+  costPerArroba: number | null;
   estimatedArrobas: number;
   projectedRevenue: number;
   projectedMargin: number;
@@ -94,6 +98,7 @@ async function withSummary(lots: CattleLot[]): Promise<CattleLotSummary[]> {
       (latestWeightKg * currentHeadCount * (Number(lot.estimated_carcass_yield_pct) / 100)) / KG_PER_ARROBA;
     const projectedRevenue = estimatedArrobas * boiGordoPricePerArroba;
     const projectedMargin = projectedRevenue - totalCost;
+    const costPerArroba = estimatedArrobas > 0 ? totalCost / estimatedArrobas : null;
 
     return {
       ...lot,
@@ -107,6 +112,7 @@ async function withSummary(lots: CattleLot[]): Promise<CattleLotSummary[]> {
       kgToTarget,
       totalCost,
       costPerHead: currentHeadCount > 0 ? totalCost / currentHeadCount : 0,
+      costPerArroba,
       estimatedArrobas,
       projectedRevenue,
       projectedMargin,

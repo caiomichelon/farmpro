@@ -47,6 +47,7 @@ export function useCattleAnimalHealthEvents(animalId: string | undefined) {
       event_date?: string;
       next_due_date?: string;
       notes?: string;
+      protocol_id?: string;
     }) => {
       if (!animalId) return { error: 'Animal não encontrado.' };
 
@@ -57,6 +58,7 @@ export function useCattleAnimalHealthEvents(animalId: string | undefined) {
         event_date: input.event_date || new Date().toISOString().slice(0, 10),
         next_due_date: input.next_due_date || null,
         notes: input.notes || null,
+        protocol_id: input.protocol_id || null,
       });
 
       if (insertError) return { error: insertError.message };
