@@ -36,9 +36,14 @@ export default function FarmHomeScreen() {
       <CommodityTicker />
       <SafeAreaView style={styles.safeArea} edges={['bottom']}>
         <View style={styles.header}>
-          <Pressable onPress={() => router.push('/farms')} hitSlop={12}>
-            <Text style={styles.backLink}>{t('farmHome.switchFarm')}</Text>
-          </Pressable>
+          <View style={styles.headerTopRow}>
+            <Pressable onPress={() => router.push('/farms')} hitSlop={12}>
+              <Text style={styles.backLink}>{t('farmHome.switchFarm')}</Text>
+            </Pressable>
+            <Pressable onPress={() => router.push(`/farms/${farmId}/buscar`)} hitSlop={12}>
+              <Text style={styles.backLink}>🔎 Buscar</Text>
+            </Pressable>
+          </View>
 
           {isLoading || !farm ? (
             <ActivityIndicator color={colors.textInverse} style={{ marginTop: spacing.lg }} />
@@ -309,6 +314,11 @@ function createStyles(colors: Colors) {
       paddingTop: spacing.lg,
       paddingBottom: spacing.xl,
       gap: spacing.lg,
+    },
+    headerTopRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
     },
     backLink: {
       ...typography.captionMedium,
