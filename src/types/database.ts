@@ -113,6 +113,7 @@ export type GrainSale = {
   quantity_sacas: number;
   price_per_saca: number;
   notes: string | null;
+  photo_url: string | null;
   created_at: string;
 };
 
@@ -175,6 +176,7 @@ export type CattleSlaughter = {
   price_per_arroba: number;
   next_slaughter_date: string | null;
   notes: string | null;
+  photo_url: string | null;
   created_at: string;
 };
 

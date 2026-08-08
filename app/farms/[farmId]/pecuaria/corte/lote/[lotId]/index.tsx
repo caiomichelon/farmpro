@@ -1,6 +1,6 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../../../../../src/components/Button';
@@ -116,17 +116,22 @@ export default function LotDetailScreen() {
           ) : (
             slaughters.map((s) => (
               <Card key={s.id} style={styles.rowCard}>
-                <View style={styles.rowBetween}>
-                  <Text style={styles.rowValue}>{s.slaughterhouseName ?? 'Frigorífico não informado'}</Text>
-                  <Text style={styles.rowDate}>{formatDate(s.slaughter_date)}</Text>
+                <View style={styles.rowTopRow}>
+                  {s.photo_url ? <Image source={{ uri: s.photo_url }} style={styles.rowThumbnail} /> : null}
+                  <View style={{ flex: 1, gap: 2 }}>
+                    <View style={styles.rowBetween}>
+                      <Text style={styles.rowValue}>{s.slaughterhouseName ?? 'Frigorífico não informado'}</Text>
+                      <Text style={styles.rowDate}>{formatDate(s.slaughter_date)}</Text>
+                    </View>
+                    <Text style={styles.rowNotes}>
+                      {s.head_count} cabeças · {Number(s.exit_avg_weight_kg).toFixed(0)} kg méd. ·{' '}
+                      {Number(s.price_per_arroba).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}/@
+                    </Text>
+                    {s.next_slaughter_date ? (
+                      <Text style={styles.rowNotes}>Próximo abate agendado: {formatDate(s.next_slaughter_date)}</Text>
+                    ) : null}
+                  </View>
                 </View>
-                <Text style={styles.rowNotes}>
-                  {s.head_count} cabeças · {Number(s.exit_avg_weight_kg).toFixed(0)} kg méd. ·{' '}
-                  {Number(s.price_per_arroba).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}/@
-                </Text>
-                {s.next_slaughter_date ? (
-                  <Text style={styles.rowNotes}>Próximo abate agendado: {formatDate(s.next_slaughter_date)}</Text>
-                ) : null}
               </Card>
             ))
           )}
@@ -216,6 +221,17 @@ const styles = StyleSheet.create({
   },
   rowCard: {
     gap: 2,
+  },
+  rowTopRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.md,
+  },
+  rowThumbnail: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.sm,
+    backgroundColor: colors.surfaceAlt,
   },
   rowBetween: {
     flexDirection: 'row',

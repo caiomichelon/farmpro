@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../../../../src/components/Button';
 import { ChipSelect } from '../../../../../../src/components/ChipSelect';
+import { PhotoPicker } from '../../../../../../src/components/PhotoPicker';
 import { ScreenHeader } from '../../../../../../src/components/ScreenHeader';
 import { TextField } from '../../../../../../src/components/TextField';
 import { useGrainBuyers } from '../../../../../../src/hooks/useGrainBuyers';
@@ -22,6 +23,7 @@ export default function NewSaleScreen() {
   const [quantity, setQuantity] = useState('');
   const [pricePerSaca, setPricePerSaca] = useState('');
   const [notes, setNotes] = useState('');
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -50,6 +52,7 @@ export default function NewSaleScreen() {
       quantity_sacas: quantityValue,
       price_per_saca: priceValue,
       notes: notes.trim() || undefined,
+      photo_url: photoUrl ?? undefined,
     });
     setIsSubmitting(false);
 
@@ -94,6 +97,13 @@ export default function NewSaleScreen() {
             </Text>
           ) : null}
           <TextField label="Observação" value={notes} onChangeText={setNotes} placeholder="Opcional" />
+          <PhotoPicker
+            label="Foto da nota (opcional)"
+            photoUrl={photoUrl}
+            onChange={setPhotoUrl}
+            folder="grain-sales"
+            accentColor={colors.lavoura}
+          />
 
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <Button label="Salvar venda" onPress={handleSubmit} loading={isSubmitting} disabled={!quantity || !pricePerSaca} />

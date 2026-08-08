@@ -46,6 +46,7 @@ export function useGrainSales(seasonId: string | undefined) {
       price_per_saca: number;
       sale_date?: string;
       notes?: string;
+      photo_url?: string;
     }) => {
       if (!seasonId) return { error: 'Safra não encontrada.' };
 
@@ -56,6 +57,7 @@ export function useGrainSales(seasonId: string | undefined) {
         price_per_saca: input.price_per_saca,
         sale_date: input.sale_date || new Date().toISOString().slice(0, 10),
         notes: input.notes || null,
+        photo_url: input.photo_url || null,
       });
 
       if (insertError) return { error: insertError.message };

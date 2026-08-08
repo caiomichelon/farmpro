@@ -1,6 +1,6 @@
-import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../../../../src/components/Button';
@@ -14,9 +14,18 @@ import { colors, radius, spacing, typography } from '../../../../../../src/theme
 
 export default function HarvestScreen() {
   const { farmId, seasonId } = useLocalSearchParams<{ farmId: string; seasonId: string }>();
-  const { entries, totalSacas, daysHarvesting, isLoading, error, createEntry } = useHarvestEntries(seasonId);
-  const { sales, totalSacasSold, totalValue, isLoading: isLoadingSales } = useGrainSales(seasonId);
+  const { entries, totalSacas, daysHarvesting, isLoading, error, createEntry, reload: reloadEntries } = useHarvestEntries(seasonId);
+  const { sales, totalSacasSold, totalValue, isLoading: isLoadingSales, reload: reloadSales } = useGrainSales(seasonId);
   const [isAdding, setIsAdding] = useState(false);
+
+  // "Lançar venda" é uma rota separada — refaz a busca ao voltar pra cá,
+  // senão a venda recém-criada não aparece até um refresh manual.
+  useFocusEffect(
+    useCallback(() => {
+      reloadEntries();
+      reloadSales();
+    }, [reloadEntries, reloadSales])
+  );
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -63,18 +72,23 @@ export default function HarvestScreen() {
           ) : (
             sales.map((sale) => (
               <Card key={sale.id} style={styles.rowCard}>
-                <View style={styles.rowBetween}>
-                  <Text style={styles.rowValue}>{sale.buyerName ?? 'Comprador não informado'}</Text>
-                  <Text style={styles.rowDate}>{formatDate(sale.sale_date)}</Text>
+                <View style={styles.rowTopRow}>
+                  {sale.photo_url ? <Image source={{ uri: sale.photo_url }} style={styles.rowThumbnail} /> : null}
+                  <View style={{ flex: 1, gap: 2 }}>
+                    <View style={styles.rowBetween}>
+                      <Text style={styles.rowValue}>{sale.buyerName ?? 'Comprador não informado'}</Text>
+                      <Text style={styles.rowDate}>{formatDate(sale.sale_date)}</Text>
+                    </View>
+                    <Text style={styles.rowNotes}>
+                      {Number(sale.quantity_sacas).toLocaleString('pt-BR')} sc ·{' '}
+                      {Number(sale.price_per_saca).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}/sc ·{' '}
+                      {(Number(sale.quantity_sacas) * Number(sale.price_per_saca)).toLocaleString('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL',
+                      })}
+                    </Text>
+                  </View>
                 </View>
-                <Text style={styles.rowNotes}>
-                  {Number(sale.quantity_sacas).toLocaleString('pt-BR')} sc ·{' '}
-                  {Number(sale.price_per_saca).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}/sc ·{' '}
-                  {(Number(sale.quantity_sacas) * Number(sale.price_per_saca)).toLocaleString('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL',
-                  })}
-                </Text>
               </Card>
             ))
           )}
@@ -168,6 +182,17 @@ const styles = StyleSheet.create({
   },
   rowCard: {
     gap: 2,
+  },
+  rowTopRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.md,
+  },
+  rowThumbnail: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.sm,
+    backgroundColor: colors.surfaceAlt,
   },
   rowBetween: {
     flexDirection: 'row',

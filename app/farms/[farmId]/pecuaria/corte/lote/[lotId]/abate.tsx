@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../../../../../src/components/Button';
 import { ChipSelect } from '../../../../../../../src/components/ChipSelect';
+import { PhotoPicker } from '../../../../../../../src/components/PhotoPicker';
 import { ScreenHeader } from '../../../../../../../src/components/ScreenHeader';
 import { TextField } from '../../../../../../../src/components/TextField';
 import { FAT_FINISH_SCORE_OPTIONS } from '../../../../../../../src/data/cattleOptions';
@@ -27,6 +28,7 @@ export default function SlaughterScreen() {
   const [fatFinish, setFatFinish] = useState<string | null>(null);
   const [feedConversion, setFeedConversion] = useState('');
   const [nextSlaughterDate, setNextSlaughterDate] = useState('');
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -60,6 +62,7 @@ export default function SlaughterScreen() {
       fat_finish_score: fatFinish ? Number(fatFinish) : undefined,
       feed_conversion_ratio: feedConversion ? Number(feedConversion.replace(',', '.')) : undefined,
       next_slaughter_date: parseDate(nextSlaughterDate) ?? undefined,
+      photo_url: photoUrl ?? undefined,
     });
     setIsSubmitting(false);
 
@@ -109,6 +112,13 @@ export default function SlaughterScreen() {
 
           <TextField label="Conversão alimentar" value={feedConversion} onChangeText={setFeedConversion} keyboardType="decimal-pad" placeholder="Opcional — kg ração/kg ganho" />
           <TextField label="Próximo abate programado" value={nextSlaughterDate} onChangeText={setNextSlaughterDate} placeholder="DD/MM/AAAA (opcional)" keyboardType="numbers-and-punctuation" />
+          <PhotoPicker
+            label="Foto da nota (opcional)"
+            photoUrl={photoUrl}
+            onChange={setPhotoUrl}
+            folder="cattle-slaughters"
+            accentColor={colors.pecuaria}
+          />
 
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <Button

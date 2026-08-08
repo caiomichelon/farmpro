@@ -51,6 +51,7 @@ export function useCattleSlaughters(lotId: string | undefined) {
       slaughter_date?: string;
       next_slaughter_date?: string;
       notes?: string;
+      photo_url?: string;
     }) => {
       if (!lotId) return { error: 'Lote não encontrado.' };
 
@@ -66,6 +67,7 @@ export function useCattleSlaughters(lotId: string | undefined) {
         slaughter_date: input.slaughter_date || new Date().toISOString().slice(0, 10),
         next_slaughter_date: input.next_slaughter_date || null,
         notes: input.notes || null,
+        photo_url: input.photo_url || null,
       });
 
       if (insertError) return { error: insertError.message };
