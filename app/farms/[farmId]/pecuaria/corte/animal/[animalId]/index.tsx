@@ -8,19 +8,48 @@ import { Card } from '../../../../../../../src/components/Card';
 import { EmptyState } from '../../../../../../../src/components/EmptyState';
 import { ScreenHeader } from '../../../../../../../src/components/ScreenHeader';
 import { HEALTH_EVENT_TYPE_LABELS, useCattleAnimalHealthEvents } from '../../../../../../../src/hooks/useCattleAnimalHealth';
-import { useCattleAnimalMovements } from '../../../../../../../src/hooks/useCattleAnimalMovements';
+import { useCattleAnimalMovements, type CattleAnimalMovementWithNames } from '../../../../../../../src/hooks/useCattleAnimalMovements';
 import { useCattleAnimalWeighings } from '../../../../../../../src/hooks/useCattleAnimalWeighings';
 import {
   CATTLE_LOT_READINESS_LABELS,
   useCattleAnimal,
+  type CattleAnimalSummary,
   type CattleLotReadiness,
 } from '../../../../../../../src/hooks/useCattleAnimals';
+import type { CattleAnimalHealthEvent, CattleAnimalWeighing } from '../../../../../../../src/types/database';
 import { radius, spacing, typography, useColors, type Colors } from '../../../../../../../src/theme';
 
 const READINESS_COLOR_KEY: Record<CattleLotReadiness, 'success' | 'pecuaria' | 'textMuted'> = {
   pronto: 'success',
   engordando: 'pecuaria',
   recem_chegado: 'textMuted',
+};
+
+type TimelineKind = 'entrada' | 'pesagem' | 'saude' | 'movimentacao';
+
+interface TimelineItem {
+  id: string;
+  date: string;
+  /** Timestamp de criação do registro — desempata itens no mesmo dia (a
+   * data sozinha só tem granularidade de dia). */
+  createdAt: string;
+  kind: TimelineKind;
+  title: string;
+  subtitle?: string;
+}
+
+const TIMELINE_KIND_LABELS: Record<TimelineKind, string> = {
+  entrada: 'Entrada',
+  pesagem: 'Pesagem',
+  saude: 'Saúde',
+  movimentacao: 'Mudança de lote',
+};
+
+const TIMELINE_COLOR_KEY: Record<TimelineKind, 'success' | 'pecuaria' | 'danger' | 'textMuted'> = {
+  entrada: 'success',
+  pesagem: 'pecuaria',
+  saude: 'danger',
+  movimentacao: 'textMuted',
 };
 
 export default function AnimalDetailScreen() {
@@ -51,6 +80,7 @@ export default function AnimalDetailScreen() {
   }
 
   const readinessColor = colors[READINESS_COLOR_KEY[animal.readiness]];
+  const timeline = buildTimeline(animal, weighings, healthEvents, movements);
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -94,53 +124,26 @@ export default function AnimalDetailScreen() {
           <SummaryStat label="Entrada" value={formatDate(animal.entry_date)} styles={styles} />
         </View>
 
-        <Section title="Pesagens" styles={styles}>
-          {weighings.length === 0 ? (
-            <EmptyState text="Nenhuma pesagem registrada ainda." />
+        <Section
+          title="Histórico completo"
+          subtitle="Tudo o que já aconteceu com este animal, do mais recente pro mais antigo"
+          styles={styles}
+        >
+          {timeline.length === 0 ? (
+            <EmptyState text="Nenhum evento registrado ainda." />
           ) : (
-            weighings.map((w) => (
-              <Card key={w.id} style={styles.rowCard}>
+            timeline.map((item) => (
+              <Card key={item.id} style={styles.rowCard}>
                 <View style={styles.rowBetween}>
-                  <Text style={styles.rowValue}>{Number(w.weight_kg).toFixed(0)} kg</Text>
-                  <Text style={styles.rowDate}>{formatDate(w.weighed_at)}</Text>
+                  <View style={[styles.timelineTag, { backgroundColor: colors[TIMELINE_COLOR_KEY[item.kind]] + '22' }]}>
+                    <Text style={[styles.timelineTagText, { color: colors[TIMELINE_COLOR_KEY[item.kind]] }]}>
+                      {TIMELINE_KIND_LABELS[item.kind]}
+                    </Text>
+                  </View>
+                  <Text style={styles.rowDate}>{formatDate(item.date)}</Text>
                 </View>
-                {w.body_condition_score ? <Text style={styles.rowNotes}>Escore: {w.body_condition_score}</Text> : null}
-              </Card>
-            ))
-          )}
-        </Section>
-
-        <Section title="Saúde" styles={styles}>
-          {healthEvents.length === 0 ? (
-            <EmptyState text="Nenhum evento de saúde registrado ainda." />
-          ) : (
-            healthEvents.map((e) => (
-              <Card key={e.id} style={styles.rowCard}>
-                <View style={styles.rowBetween}>
-                  <Text style={styles.rowValue}>{HEALTH_EVENT_TYPE_LABELS[e.event_type]}</Text>
-                  <Text style={styles.rowDate}>{formatDate(e.event_date)}</Text>
-                </View>
-                <Text style={styles.rowNotes}>{e.description}</Text>
-                {e.next_due_date ? (
-                  <Text style={styles.rowNotes}>Próxima dose: {formatDate(e.next_due_date)}</Text>
-                ) : null}
-              </Card>
-            ))
-          )}
-        </Section>
-
-        <Section title="Movimentação entre lotes" styles={styles}>
-          {movements.length === 0 ? (
-            <EmptyState text="Este animal ainda não mudou de lote." />
-          ) : (
-            movements.map((m) => (
-              <Card key={m.id} style={styles.rowCard}>
-                <View style={styles.rowBetween}>
-                  <Text style={styles.rowValue}>
-                    {m.fromLotName ?? 'Entrada'} → {m.toLotName}
-                  </Text>
-                  <Text style={styles.rowDate}>{formatDate(m.moved_at)}</Text>
-                </View>
+                <Text style={styles.rowValue}>{item.title}</Text>
+                {item.subtitle ? <Text style={styles.rowNotes}>{item.subtitle}</Text> : null}
               </Card>
             ))
           )}
@@ -169,10 +172,21 @@ function SummaryStat({ label, value, styles }: { label: string; value: string; s
   );
 }
 
-function Section({ title, children, styles }: { title: string; children: React.ReactNode; styles: ReturnType<typeof createStyles> }) {
+function Section({
+  title,
+  subtitle,
+  children,
+  styles,
+}: {
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+  styles: ReturnType<typeof createStyles>;
+}) {
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{title}</Text>
+      {subtitle ? <Text style={styles.sectionSubtitle}>{subtitle}</Text> : null}
       <View style={styles.sectionBody}>{children}</View>
     </View>
   );
@@ -181,6 +195,78 @@ function Section({ title, children, styles }: { title: string; children: React.R
 function formatDate(isoDate: string) {
   const [year, month, day] = isoDate.split('-');
   return `${day}/${month}/${year}`;
+}
+
+/** Junta entrada, pesagens, saúde e movimentações entre lotes numa única
+ * linha do tempo — o "brinco mostra tudo, onde ele passou", em vez de
+ * espalhar o histórico do animal em seções separadas. */
+function buildTimeline(
+  animal: CattleAnimalSummary,
+  weighings: CattleAnimalWeighing[],
+  healthEvents: CattleAnimalHealthEvent[],
+  movements: CattleAnimalMovementWithNames[]
+): TimelineItem[] {
+  // O lote de entrada é o de origem da movimentação mais antiga (se o
+  // animal já mudou de lote) — animal.lotName é o lote ATUAL, que não é
+  // necessariamente onde ele entrou.
+  const earliestMovement = movements.reduce<CattleAnimalMovementWithNames | null>((earliest, m) => {
+    if (!earliest) return m;
+    if (m.moved_at !== earliest.moved_at) return m.moved_at < earliest.moved_at ? m : earliest;
+    return m.created_at < earliest.created_at ? m : earliest;
+  }, null);
+  const entryLotName = earliestMovement?.fromLotName ?? animal.lotName ?? '—';
+
+  const items: TimelineItem[] = [
+    {
+      id: 'entrada',
+      date: animal.entry_date,
+      createdAt: animal.created_at,
+      kind: 'entrada',
+      title: `Entrada no lote ${entryLotName}`,
+      subtitle: animal.entry_weight_kg !== null ? `${Number(animal.entry_weight_kg).toFixed(0)} kg` : undefined,
+    },
+  ];
+
+  for (const w of weighings) {
+    items.push({
+      id: `pesagem-${w.id}`,
+      date: w.weighed_at,
+      createdAt: w.created_at,
+      kind: 'pesagem',
+      title: `${Number(w.weight_kg).toFixed(0)} kg`,
+      subtitle: w.body_condition_score !== null ? `Escore: ${w.body_condition_score}` : undefined,
+    });
+  }
+
+  for (const e of healthEvents) {
+    items.push({
+      id: `saude-${e.id}`,
+      date: e.event_date,
+      createdAt: e.created_at,
+      kind: 'saude',
+      title: `${HEALTH_EVENT_TYPE_LABELS[e.event_type]}: ${e.description}`,
+      subtitle: e.next_due_date ? `Próxima dose: ${formatDate(e.next_due_date)}` : undefined,
+    });
+  }
+
+  for (const m of movements) {
+    items.push({
+      id: `mov-${m.id}`,
+      date: m.moved_at,
+      createdAt: m.created_at,
+      kind: 'movimentacao',
+      title: `${m.fromLotName ?? 'Entrada'} → ${m.toLotName}`,
+      subtitle: m.notes ?? undefined,
+    });
+  }
+
+  // Desempata por data (granularidade de dia) usando o instante real de
+  // criação do registro — assim um dia de "processing" (pesar + vacinar +
+  // mover tudo junto) aparece na ordem em que realmente aconteceu.
+  return items.sort((a, b) => {
+    if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+    return a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0;
+  });
 }
 
 function createStyles(colors: Colors) {
@@ -268,6 +354,11 @@ function createStyles(colors: Colors) {
       ...typography.subheading,
       color: colors.textPrimary,
     },
+    sectionSubtitle: {
+      ...typography.caption,
+      color: colors.textSecondary,
+      marginTop: -spacing.sm,
+    },
     sectionBody: {
       gap: spacing.md,
     },
@@ -278,6 +369,15 @@ function createStyles(colors: Colors) {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
+    },
+    timelineTag: {
+      alignSelf: 'flex-start',
+      borderRadius: radius.sm,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: 2,
+    },
+    timelineTagText: {
+      ...typography.captionMedium,
     },
     rowValue: {
       ...typography.bodyMedium,
