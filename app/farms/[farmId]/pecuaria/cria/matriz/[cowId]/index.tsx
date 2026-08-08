@@ -219,6 +219,11 @@ export default function CowDetailScreen() {
               </Card>
             ))
           )}
+          <Button
+            label="📊 Você, no passado"
+            variant="ghost"
+            onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/matriz/${cowId}/comparativo`)}
+          />
         </Section>
       </ScrollView>
     </SafeAreaView>

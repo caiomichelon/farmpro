@@ -72,6 +72,11 @@ export default function PlotDetailScreen() {
           label="+ Nova safra"
           onPress={() => router.push(`/farms/${farmId}/lavoura/talhao/${plotId}/nova-safra`)}
         />
+        <Button
+          label="📊 Você, no passado"
+          variant="ghost"
+          onPress={() => router.push(`/farms/${farmId}/lavoura/talhao/${plotId}/comparativo`)}
+        />
       </View>
     </SafeAreaView>
   );
