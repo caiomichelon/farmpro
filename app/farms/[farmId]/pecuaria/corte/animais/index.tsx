@@ -1,13 +1,18 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text } from 'react-native';
+import { useCallback, useMemo, useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DataTable, type DataTableColumn } from '../../../../../../src/components/DataTable';
 import { EmptyState } from '../../../../../../src/components/EmptyState';
 import { ScreenHeader } from '../../../../../../src/components/ScreenHeader';
-import { useCattleAnimalsByFarm, type CattleAnimalSummary } from '../../../../../../src/hooks/useCattleAnimals';
-import { colors, spacing, typography } from '../../../../../../src/theme';
+import { TextField } from '../../../../../../src/components/TextField';
+import {
+  CATTLE_LOT_READINESS_LABELS,
+  useCattleAnimalsByFarm,
+  type CattleAnimalSummary,
+} from '../../../../../../src/hooks/useCattleAnimals';
+import { spacing, typography, useColors, type Colors } from '../../../../../../src/theme';
 
 const SEX_LABELS: Record<string, string> = { macho: 'Macho', femea: 'Fêmea' };
 const STATUS_LABELS: Record<string, string> = {
@@ -17,18 +22,31 @@ const STATUS_LABELS: Record<string, string> = {
   morto: 'Morto',
 };
 
-const COLUMNS: DataTableColumn<CattleAnimalSummary>[] = [
-  { key: 'tag', label: 'Brinco', width: 100, render: (a) => a.tag_number },
-  { key: 'lot', label: 'Lote', width: 140, render: (a) => a.lotName ?? '—' },
-  { key: 'sex', label: 'Sexo', width: 90, render: (a) => (a.sex ? SEX_LABELS[a.sex] : '—') },
-  { key: 'breed', label: 'Raça', width: 120, render: (a) => a.breed ?? '—' },
-  { key: 'weight', label: 'Peso atual', width: 110, render: (a) => (a.latestWeightKg !== null ? `${a.latestWeightKg.toFixed(0)} kg` : '—') },
-  { key: 'status', label: 'Status', width: 100, render: (a) => STATUS_LABELS[a.status] },
-];
+function buildColumns(): DataTableColumn<CattleAnimalSummary>[] {
+  return [
+    { key: 'tag', label: 'Brinco', width: 100, render: (a) => a.tag_number },
+    { key: 'lot', label: 'Lote', width: 140, render: (a) => a.lotName ?? '—' },
+    { key: 'sex', label: 'Sexo', width: 90, render: (a) => (a.sex ? SEX_LABELS[a.sex] : '—') },
+    { key: 'breed', label: 'Raça', width: 120, render: (a) => a.breed ?? '—' },
+    { key: 'weight', label: 'Peso atual', width: 110, render: (a) => (a.latestWeightKg !== null ? `${a.latestWeightKg.toFixed(0)} kg` : '—') },
+    { key: 'gmd', label: 'GMD', width: 100, render: (a) => (a.gmdKgPerDay !== null ? `${a.gmdKgPerDay.toFixed(2)} kg/dia` : '—') },
+    {
+      key: 'readiness',
+      label: 'Prontidão',
+      width: 130,
+      render: (a) => (a.status === 'ativo' ? CATTLE_LOT_READINESS_LABELS[a.readiness] : '—'),
+    },
+    { key: 'status', label: 'Status', width: 100, render: (a) => STATUS_LABELS[a.status] },
+  ];
+}
 
 export default function AllAnimalsSpreadsheetScreen() {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const columns = useMemo(() => buildColumns(), []);
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const { animals, isLoading, error, reload } = useCattleAnimalsByFarm(farmId);
+  const [search, setSearch] = useState('');
 
   // Animais são cadastrados dentro de um lote, em outra rota — refaz a busca
   // ao focar de novo pra planilha não ficar desatualizada.
@@ -37,6 +55,10 @@ export default function AllAnimalsSpreadsheetScreen() {
       reload();
     }, [reload])
   );
+
+  const filteredAnimals = search.trim()
+    ? animals.filter((a) => a.tag_number.toLowerCase().includes(search.trim().toLowerCase()))
+    : animals;
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -51,12 +73,20 @@ export default function AllAnimalsSpreadsheetScreen() {
         <EmptyState text="Nenhum animal individual cadastrado ainda. Cadastre animais dentro de um lote." />
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
-          <DataTable
-            columns={COLUMNS}
-            data={animals}
-            keyExtractor={(a) => a.id}
-            onRowPress={(a) => router.push(`/farms/${farmId}/pecuaria/corte/animal/${a.id}`)}
-          />
+          <View style={styles.searchRow}>
+            <TextField label="Buscar por brinco" value={search} onChangeText={setSearch} placeholder="Digite o brinco" />
+          </View>
+
+          {filteredAnimals.length === 0 ? (
+            <EmptyState text="Nenhum animal encontrado com esse brinco." />
+          ) : (
+            <DataTable
+              columns={columns}
+              data={filteredAnimals}
+              keyExtractor={(a) => a.id}
+              onRowPress={(a) => router.push(`/farms/${farmId}/pecuaria/corte/animal/${a.id}`)}
+            />
+          )}
         </ScrollView>
       )}
 
@@ -65,21 +95,27 @@ export default function AllAnimalsSpreadsheetScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  loading: {
-    marginTop: spacing.xxl,
-  },
-  content: {
-    paddingHorizontal: spacing.xl,
-    paddingBottom: spacing.xxxl,
-  },
-  errorText: {
-    ...typography.caption,
-    color: colors.danger,
-    paddingHorizontal: spacing.xl,
-  },
-});
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    loading: {
+      marginTop: spacing.xxl,
+    },
+    content: {
+      paddingHorizontal: spacing.xl,
+      paddingBottom: spacing.xxxl,
+      gap: spacing.md,
+    },
+    searchRow: {
+      marginBottom: spacing.xs,
+    },
+    errorText: {
+      ...typography.caption,
+      color: colors.danger,
+      paddingHorizontal: spacing.xl,
+    },
+  });
+}

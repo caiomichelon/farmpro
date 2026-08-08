@@ -395,6 +395,8 @@ export type CattleAnimalHealthEvent = {
   description: string;
   notes: string | null;
   photo_url: string | null;
+  /** Data da próxima dose/retorno — opcional, base do alerta de "vacina pendente". */
+  next_due_date: string | null;
   created_at: string;
 };
 

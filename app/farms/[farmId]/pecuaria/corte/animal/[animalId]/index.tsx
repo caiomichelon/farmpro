@@ -1,6 +1,6 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useMemo } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../../../../../src/components/Button';
@@ -10,10 +10,22 @@ import { ScreenHeader } from '../../../../../../../src/components/ScreenHeader';
 import { HEALTH_EVENT_TYPE_LABELS, useCattleAnimalHealthEvents } from '../../../../../../../src/hooks/useCattleAnimalHealth';
 import { useCattleAnimalMovements } from '../../../../../../../src/hooks/useCattleAnimalMovements';
 import { useCattleAnimalWeighings } from '../../../../../../../src/hooks/useCattleAnimalWeighings';
-import { useCattleAnimal } from '../../../../../../../src/hooks/useCattleAnimals';
-import { colors, radius, spacing, typography } from '../../../../../../../src/theme';
+import {
+  CATTLE_LOT_READINESS_LABELS,
+  useCattleAnimal,
+  type CattleLotReadiness,
+} from '../../../../../../../src/hooks/useCattleAnimals';
+import { radius, spacing, typography, useColors, type Colors } from '../../../../../../../src/theme';
+
+const READINESS_COLOR_KEY: Record<CattleLotReadiness, 'success' | 'pecuaria' | 'textMuted'> = {
+  pronto: 'success',
+  engordando: 'pecuaria',
+  recem_chegado: 'textMuted',
+};
 
 export default function AnimalDetailScreen() {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId, animalId } = useLocalSearchParams<{ farmId: string; animalId: string }>();
   const { animal, isLoading, reload: reloadAnimal } = useCattleAnimal(animalId);
   const { weighings, reload: reloadWeighings } = useCattleAnimalWeighings(animalId);
@@ -38,6 +50,8 @@ export default function AnimalDetailScreen() {
     );
   }
 
+  const readinessColor = colors[READINESS_COLOR_KEY[animal.readiness]];
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScreenHeader
@@ -46,14 +60,41 @@ export default function AnimalDetailScreen() {
       />
 
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.summaryGrid}>
-          <SummaryStat label="Peso atual" value={animal.latestWeightKg !== null ? `${animal.latestWeightKg.toFixed(0)} kg` : '—'} />
-          <SummaryStat label="Sexo" value={animal.sex === 'macho' ? 'Macho' : animal.sex === 'femea' ? 'Fêmea' : '—'} />
-          <SummaryStat label="Entrada" value={formatDate(animal.entry_date)} />
-          <SummaryStat label="Status" value={animal.status === 'ativo' ? 'Ativo' : animal.status} />
+        <View style={styles.quickActions}>
+          <QuickAction label="Pesar" onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/animal/${animalId}/nova-pesagem`)} styles={styles} />
+          <QuickAction label="Saúde" onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/animal/${animalId}/novo-evento-saude`)} styles={styles} />
+          <QuickAction label="Mover lote" onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/animal/${animalId}/mover-lote`)} styles={styles} />
         </View>
 
-        <Section title="Pesagens">
+        {animal.status === 'ativo' ? (
+          <View style={[styles.readinessBadge, { backgroundColor: readinessColor + '22', borderColor: readinessColor }]}>
+            <Text style={[styles.readinessText, { color: readinessColor }]}>
+              {CATTLE_LOT_READINESS_LABELS[animal.readiness]}
+            </Text>
+            {animal.kgToTarget !== null ? (
+              <Text style={styles.readinessSubtext}>
+                {animal.kgToTarget > 0 ? `Faltam ${animal.kgToTarget.toFixed(0)} kg pra meta do lote` : `${Math.abs(animal.kgToTarget).toFixed(0)} kg acima da meta`}
+              </Text>
+            ) : (
+              <Text style={styles.readinessSubtext}>Lote sem meta de peso definida</Text>
+            )}
+          </View>
+        ) : null}
+
+        {animal.hasOverdueHealth ? (
+          <View style={styles.healthAlert}>
+            <Text style={styles.healthAlertText}>⚠ Tem dose de vacina/tratamento vencida</Text>
+          </View>
+        ) : null}
+
+        <View style={styles.summaryGrid}>
+          <SummaryStat label="Peso atual" value={animal.latestWeightKg !== null ? `${animal.latestWeightKg.toFixed(0)} kg` : '—'} styles={styles} />
+          <SummaryStat label="GMD" value={animal.gmdKgPerDay !== null ? `${animal.gmdKgPerDay.toFixed(2)} kg/dia` : '—'} styles={styles} />
+          <SummaryStat label="Sexo" value={animal.sex === 'macho' ? 'Macho' : animal.sex === 'femea' ? 'Fêmea' : '—'} styles={styles} />
+          <SummaryStat label="Entrada" value={formatDate(animal.entry_date)} styles={styles} />
+        </View>
+
+        <Section title="Pesagens" styles={styles}>
           {weighings.length === 0 ? (
             <EmptyState text="Nenhuma pesagem registrada ainda." />
           ) : (
@@ -67,14 +108,9 @@ export default function AnimalDetailScreen() {
               </Card>
             ))
           )}
-          <Button
-            label="+ Nova pesagem"
-            variant="secondary"
-            onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/animal/${animalId}/nova-pesagem`)}
-          />
         </Section>
 
-        <Section title="Saúde">
+        <Section title="Saúde" styles={styles}>
           {healthEvents.length === 0 ? (
             <EmptyState text="Nenhum evento de saúde registrado ainda." />
           ) : (
@@ -85,17 +121,15 @@ export default function AnimalDetailScreen() {
                   <Text style={styles.rowDate}>{formatDate(e.event_date)}</Text>
                 </View>
                 <Text style={styles.rowNotes}>{e.description}</Text>
+                {e.next_due_date ? (
+                  <Text style={styles.rowNotes}>Próxima dose: {formatDate(e.next_due_date)}</Text>
+                ) : null}
               </Card>
             ))
           )}
-          <Button
-            label="+ Registrar evento de saúde"
-            variant="secondary"
-            onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/animal/${animalId}/novo-evento-saude`)}
-          />
         </Section>
 
-        <Section title="Movimentação entre lotes">
+        <Section title="Movimentação entre lotes" styles={styles}>
           {movements.length === 0 ? (
             <EmptyState text="Este animal ainda não mudou de lote." />
           ) : (
@@ -110,26 +144,32 @@ export default function AnimalDetailScreen() {
               </Card>
             ))
           )}
-          <Button
-            label="+ Mover de lote"
-            onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/animal/${animalId}/mover-lote`)}
-          />
         </Section>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-function SummaryStat({ label, value }: { label: string; value: string }) {
+function QuickAction({ label, onPress, styles }: { label: string; onPress: () => void; styles: ReturnType<typeof createStyles> }) {
+  return (
+    <Pressable style={({ pressed }) => [styles.quickActionButton, pressed && styles.quickActionPressed]} onPress={onPress}>
+      <Text style={styles.quickActionText}>{label}</Text>
+    </Pressable>
+  );
+}
+
+function SummaryStat({ label, value, styles }: { label: string; value: string; styles: ReturnType<typeof createStyles> }) {
   return (
     <View style={styles.summaryCell}>
-      <Text style={styles.summaryValue}>{value}</Text>
+      <Text style={styles.summaryValue} numberOfLines={1}>
+        {value}
+      </Text>
       <Text style={styles.summaryLabel}>{label}</Text>
     </View>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, children, styles }: { title: string; children: React.ReactNode; styles: ReturnType<typeof createStyles> }) {
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{title}</Text>
@@ -143,69 +183,113 @@ function formatDate(isoDate: string) {
   return `${day}/${month}/${year}`;
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  loading: {
-    marginTop: spacing.xxl,
-  },
-  content: {
-    paddingHorizontal: spacing.xl,
-    paddingBottom: spacing.xxxl,
-    gap: spacing.xxl,
-  },
-  summaryGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.md,
-  },
-  summaryCell: {
-    flexBasis: '47%',
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    padding: spacing.md,
-  },
-  summaryValue: {
-    ...typography.heading,
-    color: colors.textPrimary,
-  },
-  summaryLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  section: {
-    gap: spacing.md,
-  },
-  sectionTitle: {
-    ...typography.subheading,
-    color: colors.textPrimary,
-  },
-  sectionBody: {
-    gap: spacing.md,
-  },
-  rowCard: {
-    gap: 2,
-  },
-  rowBetween: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  rowValue: {
-    ...typography.bodyMedium,
-    color: colors.textPrimary,
-  },
-  rowDate: {
-    ...typography.caption,
-    color: colors.textMuted,
-  },
-  rowNotes: {
-    ...typography.caption,
-    color: colors.textSecondary,
-  },
-});
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    loading: {
+      marginTop: spacing.xxl,
+    },
+    content: {
+      paddingHorizontal: spacing.xl,
+      paddingBottom: spacing.xxxl,
+      gap: spacing.xxl,
+    },
+    quickActions: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+    },
+    quickActionButton: {
+      flex: 1,
+      backgroundColor: colors.pecuariaLight,
+      borderRadius: radius.md,
+      paddingVertical: spacing.sm,
+      alignItems: 'center',
+    },
+    quickActionPressed: {
+      opacity: 0.7,
+    },
+    quickActionText: {
+      ...typography.captionMedium,
+      color: colors.pecuaria,
+    },
+    readinessBadge: {
+      borderWidth: 1,
+      borderRadius: radius.lg,
+      padding: spacing.lg,
+      gap: 2,
+    },
+    readinessText: {
+      ...typography.subheading,
+    },
+    readinessSubtext: {
+      ...typography.caption,
+      color: colors.textSecondary,
+    },
+    healthAlert: {
+      backgroundColor: colors.dangerLight,
+      borderWidth: 1,
+      borderColor: colors.danger,
+      borderRadius: radius.md,
+      padding: spacing.md,
+    },
+    healthAlertText: {
+      ...typography.captionMedium,
+      color: colors.danger,
+    },
+    summaryGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.md,
+    },
+    summaryCell: {
+      flexBasis: '47%',
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.md,
+      padding: spacing.md,
+    },
+    summaryValue: {
+      ...typography.heading,
+      color: colors.textPrimary,
+    },
+    summaryLabel: {
+      ...typography.caption,
+      color: colors.textSecondary,
+      marginTop: 2,
+    },
+    section: {
+      gap: spacing.md,
+    },
+    sectionTitle: {
+      ...typography.subheading,
+      color: colors.textPrimary,
+    },
+    sectionBody: {
+      gap: spacing.md,
+    },
+    rowCard: {
+      gap: 2,
+    },
+    rowBetween: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    rowValue: {
+      ...typography.bodyMedium,
+      color: colors.textPrimary,
+    },
+    rowDate: {
+      ...typography.caption,
+      color: colors.textMuted,
+    },
+    rowNotes: {
+      ...typography.caption,
+      color: colors.textSecondary,
+    },
+  });
+}

@@ -114,6 +114,15 @@ export default function CorteHomeScreen() {
                   <Text style={styles.link}>Prontos pra abate</Text>
                 </Pressable>
                 <Text style={styles.linkDivider}>·</Text>
+                <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/repasse`)} hitSlop={8}>
+                  <Text style={styles.link}>Repasse</Text>
+                </Pressable>
+                <Text style={styles.linkDivider}>·</Text>
+                <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/vacinas-pendentes`)} hitSlop={8}>
+                  <Text style={styles.link}>Vacinas pendentes</Text>
+                </Pressable>
+              </View>
+              <View style={styles.linksRow}>
                 <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/importar`)} hitSlop={8}>
                   <Text style={styles.link}>Importar lotes</Text>
                 </Pressable>
