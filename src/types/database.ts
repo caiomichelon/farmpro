@@ -528,6 +528,19 @@ export type CattleLotPhoto = {
   taken_at: string;
 };
 
+/** Diário de bordo — nota rápida da fazenda (texto e/ou foto, GPS
+ * opcional), sem precisar escolher lote/talhão/animal antes. */
+export type FarmNote = {
+  id: string;
+  farm_id: string;
+  note_text: string | null;
+  photo_url: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  created_by: string | null;
+  created_at: string;
+};
+
 export type CattleInventoryCategory = 'racao' | 'nucleo_mineral' | 'medicamento' | 'outro';
 export type CattleInventoryUnit = 'kg' | 'saco' | 'litro' | 'dose' | 'unidade';
 export type CattleInventoryMovementType = 'entrada' | 'saida';
@@ -874,6 +887,12 @@ export interface Database {
         Row: CattleLotPhoto;
         Insert: Partial<CattleLotPhoto> & { lot_id: string; photo_url: string };
         Update: Partial<CattleLotPhoto>;
+        Relationships: [];
+      };
+      farm_notes: {
+        Row: FarmNote;
+        Insert: Partial<FarmNote> & { farm_id: string };
+        Update: Partial<FarmNote>;
         Relationships: [];
       };
       cattle_inventory_items: {
