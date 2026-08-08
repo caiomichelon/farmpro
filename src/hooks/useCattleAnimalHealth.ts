@@ -72,6 +72,38 @@ export function useCattleAnimalHealthEvents(animalId: string | undefined) {
   return { events, isLoading, error, reload, createEvent };
 }
 
+/** Aplica o mesmo evento de saúde (vacina/tratamento) em vários animais de
+ * uma vez — mesma ideia do registro individual, só que em lote, pra não
+ * precisar entrar animal por animal quando é a fazenda toda que recebe a
+ * mesma dose. */
+export async function createBulkHealthEvent(
+  animalIds: string[],
+  input: {
+    event_type: CattleHealthEventType;
+    description: string;
+    event_date?: string;
+    next_due_date?: string;
+    protocol_id?: string;
+  }
+): Promise<{ error: string | null; created: number }> {
+  if (animalIds.length === 0) return { error: 'Selecione pelo menos um animal.', created: 0 };
+  if (!input.description.trim()) return { error: 'Descreva o evento (ex.: nome da vacina ou tratamento).', created: 0 };
+
+  const rows = animalIds.map((animalId) => ({
+    animal_id: animalId,
+    event_type: input.event_type,
+    description: input.description.trim(),
+    event_date: input.event_date || new Date().toISOString().slice(0, 10),
+    next_due_date: input.next_due_date || null,
+    protocol_id: input.protocol_id || null,
+  }));
+
+  const { error: insertError } = await supabase.from('cattle_animal_health_events').insert(rows);
+  if (insertError) return { error: insertError.message, created: 0 };
+
+  return { error: null, created: rows.length };
+}
+
 export interface CattleHealthEventWithAnimal extends CattleAnimalHealthEvent {
   animalTagNumber: string;
   lotName: string | null;

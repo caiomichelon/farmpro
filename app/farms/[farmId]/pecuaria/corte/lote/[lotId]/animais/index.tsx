@@ -27,9 +27,14 @@ export default function LotAnimalsScreen() {
         title="Animais do lote"
         subtitle={`${animals.length} ${animals.length === 1 ? 'animal' : 'animais'}`}
         right={
-          <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${lotId}/animais/importar`)} hitSlop={12}>
-            <Text style={styles.headerLink}>Importar</Text>
-          </Pressable>
+          <View style={styles.headerLinks}>
+            <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${lotId}/animais/vacinar-lote`)} hitSlop={12}>
+              <Text style={styles.headerLink}>Aplicar em lote</Text>
+            </Pressable>
+            <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${lotId}/animais/importar`)} hitSlop={12}>
+              <Text style={styles.headerLink}>Importar</Text>
+            </Pressable>
+          </View>
         }
       />
 
@@ -83,6 +88,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  headerLinks: {
+    flexDirection: 'row',
+    gap: spacing.md,
   },
   headerLink: {
     ...typography.captionMedium,
