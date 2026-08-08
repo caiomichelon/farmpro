@@ -2,6 +2,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { FadeSlideIn } from '../../../../src/components/FadeSlideIn';
 import { ScreenHeader } from '../../../../src/components/ScreenHeader';
 import { colors, radius, spacing, typography } from '../../../../src/theme';
 
@@ -13,16 +14,20 @@ export default function PecuariaHomeScreen() {
       <ScreenHeader title="Pecuária" subtitle="Corte e Cria/Reprodução" />
 
       <View style={styles.content}>
-        <AreaCard
-          title="Corte"
-          description="Lotes, indicadores zootécnicos, frigoríficos e registro de abate."
-          onPress={() => router.push(`/farms/${farmId}/pecuaria/corte`)}
-        />
-        <AreaCard
-          title="Cria / Reprodução"
-          description="Matrizes, inseminação, previsão de parto e histórico de bezerros."
-          onPress={() => router.push(`/farms/${farmId}/pecuaria/cria`)}
-        />
+        <FadeSlideIn>
+          <AreaCard
+            title="Corte"
+            description="Lotes, indicadores zootécnicos, frigoríficos e registro de abate."
+            onPress={() => router.push(`/farms/${farmId}/pecuaria/corte`)}
+          />
+        </FadeSlideIn>
+        <FadeSlideIn delay={70}>
+          <AreaCard
+            title="Cria / Reprodução"
+            description="Matrizes, inseminação, previsão de parto e histórico de bezerros."
+            onPress={() => router.push(`/farms/${farmId}/pecuaria/cria`)}
+          />
+        </FadeSlideIn>
       </View>
     </SafeAreaView>
   );

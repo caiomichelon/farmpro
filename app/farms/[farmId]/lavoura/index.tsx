@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../../../src/components/Button';
 import { Card } from '../../../../src/components/Card';
 import { EmptyState } from '../../../../src/components/EmptyState';
+import { FadeSlideIn } from '../../../../src/components/FadeSlideIn';
 import { FinancialSummary } from '../../../../src/components/FinancialSummary';
 import { ScreenHeader } from '../../../../src/components/ScreenHeader';
 import { StatGrid } from '../../../../src/components/StatGrid';
@@ -49,33 +50,37 @@ export default function LavouraHomeScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           ListHeaderComponent={
-            <View style={styles.headerContent}>
-              <StatGrid
-                stats={[
-                  { label: 'Talhões', value: String(summary.totalPlots) },
-                  { label: 'Área total', value: `${summary.totalHectares.toLocaleString('pt-BR')} ha` },
-                  { label: 'Safras em andamento', value: String(summary.activeSeasons) },
-                  {
-                    label: 'Produtividade média',
-                    value: summary.avgYieldPerHectare !== null ? `${summary.avgYieldPerHectare.toFixed(1)} sc/ha` : '—',
-                  },
-                ]}
-              />
-              <FinancialSummary cost={summary.totalCost} revenue={summary.totalRevenue} margin={summary.margin} />
-              <View style={styles.linksRow}>
-                <Pressable onPress={() => router.push(`/farms/${farmId}/lavoura/planilha`)} hitSlop={8}>
-                  <Text style={styles.link}>Planilha de talhões</Text>
-                </Pressable>
-                <Text style={styles.linkDivider}>·</Text>
-                <Pressable onPress={() => router.push(`/farms/${farmId}/lavoura/safras`)} hitSlop={8}>
-                  <Text style={styles.link}>Planilha de safras</Text>
-                </Pressable>
+            <FadeSlideIn>
+              <View style={styles.headerContent}>
+                <StatGrid
+                  stats={[
+                    { label: 'Talhões', value: String(summary.totalPlots) },
+                    { label: 'Área total', value: `${summary.totalHectares.toLocaleString('pt-BR')} ha` },
+                    { label: 'Safras em andamento', value: String(summary.activeSeasons) },
+                    {
+                      label: 'Produtividade média',
+                      value: summary.avgYieldPerHectare !== null ? `${summary.avgYieldPerHectare.toFixed(1)} sc/ha` : '—',
+                    },
+                  ]}
+                />
+                <FinancialSummary cost={summary.totalCost} revenue={summary.totalRevenue} margin={summary.margin} />
+                <View style={styles.linksRow}>
+                  <Pressable onPress={() => router.push(`/farms/${farmId}/lavoura/planilha`)} hitSlop={8}>
+                    <Text style={styles.link}>Planilha de talhões</Text>
+                  </Pressable>
+                  <Text style={styles.linkDivider}>·</Text>
+                  <Pressable onPress={() => router.push(`/farms/${farmId}/lavoura/safras`)} hitSlop={8}>
+                    <Text style={styles.link}>Planilha de safras</Text>
+                  </Pressable>
+                </View>
               </View>
-            </View>
+            </FadeSlideIn>
           }
           ListEmptyComponent={<EmptyState text="Nenhum talhão cadastrado ainda. Comece criando o primeiro." />}
-          renderItem={({ item }) => (
-            <PlotCard plot={item} onPress={() => router.push(`/farms/${farmId}/lavoura/talhao/${item.id}`)} />
+          renderItem={({ item, index }) => (
+            <FadeSlideIn delay={Math.min(index, 6) * 50}>
+              <PlotCard plot={item} onPress={() => router.push(`/farms/${farmId}/lavoura/talhao/${item.id}`)} />
+            </FadeSlideIn>
           )}
         />
       )}

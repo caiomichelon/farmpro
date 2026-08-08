@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../../../../src/components/Button';
 import { Card } from '../../../../../src/components/Card';
 import { EmptyState } from '../../../../../src/components/EmptyState';
+import { FadeSlideIn } from '../../../../../src/components/FadeSlideIn';
 import { ScreenHeader } from '../../../../../src/components/ScreenHeader';
 import { StatGrid } from '../../../../../src/components/StatGrid';
 import { TextField } from '../../../../../src/components/TextField';
@@ -82,6 +83,7 @@ export default function CriaHomeScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           ListHeaderComponent={
+            <FadeSlideIn>
             <View style={styles.headerContent}>
               <StatGrid
                 stats={[
@@ -147,10 +149,13 @@ export default function CriaHomeScreen() {
 
               <TextField label="Buscar matriz" value={search} onChangeText={setSearch} placeholder="Digite a identificação" />
             </View>
+            </FadeSlideIn>
           }
           ListEmptyComponent={<EmptyState text="Nenhuma matriz cadastrada ainda. Comece criando a primeira." />}
-          renderItem={({ item }) => (
-            <CowCard cow={item} styles={styles} colors={colors} onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/matriz/${item.id}`)} />
+          renderItem={({ item, index }) => (
+            <FadeSlideIn delay={Math.min(index, 6) * 50}>
+              <CowCard cow={item} styles={styles} colors={colors} onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/matriz/${item.id}`)} />
+            </FadeSlideIn>
           )}
         />
       )}

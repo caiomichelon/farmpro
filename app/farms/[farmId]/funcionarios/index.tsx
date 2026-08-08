@@ -7,6 +7,7 @@ import { Button } from '../../../../src/components/Button';
 import { Card } from '../../../../src/components/Card';
 import { ChipSelect } from '../../../../src/components/ChipSelect';
 import { EmptyState } from '../../../../src/components/EmptyState';
+import { FadeSlideIn } from '../../../../src/components/FadeSlideIn';
 import { ScreenHeader } from '../../../../src/components/ScreenHeader';
 import { EMPLOYEE_SECTOR_LABELS, EMPLOYEE_SECTOR_OPTIONS } from '../../../../src/data/employeeOptions';
 import { useEmployees, type EmployeeSummary } from '../../../../src/hooks/useEmployees';
@@ -70,11 +71,13 @@ export default function EmployeesHomeScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={<EmptyState text="Nenhum funcionário cadastrado ainda." />}
-          renderItem={({ item }) => (
-            <EmployeeCard
-              employee={item}
-              onPress={() => router.push(`/farms/${farmId}/funcionarios/funcionario/${item.id}`)}
-            />
+          renderItem={({ item, index }) => (
+            <FadeSlideIn delay={Math.min(index, 6) * 50}>
+              <EmployeeCard
+                employee={item}
+                onPress={() => router.push(`/farms/${farmId}/funcionarios/funcionario/${item.id}`)}
+              />
+            </FadeSlideIn>
           )}
         />
       )}

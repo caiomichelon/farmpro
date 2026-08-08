@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, type StyleProp, type ViewStyle } from 'react-native';
+import { useMemo, useRef } from 'react';
+import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, type StyleProp, type ViewStyle } from 'react-native';
 
 import { radius, spacing, typography, useColors, type Colors } from '../theme';
 
@@ -19,27 +19,30 @@ export function Button({ label, onPress, variant = 'primary', disabled, loading,
   const styles = useMemo(() => createStyles(colors), [colors]);
   const variantStyles = useMemo(() => createVariantStyles(colors), [colors]);
   const isDisabled = disabled || loading;
+  const scale = useRef(new Animated.Value(1)).current;
+
+  function animateTo(value: number) {
+    Animated.spring(scale, { toValue: value, useNativeDriver: true, speed: 40, bounciness: 6 }).start();
+  }
 
   return (
-    <Pressable
-      onPress={onPress}
-      disabled={isDisabled}
-      style={({ pressed }) => [
-        styles.base,
-        variantStyles[variant],
-        isDisabled && styles.disabled,
-        pressed && !isDisabled && styles.pressed,
-        style,
-      ]}
-    >
-      {loading ? (
-        <ActivityIndicator color={variant === 'primary' ? colors.textInverse : colors.primary} />
-      ) : (
-        <Text style={[styles.label, variant === 'primary' ? styles.labelInverse : styles.labelDefault]}>
-          {label}
-        </Text>
-      )}
-    </Pressable>
+    <Animated.View style={{ transform: [{ scale }] }}>
+      <Pressable
+        onPress={onPress}
+        onPressIn={() => !isDisabled && animateTo(0.97)}
+        onPressOut={() => animateTo(1)}
+        disabled={isDisabled}
+        style={[styles.base, variantStyles[variant], isDisabled && styles.disabled, style]}
+      >
+        {loading ? (
+          <ActivityIndicator color={variant === 'primary' ? colors.textInverse : colors.primary} />
+        ) : (
+          <Text style={[styles.label, variant === 'primary' ? styles.labelInverse : styles.labelDefault]}>
+            {label}
+          </Text>
+        )}
+      </Pressable>
+    </Animated.View>
   );
 }
 
@@ -51,9 +54,6 @@ function createStyles(colors: Colors) {
       alignItems: 'center',
       justifyContent: 'center',
       paddingHorizontal: spacing.lg,
-    },
-    pressed: {
-      opacity: 0.85,
     },
     disabled: {
       opacity: 0.5,

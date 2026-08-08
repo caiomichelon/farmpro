@@ -1,22 +1,45 @@
 import { Link, router } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '../../src/components/Button';
+import { FadeSlideIn } from '../../src/components/FadeSlideIn';
 import { TextField } from '../../src/components/TextField';
 import { useAuth } from '../../src/context/AuthContext';
-import { useT } from '../../src/i18n';
-import { spacing, typography, useColors, type Colors } from '../../src/theme';
+import { useT, type TFunction } from '../../src/i18n';
+import { fetchAgroNews, type AgroNewsItem } from '../../src/lib/agroNews';
+import { radius, spacing, typography, useColors, type Colors } from '../../src/theme';
+
+function buildBenefits(t: TFunction): { icon: string; title: string; description: string }[] {
+  return [
+    { icon: '🌱', title: t('auth.login.benefit1Title'), description: t('auth.login.benefit1Description') },
+    { icon: '☁️', title: t('auth.login.benefit2Title'), description: t('auth.login.benefit2Description') },
+    { icon: '🔔', title: t('auth.login.benefit3Title'), description: t('auth.login.benefit3Description') },
+    { icon: '📊', title: t('auth.login.benefit4Title'), description: t('auth.login.benefit4Description') },
+  ];
+}
 
 export default function LoginScreen() {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const t = useT();
+  const benefits = useMemo(() => buildBenefits(t), [t]);
   const { signInWithPassword } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [news, setNews] = useState<AgroNewsItem[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchAgroNews().then((items) => {
+      if (!cancelled) setNews(items);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function handleSubmit() {
     setError(null);
@@ -32,41 +55,88 @@ export default function LoginScreen() {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <View style={styles.content}>
-        <Text style={styles.title}>{t('auth.login.title')}</Text>
-        <Text style={styles.subtitle}>{t('auth.login.subtitle')}</Text>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+        <FadeSlideIn>
+          <View style={styles.hero}>
+            <Text style={styles.heroTitle}>FarmPro</Text>
+            <Text style={styles.heroTagline}>{t('auth.login.tagline')}</Text>
+          </View>
+        </FadeSlideIn>
 
-        <View style={styles.form}>
-          <TextField
-            label={t('auth.login.email')}
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            placeholder="voce@email.com"
-          />
-          <TextField
-            label={t('auth.login.password')}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            placeholder="••••••••"
-          />
-          {error ? <Text style={styles.error}>{error}</Text> : null}
-          <Button label={t('auth.login.submit')} onPress={handleSubmit} loading={isSubmitting} disabled={!email || !password} />
-        </View>
+        <View style={styles.body}>
+          <FadeSlideIn delay={80}>
+            <View style={styles.form}>
+              <Text style={styles.title}>{t('auth.login.title')}</Text>
+              <Text style={styles.subtitle}>{t('auth.login.subtitle')}</Text>
 
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>{t('auth.login.noAccount')}</Text>
-          <Link href="/auth/signup" style={styles.footerLink}>
-            {t('auth.login.createAccount')}
-          </Link>
+              <TextField
+                label={t('auth.login.email')}
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                placeholder="voce@email.com"
+              />
+              <TextField
+                label={t('auth.login.password')}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                placeholder="••••••••"
+              />
+              {error ? <Text style={styles.error}>{error}</Text> : null}
+              <Button label={t('auth.login.submit')} onPress={handleSubmit} loading={isSubmitting} disabled={!email || !password} />
+
+              <View style={styles.footer}>
+                <Text style={styles.footerText}>{t('auth.login.noAccount')}</Text>
+                <Link href="/auth/signup" style={styles.footerLink}>
+                  {t('auth.login.createAccount')}
+                </Link>
+              </View>
+            </View>
+          </FadeSlideIn>
+
+          <FadeSlideIn delay={160}>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>{t('auth.login.benefitsTitle')}</Text>
+              <View style={styles.benefitsList}>
+                {benefits.map((benefit) => (
+                  <View key={benefit.title} style={styles.benefitRow}>
+                    <Text style={styles.benefitIcon}>{benefit.icon}</Text>
+                    <View style={styles.benefitTextBlock}>
+                      <Text style={styles.benefitTitle}>{benefit.title}</Text>
+                      <Text style={styles.benefitDescription}>{benefit.description}</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </View>
+          </FadeSlideIn>
+
+          {news.length > 0 ? (
+            <FadeSlideIn delay={240}>
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>{t('auth.login.newsTitle')}</Text>
+                <View style={styles.newsList}>
+                  {news.map((item) => (
+                    <Pressable
+                      key={item.link}
+                      style={({ pressed }) => [styles.newsCard, pressed && styles.newsCardPressed]}
+                      onPress={() => Linking.openURL(item.link)}
+                    >
+                      <Text style={styles.newsTitle} numberOfLines={2}>
+                        {item.title}
+                      </Text>
+                      {item.source ? <Text style={styles.newsSource}>{item.source}</Text> : null}
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
+            </FadeSlideIn>
+          ) : null}
         </View>
-      </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
@@ -77,23 +147,42 @@ function createStyles(colors: Colors) {
       flex: 1,
       backgroundColor: colors.background,
     },
-    content: {
-      flex: 1,
-      justifyContent: 'center',
+    scrollContent: {
+      flexGrow: 1,
+    },
+    hero: {
+      backgroundColor: colors.primary,
+      paddingTop: spacing.xxxl + spacing.xl,
+      paddingBottom: spacing.xxl,
       paddingHorizontal: spacing.xl,
-      gap: spacing.xl,
+      gap: spacing.xs,
+    },
+    heroTitle: {
+      ...typography.displayLg,
+      color: colors.textInverse,
+    },
+    heroTagline: {
+      ...typography.body,
+      color: colors.textInverse,
+      opacity: 0.85,
+    },
+    body: {
+      paddingHorizontal: spacing.xl,
+      paddingTop: spacing.xl,
+      paddingBottom: spacing.xxxl,
+      gap: spacing.xxl,
+    },
+    form: {
+      gap: spacing.lg,
     },
     title: {
-      ...typography.displayMd,
+      ...typography.heading,
       color: colors.textPrimary,
     },
     subtitle: {
       ...typography.body,
       color: colors.textSecondary,
-      marginTop: -spacing.lg,
-    },
-    form: {
-      gap: spacing.lg,
+      marginTop: -spacing.md,
     },
     error: {
       ...typography.caption,
@@ -103,6 +192,7 @@ function createStyles(colors: Colors) {
       flexDirection: 'row',
       justifyContent: 'center',
       gap: spacing.xs,
+      marginTop: spacing.sm,
     },
     footerText: {
       ...typography.body,
@@ -111,6 +201,63 @@ function createStyles(colors: Colors) {
     footerLink: {
       ...typography.bodyMedium,
       color: colors.primary,
+    },
+    section: {
+      gap: spacing.md,
+    },
+    sectionTitle: {
+      ...typography.subheading,
+      color: colors.textPrimary,
+    },
+    benefitsList: {
+      gap: spacing.md,
+    },
+    benefitRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: spacing.md,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.lg,
+      padding: spacing.md,
+    },
+    benefitIcon: {
+      fontSize: 22,
+    },
+    benefitTextBlock: {
+      flex: 1,
+      gap: 2,
+    },
+    benefitTitle: {
+      ...typography.bodyMedium,
+      color: colors.textPrimary,
+    },
+    benefitDescription: {
+      ...typography.caption,
+      color: colors.textSecondary,
+    },
+    newsList: {
+      gap: spacing.sm,
+    },
+    newsCard: {
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.lg,
+      padding: spacing.md,
+      gap: 2,
+    },
+    newsCardPressed: {
+      opacity: 0.7,
+    },
+    newsTitle: {
+      ...typography.bodyMedium,
+      color: colors.textPrimary,
+    },
+    newsSource: {
+      ...typography.caption,
+      color: colors.textMuted,
     },
   });
 }

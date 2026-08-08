@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../../../../src/components/Button';
 import { Card } from '../../../../../src/components/Card';
 import { EmptyState } from '../../../../../src/components/EmptyState';
+import { FadeSlideIn } from '../../../../../src/components/FadeSlideIn';
 import { FinancialSummary } from '../../../../../src/components/FinancialSummary';
 import { ScreenHeader } from '../../../../../src/components/ScreenHeader';
 import { StatGrid } from '../../../../../src/components/StatGrid';
@@ -72,6 +73,7 @@ export default function CorteHomeScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           ListHeaderComponent={
+            <FadeSlideIn>
             <View style={styles.headerContent}>
               <StatGrid
                 stats={[
@@ -136,10 +138,13 @@ export default function CorteHomeScreen() {
                 </Pressable>
               </View>
             </View>
+            </FadeSlideIn>
           }
           ListEmptyComponent={<EmptyState text="Nenhum lote cadastrado ainda. Comece criando o primeiro." />}
-          renderItem={({ item }) => (
-            <LotCard lot={item} styles={styles} colors={colors} onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${item.id}`)} />
+          renderItem={({ item, index }) => (
+            <FadeSlideIn delay={Math.min(index, 6) * 50}>
+              <LotCard lot={item} styles={styles} colors={colors} onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${item.id}`)} />
+            </FadeSlideIn>
           )}
         />
       )}

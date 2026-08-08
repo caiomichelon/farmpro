@@ -4,6 +4,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CommodityTicker } from '../../../src/components/CommodityTicker';
+import { FadeSlideIn } from '../../../src/components/FadeSlideIn';
 import { SectorButton } from '../../../src/components/SectorButton';
 import { SummaryStat } from '../../../src/components/SummaryStat';
 import { useFarm } from '../../../src/hooks/useFarms';
@@ -76,58 +77,66 @@ export default function FarmHomeScreen() {
             </View>
           ) : null}
 
-          <View style={styles.sectorsRow}>
-            <SectorButton
-              title={t('farmHome.lavoura')}
-              subtitle={t('farmHome.lavouraSubtitle')}
-              color={colors.lavoura}
-              backgroundColor={colors.lavouraLight}
-              onPress={() => router.push(`/farms/${farmId}/lavoura`)}
-            />
-            <SectorButton
-              title={t('farmHome.pecuaria')}
-              subtitle={t('farmHome.pecuariaSubtitle')}
-              color={colors.pecuaria}
-              backgroundColor={colors.pecuariaLight}
-              onPress={() => router.push(`/farms/${farmId}/pecuaria`)}
-            />
-          </View>
-
-          <Pressable
-            style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
-            onPress={() => router.push(`/farms/${farmId}/funcionarios`)}
-          >
-            <View style={[styles.employeesMarker, { backgroundColor: colors.funcionarios }]} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.employeesTitle}>{t('farmHome.employees')}</Text>
-              <Text style={styles.employeesSubtitle}>{t('farmHome.employeesSubtitle')}</Text>
+          <FadeSlideIn>
+            <View style={styles.sectorsRow}>
+              <SectorButton
+                title={t('farmHome.lavoura')}
+                subtitle={t('farmHome.lavouraSubtitle')}
+                color={colors.lavoura}
+                backgroundColor={colors.lavouraLight}
+                onPress={() => router.push(`/farms/${farmId}/lavoura`)}
+              />
+              <SectorButton
+                title={t('farmHome.pecuaria')}
+                subtitle={t('farmHome.pecuariaSubtitle')}
+                color={colors.pecuaria}
+                backgroundColor={colors.pecuariaLight}
+                onPress={() => router.push(`/farms/${farmId}/pecuaria`)}
+              />
             </View>
-            <Text style={styles.employeesChevron}>→</Text>
-          </Pressable>
+          </FadeSlideIn>
 
-          <Pressable
-            style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
-            onPress={() => router.push(`/farms/${farmId}/membros`)}
-          >
-            <View style={[styles.employeesMarker, { backgroundColor: colors.primary }]} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.employeesTitle}>{t('farmHome.members')}</Text>
-              <Text style={styles.employeesSubtitle}>{t('farmHome.membersSubtitle')}</Text>
-            </View>
-            <Text style={styles.employeesChevron}>→</Text>
-          </Pressable>
+          <FadeSlideIn delay={60}>
+            <Pressable
+              style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
+              onPress={() => router.push(`/farms/${farmId}/funcionarios`)}
+            >
+              <View style={[styles.employeesMarker, { backgroundColor: colors.funcionarios }]} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.employeesTitle}>{t('farmHome.employees')}</Text>
+                <Text style={styles.employeesSubtitle}>{t('farmHome.employeesSubtitle')}</Text>
+              </View>
+              <Text style={styles.employeesChevron}>→</Text>
+            </Pressable>
+          </FadeSlideIn>
 
-          <Pressable
-            style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
-            onPress={() => router.push(`/farms/${farmId}/exportar`)}
-          >
-            <View style={[styles.employeesMarker, { backgroundColor: colors.textMuted }]} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.employeesTitle}>{t('farmHome.export')}</Text>
-              <Text style={styles.employeesSubtitle}>{t('farmHome.exportSubtitle')}</Text>
-            </View>
-            <Text style={styles.employeesChevron}>→</Text>
-          </Pressable>
+          <FadeSlideIn delay={110}>
+            <Pressable
+              style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
+              onPress={() => router.push(`/farms/${farmId}/membros`)}
+            >
+              <View style={[styles.employeesMarker, { backgroundColor: colors.primary }]} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.employeesTitle}>{t('farmHome.members')}</Text>
+                <Text style={styles.employeesSubtitle}>{t('farmHome.membersSubtitle')}</Text>
+              </View>
+              <Text style={styles.employeesChevron}>→</Text>
+            </Pressable>
+          </FadeSlideIn>
+
+          <FadeSlideIn delay={160}>
+            <Pressable
+              style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
+              onPress={() => router.push(`/farms/${farmId}/exportar`)}
+            >
+              <View style={[styles.employeesMarker, { backgroundColor: colors.textMuted }]} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.employeesTitle}>{t('farmHome.export')}</Text>
+                <Text style={styles.employeesSubtitle}>{t('farmHome.exportSubtitle')}</Text>
+              </View>
+              <Text style={styles.employeesChevron}>→</Text>
+            </Pressable>
+          </FadeSlideIn>
         </ScrollView>
       </SafeAreaView>
     </View>

@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../src/components/Button';
 import { EmptyState } from '../../src/components/EmptyState';
+import { FadeSlideIn } from '../../src/components/FadeSlideIn';
 import { TextField } from '../../src/components/TextField';
 import { useFarms, type FarmSummary } from '../../src/hooks/useFarms';
 import { joinFarmByCode } from '../../src/hooks/useFarmMembers';
@@ -23,15 +24,17 @@ export default function FarmSelectionScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.eyebrow}>{t('farms.eyebrow')}</Text>
-          <Text style={styles.title}>{t('farms.title')}</Text>
+      <FadeSlideIn>
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.eyebrow}>{t('farms.eyebrow')}</Text>
+            <Text style={styles.title}>{t('farms.title')}</Text>
+          </View>
+          <Pressable onPress={() => router.push('/ajustes')} hitSlop={12}>
+            <Text style={styles.settingsIcon}>{t('farms.settings')}</Text>
+          </Pressable>
         </View>
-        <Pressable onPress={() => router.push('/ajustes')} hitSlop={12}>
-          <Text style={styles.settingsIcon}>{t('farms.settings')}</Text>
-        </Pressable>
-      </View>
+      </FadeSlideIn>
 
       {isLoading ? (
         <ActivityIndicator style={styles.loading} color={colors.primary} />
@@ -41,7 +44,11 @@ export default function FarmSelectionScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={!isCreating ? <EmptyState text={t('farms.empty')} /> : null}
-          renderItem={({ item }) => <FarmCard farm={item} styles={styles} t={t} onPress={() => router.push(`/farms/${item.id}`)} />}
+          renderItem={({ item, index }) => (
+            <FadeSlideIn delay={Math.min(index, 6) * 60}>
+              <FarmCard farm={item} styles={styles} t={t} onPress={() => router.push(`/farms/${item.id}`)} />
+            </FadeSlideIn>
+          )}
         />
       )}
 
