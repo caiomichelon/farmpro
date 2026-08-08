@@ -20,6 +20,8 @@ export default function LavouraLayout() {
         name="safra/[seasonId]/nova-venda"
         options={{ animation: 'slide_from_bottom' }}
       />
+      <Stack.Screen name="estoque/novo-item" options={{ animation: 'slide_from_bottom' }} />
+      <Stack.Screen name="estoque/item/[itemId]/nova-movimentacao" options={{ animation: 'slide_from_bottom' }} />
     </Stack>
   );
 }

@@ -72,6 +72,10 @@ export default function LavouraHomeScreen() {
                   <Pressable onPress={() => router.push(`/farms/${farmId}/lavoura/safras`)} hitSlop={8}>
                     <Text style={styles.link}>Planilha de safras</Text>
                   </Pressable>
+                  <Text style={styles.linkDivider}>·</Text>
+                  <Pressable onPress={() => router.push(`/farms/${farmId}/lavoura/estoque`)} hitSlop={8}>
+                    <Text style={styles.link}>Estoque</Text>
+                  </Pressable>
                 </View>
               </View>
             </FadeSlideIn>

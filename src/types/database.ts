@@ -494,6 +494,39 @@ export type CattleInventoryMovement = {
   created_at: string;
 };
 
+export type LavouraInventoryCategory = 'sementes' | 'fertilizante' | 'defensivo' | 'combustivel' | 'outro';
+export type LavouraInventoryUnit = CattleInventoryUnit;
+export type LavouraInventoryMovementType = CattleInventoryMovementType;
+
+/** Item de estoque da Lavoura (sementes, fertilizante, defensivo,
+ * combustível) — mesmo desenho do estoque da Pecuária: quantidade atual
+ * calculada, nunca guardada solta. */
+export type LavouraInventoryItem = {
+  id: string;
+  farm_id: string;
+  name: string;
+  category: LavouraInventoryCategory;
+  unit: LavouraInventoryUnit;
+  initial_quantity: number;
+  min_quantity: number | null;
+  unit_cost: number | null;
+  notes: string | null;
+  created_at: string;
+};
+
+/** Entrada (compra) ou saída (aplicação) de um item de estoque da
+ * Lavoura — a saída pode indicar em qual safra foi usada. */
+export type LavouraInventoryMovement = {
+  id: string;
+  item_id: string;
+  type: LavouraInventoryMovementType;
+  quantity: number;
+  plot_season_id: string | null;
+  notes: string | null;
+  moved_at: string;
+  created_at: string;
+};
+
 /**
  * Preparação para o futuro — ainda sem gateway de pagamento integrado.
  * Ver supabase/migrations/0002_subscriptions_placeholder.sql.
@@ -772,6 +805,18 @@ export interface Database {
         Row: CattleInventoryMovement;
         Insert: Partial<CattleInventoryMovement> & { item_id: string; type: CattleInventoryMovementType; quantity: number };
         Update: Partial<CattleInventoryMovement>;
+        Relationships: [];
+      };
+      lavoura_inventory_items: {
+        Row: LavouraInventoryItem;
+        Insert: Partial<LavouraInventoryItem> & { farm_id: string; name: string; category: LavouraInventoryCategory; unit: LavouraInventoryUnit };
+        Update: Partial<LavouraInventoryItem>;
+        Relationships: [];
+      };
+      lavoura_inventory_movements: {
+        Row: LavouraInventoryMovement;
+        Insert: Partial<LavouraInventoryMovement> & { item_id: string; type: LavouraInventoryMovementType; quantity: number };
+        Update: Partial<LavouraInventoryMovement>;
         Relationships: [];
       };
     };
