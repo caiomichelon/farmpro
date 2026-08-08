@@ -38,9 +38,14 @@ export default function EmployeesHomeScreen() {
             : `${employees.length} ${employees.length === 1 ? 'funcionário' : 'funcionários'}`
         }
         right={
-          <Pressable onPress={() => router.push(`/farms/${farmId}/funcionarios/importar`)} hitSlop={12}>
-            <Text style={styles.headerLink}>Importar</Text>
-          </Pressable>
+          <View style={styles.headerLinks}>
+            <Pressable onPress={() => router.push(`/farms/${farmId}/funcionarios/planilha`)} hitSlop={12}>
+              <Text style={styles.headerLink}>Planilha</Text>
+            </Pressable>
+            <Pressable onPress={() => router.push(`/farms/${farmId}/funcionarios/importar`)} hitSlop={12}>
+              <Text style={styles.headerLink}>Importar</Text>
+            </Pressable>
+          </View>
         }
       />
 
@@ -112,6 +117,10 @@ function EmployeeCard({ employee, onPress }: { employee: EmployeeSummary; onPres
 }
 
 const styles = StyleSheet.create({
+  headerLinks: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
   headerLink: {
     ...typography.captionMedium,
     color: colors.funcionarios,

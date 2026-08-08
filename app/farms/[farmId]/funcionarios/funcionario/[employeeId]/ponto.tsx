@@ -1,11 +1,11 @@
 import { useLocalSearchParams } from 'expo-router';
 import * as Location from 'expo-location';
-import { useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../../../../src/components/Button';
-import { Card } from '../../../../../../src/components/Card';
+import { DataTable, type DataTableColumn } from '../../../../../../src/components/DataTable';
 import { EmptyState } from '../../../../../../src/components/EmptyState';
 import { LocationMap } from '../../../../../../src/components/LocationMap';
 import { ScreenHeader } from '../../../../../../src/components/ScreenHeader';
@@ -14,9 +14,26 @@ import { useTimeEntries } from '../../../../../../src/hooks/useTimeEntries';
 import type { TimeEntry } from '../../../../../../src/types/database';
 import { colors, radius, spacing, typography } from '../../../../../../src/theme';
 
+function buildColumns(): DataTableColumn<TimeEntry>[] {
+  return [
+    { key: 'type', label: 'Tipo', width: 130, render: (e) => TIME_ENTRY_TYPE_LABELS[e.entry_type] },
+    { key: 'when', label: 'Data/hora', width: 130, render: (e) => formatDateTime(e.recorded_at) },
+    {
+      key: 'location',
+      label: 'Localização',
+      width: 160,
+      render: (e) =>
+        e.latitude != null && e.longitude != null
+          ? `${e.latitude.toFixed(5)}, ${e.longitude.toFixed(5)}`
+          : 'Sem localização',
+    },
+  ];
+}
+
 export default function TimeClockScreen() {
   const { employeeId } = useLocalSearchParams<{ employeeId: string }>();
   const { entries, todaysEntries, nextEntryType, isLoading, error, createEntry } = useTimeEntries(employeeId);
+  const columns = useMemo(() => buildColumns(), []);
   const [isPunching, setIsPunching] = useState(false);
   const [punchError, setPunchError] = useState<string | null>(null);
   const [showMap, setShowMap] = useState(false);
@@ -103,37 +120,16 @@ export default function TimeClockScreen() {
 
       {isLoading ? (
         <ActivityIndicator style={styles.loading} color={colors.funcionarios} />
+      ) : entries.length === 0 ? (
+        <EmptyState text="Nenhum ponto registrado ainda." />
       ) : (
-        <FlatList
-          data={entries}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
-          ListEmptyComponent={<EmptyState text="Nenhum ponto registrado ainda." />}
-          renderItem={({ item }) => <EntryRow entry={item} />}
-        />
+        <ScrollView contentContainerStyle={styles.listContent}>
+          <DataTable title="Ponto" columns={columns} data={entries} keyExtractor={(e) => e.id} />
+        </ScrollView>
       )}
 
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
     </SafeAreaView>
-  );
-}
-
-function EntryRow({ entry }: { entry: TimeEntry }) {
-  return (
-    <Card style={styles.entryCard}>
-      <View style={styles.entryTopRow}>
-        <Text style={styles.entryType}>{TIME_ENTRY_TYPE_LABELS[entry.entry_type]}</Text>
-        <Text style={styles.entryTime}>{formatDateTime(entry.recorded_at)}</Text>
-      </View>
-      {entry.latitude != null && entry.longitude != null ? (
-        <Text style={styles.entryLocation}>
-          {entry.latitude.toFixed(5)}, {entry.longitude.toFixed(5)}
-          {entry.location_accuracy_m != null ? ` · ±${Math.round(entry.location_accuracy_m)}m` : ''}
-        </Text>
-      ) : (
-        <Text style={styles.entryLocation}>Sem localização registrada</Text>
-      )}
-    </Card>
   );
 }
 
@@ -203,29 +199,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: spacing.xl,
-    gap: spacing.md,
-    flexGrow: 1,
-  },
-  entryCard: {
-    marginBottom: spacing.md,
-  },
-  entryTopRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  entryType: {
-    ...typography.bodyMedium,
-    color: colors.textPrimary,
-  },
-  entryTime: {
-    ...typography.caption,
-    color: colors.textMuted,
-  },
-  entryLocation: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: 2,
+    paddingBottom: spacing.xxxl,
   },
   errorText: {
     ...typography.caption,

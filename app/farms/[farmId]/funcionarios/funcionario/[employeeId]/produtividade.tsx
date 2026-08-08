@@ -1,11 +1,11 @@
 import { useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../../../../src/components/Button';
-import { Card } from '../../../../../../src/components/Card';
 import { ChipSelect } from '../../../../../../src/components/ChipSelect';
+import { DataTable, type DataTableColumn } from '../../../../../../src/components/DataTable';
 import { EmptyState } from '../../../../../../src/components/EmptyState';
 import { ScreenHeader } from '../../../../../../src/components/ScreenHeader';
 import { TextField } from '../../../../../../src/components/TextField';
@@ -14,9 +14,19 @@ import { useProductivityRecords } from '../../../../../../src/hooks/useProductiv
 import type { ProductivityRecord } from '../../../../../../src/types/database';
 import { colors, spacing, typography } from '../../../../../../src/theme';
 
+function buildColumns(): DataTableColumn<ProductivityRecord>[] {
+  return [
+    { key: 'activity', label: 'Atividade', width: 160, render: (r) => r.activity },
+    { key: 'quantity', label: 'Quantidade', width: 110, render: (r) => Number(r.quantity).toLocaleString('pt-BR') },
+    { key: 'unit', label: 'Unidade', width: 100, render: (r) => r.unit },
+    { key: 'date', label: 'Data', width: 100, render: (r) => formatDate(r.record_date) },
+  ];
+}
+
 export default function ProductivityScreen() {
   const { employeeId } = useLocalSearchParams<{ employeeId: string }>();
   const { records, isLoading, error, createRecord } = useProductivityRecords(employeeId);
+  const columns = useMemo(() => buildColumns(), []);
   const [isAdding, setIsAdding] = useState(false);
 
   return (
@@ -25,14 +35,12 @@ export default function ProductivityScreen() {
 
       {isLoading ? (
         <ActivityIndicator style={styles.loading} color={colors.funcionarios} />
+      ) : records.length === 0 ? (
+        <EmptyState text="Nenhum registro de produtividade ainda." />
       ) : (
-        <FlatList
-          data={records}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
-          ListEmptyComponent={<EmptyState text="Nenhum registro de produtividade ainda." />}
-          renderItem={({ item }) => <RecordRow record={item} />}
-        />
+        <ScrollView contentContainerStyle={styles.listContent}>
+          <DataTable title="Produtividade" columns={columns} data={records} keyExtractor={(r) => r.id} />
+        </ScrollView>
       )}
 
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
@@ -52,20 +60,6 @@ export default function ProductivityScreen() {
         )}
       </View>
     </SafeAreaView>
-  );
-}
-
-function RecordRow({ record }: { record: ProductivityRecord }) {
-  return (
-    <Card style={styles.card}>
-      <View style={styles.cardTopRow}>
-        <Text style={styles.cardTitle}>{record.activity}</Text>
-        <Text style={styles.cardDate}>{formatDate(record.record_date)}</Text>
-      </View>
-      <Text style={styles.cardMeta}>
-        {Number(record.quantity).toLocaleString('pt-BR')} {record.unit}
-      </Text>
-    </Card>
   );
 }
 
@@ -136,30 +130,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: spacing.xl,
-    gap: spacing.md,
-    flexGrow: 1,
-  },
-  card: {
-    marginBottom: spacing.md,
-  },
-  cardTopRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  cardTitle: {
-    ...typography.bodyMedium,
-    color: colors.textPrimary,
-    flex: 1,
-  },
-  cardDate: {
-    ...typography.caption,
-    color: colors.textMuted,
-  },
-  cardMeta: {
-    ...typography.captionMedium,
-    color: colors.funcionarios,
-    marginTop: 2,
+    paddingBottom: spacing.xxxl,
   },
   errorText: {
     ...typography.caption,
