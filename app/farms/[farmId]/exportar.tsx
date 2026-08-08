@@ -1,6 +1,6 @@
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../src/components/Button';
@@ -77,6 +77,17 @@ export default function ExportFarmDataScreen() {
           onPress={handleExport}
           loading={status === 'exporting'}
         />
+
+        <Pressable
+          style={({ pressed }) => [styles.reportRow, pressed && styles.reportRowPressed]}
+          onPress={() => router.push(`/farms/${farmId}/relatorio-bancario`)}
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={styles.reportTitle}>Relatório para banco (PDF)</Text>
+            <Text style={styles.reportSubtitle}>Resumo pronto pra apresentar em financiamento — não é o dump de dados</Text>
+          </View>
+          <Text style={styles.reportChevron}>→</Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
@@ -110,5 +121,32 @@ const styles = StyleSheet.create({
   error: {
     ...typography.caption,
     color: colors.danger,
+  },
+  reportRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    padding: spacing.lg,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 14,
+    marginTop: spacing.sm,
+  },
+  reportRowPressed: {
+    opacity: 0.8,
+  },
+  reportTitle: {
+    ...typography.subheading,
+    color: colors.textPrimary,
+  },
+  reportSubtitle: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  reportChevron: {
+    ...typography.heading,
+    color: colors.primary,
   },
 });

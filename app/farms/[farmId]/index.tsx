@@ -10,6 +10,7 @@ import { SummaryStat } from '../../../src/components/SummaryStat';
 import { useFarm } from '../../../src/hooks/useFarms';
 import { useFarmAlerts } from '../../../src/hooks/useFarmAlerts';
 import { useSyncCattleNotifications } from '../../../src/hooks/useSyncCattleNotifications';
+import { useSyncWeatherNotifications } from '../../../src/hooks/useSyncWeatherNotifications';
 import { useT } from '../../../src/i18n';
 import { radius, spacing, typography, useColors, type Colors } from '../../../src/theme';
 
@@ -21,6 +22,7 @@ export default function FarmHomeScreen() {
   const { farm, isLoading } = useFarm(farmId);
   const { alerts } = useFarmAlerts(farmId);
   useSyncCattleNotifications(farmId);
+  useSyncWeatherNotifications(farmId);
 
   return (
     <View style={styles.container}>
@@ -125,6 +127,20 @@ export default function FarmHomeScreen() {
           </FadeSlideIn>
 
           <FadeSlideIn delay={160}>
+            <Pressable
+              style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
+              onPress={() => router.push(`/farms/${farmId}/clima`)}
+            >
+              <View style={[styles.employeesMarker, { backgroundColor: colors.accent }]} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.employeesTitle}>Clima</Text>
+                <Text style={styles.employeesSubtitle}>Alertas de geada, chuva, calor e vento</Text>
+              </View>
+              <Text style={styles.employeesChevron}>→</Text>
+            </Pressable>
+          </FadeSlideIn>
+
+          <FadeSlideIn delay={210}>
             <Pressable
               style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
               onPress={() => router.push(`/farms/${farmId}/exportar`)}

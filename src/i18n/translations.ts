@@ -133,6 +133,9 @@ export const pt = {
   'settings.notifications.vaccineDescription': 'Dose vencida ou vencendo nos próximos dias — avisa também no aparelho',
   'settings.notifications.calving': 'Parto previsto',
   'settings.notifications.calvingDescription': 'Parto se aproximando ou já vencido — avisa também no aparelho',
+  'settings.notifications.weather': 'Alertas de clima',
+  'settings.notifications.weatherDescription':
+    'Geada, chuva forte, calor extremo ou vento — quando a fazenda tem localização definida em Clima; avisa também no aparelho',
 
   'settings.language.subtitle': 'Escolha o idioma do app',
 
@@ -277,6 +280,9 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'settings.notifications.vaccineDescription': 'Dose overdue or due in the next few days — also alerts on your device',
   'settings.notifications.calving': 'Expected calving',
   'settings.notifications.calvingDescription': 'Calving coming up or already overdue — also alerts on your device',
+  'settings.notifications.weather': 'Weather alerts',
+  'settings.notifications.weatherDescription':
+    'Frost, heavy rain, extreme heat or wind — once the farm has a location set in Weather; also alerts on your device',
 
   'settings.language.subtitle': 'Choose the app language',
 
@@ -418,6 +424,9 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'settings.notifications.vaccineDescription': 'Dosis vencida o por vencer en los próximos días — también avisa en el celular',
   'settings.notifications.calving': 'Parto previsto',
   'settings.notifications.calvingDescription': 'Parto por llegar o ya vencido — también avisa en el celular',
+  'settings.notifications.weather': 'Alertas de clima',
+  'settings.notifications.weatherDescription':
+    'Helada, lluvia fuerte, calor extremo o viento — cuando la granja tiene ubicación definida en Clima; también avisa en el celular',
 
   'settings.language.subtitle': 'Elige el idioma de la app',
 

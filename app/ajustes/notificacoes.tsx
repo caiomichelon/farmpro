@@ -40,6 +40,11 @@ function buildItems(t: TFunction): { key: AlertPreferenceKey; title: string; des
       title: t('settings.notifications.calving'),
       description: t('settings.notifications.calvingDescription'),
     },
+    {
+      key: 'clima',
+      title: t('settings.notifications.weather'),
+      description: t('settings.notifications.weatherDescription'),
+    },
   ];
 }
 

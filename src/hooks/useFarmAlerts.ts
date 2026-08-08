@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { getDocumentAlertStatus } from '../lib/documentAlerts';
 import { supabase } from '../lib/supabase';
+import { deriveWeatherRisks, fetchWeatherForecast } from '../lib/weather';
 import type { AlertPreferenceKey } from '../types/database';
 import { useProfile } from './useProfile';
 
@@ -237,6 +238,25 @@ export function useFarmAlerts(farmId: string | undefined) {
                 href: `/farms/${farmId}/lavoura/safra/${season.id}`,
               });
             }
+          }
+        }
+      }
+
+      // ── Clima — só quando a fazenda já tem localização definida ────────
+      if (isAlertEnabled('clima')) {
+        const { data: farmRow } = await supabase.from('farms').select('latitude, longitude').eq('id', farmId).single();
+        if (farmRow?.latitude != null && farmRow?.longitude != null) {
+          const forecast = await fetchWeatherForecast(Number(farmRow.latitude), Number(farmRow.longitude));
+          const risks = deriveWeatherRisks(forecast);
+          for (const risk of risks) {
+            result.push({
+              id: `clima-${risk.type}`,
+              category: 'clima',
+              severity: risk.severity,
+              title: risk.title,
+              description: risk.description,
+              href: `/farms/${farmId}/clima`,
+            });
           }
         }
       }

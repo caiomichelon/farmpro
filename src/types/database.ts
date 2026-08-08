@@ -28,7 +28,14 @@ export type CattleHealthEventType = 'vacina' | 'tratamento' | 'doenca' | 'outro'
 
 /** Chaves de preferência de alerta — usadas em Ajustes → Notificações pra
  * ligar/desligar cada tipo de alerta inteligente mostrado na home da fazenda. */
-export type AlertPreferenceKey = 'documentos' | 'mortalidade' | 'peso_lote' | 'financeiro_safra' | 'vacina_pendente' | 'parto_previsto';
+export type AlertPreferenceKey =
+  | 'documentos'
+  | 'mortalidade'
+  | 'peso_lote'
+  | 'financeiro_safra'
+  | 'vacina_pendente'
+  | 'parto_previsto'
+  | 'clima';
 export type AlertPreferences = Partial<Record<AlertPreferenceKey, boolean>>;
 
 export type Profile = {
@@ -55,6 +62,10 @@ export type Farm = {
   name: string;
   city: string | null;
   state: string | null;
+  /** Localização usada pros alertas de clima proativos — nulo até o usuário
+   * capturar a posição atual em Clima → "Ativar alertas de clima". */
+  latitude: number | null;
+  longitude: number | null;
   created_at: string;
   created_by: string;
 };

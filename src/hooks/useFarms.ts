@@ -91,11 +91,21 @@ export function useFarms() {
     [reload]
   );
 
-  return { farms, isLoading, error, reload, createFarm };
+  const updateFarmLocation = useCallback(
+    async (farmId: string, latitude: number, longitude: number) => {
+      const { error: updateError } = await supabase.from('farms').update({ latitude, longitude }).eq('id', farmId);
+      if (updateError) return { error: updateError.message };
+      await reload();
+      return { error: null };
+    },
+    [reload]
+  );
+
+  return { farms, isLoading, error, reload, createFarm, updateFarmLocation };
 }
 
 export function useFarm(farmId: string | undefined) {
-  const { farms, isLoading, error, reload } = useFarms();
+  const { farms, isLoading, error, reload, updateFarmLocation } = useFarms();
   const farm = farms.find((f) => f.id === farmId);
-  return { farm, isLoading, error, reload };
+  return { farm, isLoading, error, reload, updateFarmLocation };
 }
