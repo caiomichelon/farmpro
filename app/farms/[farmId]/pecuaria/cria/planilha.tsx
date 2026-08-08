@@ -46,6 +46,7 @@ export default function CowsSpreadsheetScreen() {
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
           <DataTable
+            title="Matrizes"
             columns={columns}
             data={cows}
             keyExtractor={(c) => c.id}

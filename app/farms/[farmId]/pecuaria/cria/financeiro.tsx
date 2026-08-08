@@ -69,6 +69,7 @@ export default function BreedingFinancialSpreadsheetScreen() {
             </View>
           </View>
           <DataTable
+            title="Financeiro por matriz"
             columns={columns}
             data={cows}
             keyExtractor={(c) => c.id}

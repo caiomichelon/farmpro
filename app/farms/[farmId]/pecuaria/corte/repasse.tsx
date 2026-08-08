@@ -59,6 +59,7 @@ export default function RepasseScreen() {
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
           <DataTable
+            title="Repasse"
             columns={columns}
             data={repasseAnimals}
             keyExtractor={(a) => a.id}

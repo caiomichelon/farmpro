@@ -48,6 +48,7 @@ export default function SeasonsSpreadsheetScreen() {
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
           <DataTable
+            title="Safras"
             columns={COLUMNS}
             data={seasons}
             keyExtractor={(s) => s.id}

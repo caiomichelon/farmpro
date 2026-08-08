@@ -51,7 +51,7 @@ export default function SlaughtersSpreadsheetScreen() {
         <EmptyState text="Nenhum abate registrado ainda em nenhum lote." />
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
-          <DataTable columns={columns} data={slaughters} keyExtractor={(s) => s.id} />
+          <DataTable title="Abates" columns={columns} data={slaughters} keyExtractor={(s) => s.id} />
         </ScrollView>
       )}
 

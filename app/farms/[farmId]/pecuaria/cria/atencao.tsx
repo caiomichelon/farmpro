@@ -58,6 +58,7 @@ export default function AttentionScreen() {
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
           <DataTable
+            title="Atenção"
             columns={columns}
             data={attentionCows}
             keyExtractor={(c) => c.id}

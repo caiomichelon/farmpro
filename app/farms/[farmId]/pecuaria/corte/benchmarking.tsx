@@ -74,6 +74,7 @@ export default function CorteBenchmarkingScreen() {
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
           <DataTable
+            title="Benchmarking de lotes"
             columns={columns}
             data={rankedLots}
             keyExtractor={(l) => l.id}

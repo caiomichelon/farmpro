@@ -81,6 +81,7 @@ export default function AllAnimalsSpreadsheetScreen() {
             <EmptyState text="Nenhum animal encontrado com esse brinco." />
           ) : (
             <DataTable
+              title="Todos os animais"
               columns={columns}
               data={filteredAnimals}
               keyExtractor={(a) => a.id}

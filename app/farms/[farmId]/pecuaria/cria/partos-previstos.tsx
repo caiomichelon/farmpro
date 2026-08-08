@@ -66,6 +66,7 @@ export default function ExpectedCalvingsScreen() {
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
           <DataTable
+            title="Partos previstos"
             columns={columns}
             data={pregnantCows}
             keyExtractor={(c) => c.id}

@@ -33,6 +33,7 @@ export default function PlotsSpreadsheetScreen() {
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
           <DataTable
+            title="Talhões"
             columns={COLUMNS}
             data={plots}
             keyExtractor={(p) => p.id}

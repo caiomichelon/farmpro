@@ -60,6 +60,7 @@ export default function CriaBenchmarkingScreen() {
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
           <DataTable
+            title="Benchmarking de matrizes"
             columns={columns}
             data={rankedCows}
             keyExtractor={(c) => c.id}

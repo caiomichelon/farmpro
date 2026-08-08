@@ -61,6 +61,7 @@ export default function CattleFinancialSpreadsheetScreen() {
             Receita projetada na cotação atual do boi gordo — vira valor real só depois do abate de cada lote.
           </Text>
           <DataTable
+            title="Financeiro por lote"
             columns={columns}
             data={activeLots}
             keyExtractor={(l) => l.id}

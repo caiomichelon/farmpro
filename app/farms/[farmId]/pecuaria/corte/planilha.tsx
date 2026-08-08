@@ -48,6 +48,7 @@ export default function LotsSpreadsheetScreen() {
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
           <DataTable
+            title="Lotes"
             columns={columns}
             data={lots}
             keyExtractor={(l) => l.id}

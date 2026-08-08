@@ -73,6 +73,7 @@ export default function PendingVaccinesScreen() {
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
           <DataTable
+            title="Vacinas pendentes"
             columns={columns}
             data={events}
             keyExtractor={(e) => e.id}

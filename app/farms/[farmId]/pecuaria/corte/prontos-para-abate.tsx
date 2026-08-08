@@ -72,6 +72,7 @@ export default function ReadyForSlaughterScreen() {
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
           <DataTable
+            title="Prontos pra abate"
             columns={columns}
             data={readyLots}
             keyExtractor={(l) => l.id}
