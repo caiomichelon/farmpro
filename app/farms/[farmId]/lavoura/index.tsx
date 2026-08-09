@@ -24,15 +24,10 @@ export default function LavouraHomeScreen() {
   function handleHarvestPress() {
     if (activeSeason) {
       router.push(`/farms/${farmId}/lavoura/safra/${activeSeason.seasonId}/colheita`);
-    } else if (plots.length > 0) {
-      // Já tem talhão, mas nenhum tem safra lançada — o passo que falta é
-      // cadastrar a safra, não abrir a lista de novo.
-      router.push(`/farms/${farmId}/lavoura/talhao/${plots[0].id}/nova-safra`);
     } else {
-      // Sem nenhum talhão ainda — pula direto pro atalho que pede só
-      // cultura e área, sem introduzir o conceito de talhão pra quem só
-      // quer lançar colheita.
-      router.push(`/farms/${farmId}/lavoura/colheita-inicio`);
+      // Sem safra ativa (com ou sem talhão cadastrado) — vai direto pra
+      // colheita solta na fazenda, sem pedir nada antes.
+      router.push(`/farms/${farmId}/lavoura/colheita`);
     }
   }
 
@@ -42,9 +37,7 @@ export default function LavouraHomeScreen() {
         plot: activeSeason.plotName,
         season: activeSeason.seasonLabel,
       })
-    : plots.length > 0
-      ? t('lavouraHome.harvestCtaSubtitleNeedsSeason', { plot: plots[0].name })
-      : t('lavouraHome.harvestCtaSubtitleNeedsPlot');
+    : t('lavouraHome.harvestCtaSubtitleGeneric');
 
   // A tela de "novo talhão" é uma rota separada — ao voltar pra cá o hook
   // desta tela não recarrega sozinho (ela já estava montada, nada mudou nas

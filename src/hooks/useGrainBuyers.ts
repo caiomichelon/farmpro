@@ -87,17 +87,20 @@ export function useBuyerRanking(farmId: string | undefined) {
     setIsLoading(true);
     setError(null);
     try {
-      const { data, error: fetchError } = await supabase
-        .from('grain_sales')
-        .select(
-          'quantity_sacas, price_per_saca, buyer_id, grain_buyers(id, name), plot_seasons!inner(plots!inner(farm_id))'
-        )
-        .eq('plot_seasons.plots.farm_id', farmId);
+      const [bySeason, direct] = await Promise.all([
+        supabase
+          .from('grain_sales')
+          .select('quantity_sacas, price_per_saca, buyer_id, grain_buyers(id, name), plot_seasons!inner(plots!inner(farm_id))')
+          .eq('plot_seasons.plots.farm_id', farmId),
+        supabase.from('grain_sales').select('quantity_sacas, price_per_saca, buyer_id, grain_buyers(id, name)').eq('farm_id', farmId),
+      ]);
+      if (bySeason.error) throw bySeason.error;
+      if (direct.error) throw direct.error;
 
-      if (fetchError) throw fetchError;
+      const allSales = [...(bySeason.data ?? []), ...(direct.data ?? [])];
 
       const byBuyer = new Map<string, BuyerRanking>();
-      for (const sale of (data ?? []) as unknown as SaleWithRelations[]) {
+      for (const sale of allSales as unknown as SaleWithRelations[]) {
         if (!sale.buyer_id || !sale.grain_buyers) continue;
         const existing = byBuyer.get(sale.buyer_id) ?? {
           buyerId: sale.buyer_id,

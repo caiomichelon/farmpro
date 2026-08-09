@@ -195,7 +195,13 @@ export type Supplier = {
 /** Um lançamento de colheita (diário) de uma safra. */
 export type HarvestEntry = {
   id: string;
-  plot_season_id: string;
+  /** Talhão/safra dono deste lançamento — null quando foi lançado direto na
+   * fazenda (sem talhão), caso em que farm_id é quem preenchido. Exatamente
+   * um dos dois sempre está preenchido. */
+  plot_season_id: string | null;
+  /** Fazenda dona deste lançamento, quando não está amarrado a uma safra
+   * específica (ver plot_season_id). */
+  farm_id: string | null;
   harvested_at: string;
   quantity_sacas: number;
   notes: string | null;
@@ -228,7 +234,13 @@ export type GrainBuyer = {
 /** Venda de grão, lançada a partir da tela de colheita de uma safra. */
 export type GrainSale = {
   id: string;
-  plot_season_id: string;
+  /** Talhão/safra dona desta venda — null quando foi lançada direto na
+   * fazenda (sem talhão), caso em que farm_id é quem preenchido. Exatamente
+   * um dos dois sempre está preenchido. */
+  plot_season_id: string | null;
+  /** Fazenda dona desta venda, quando não está amarrada a uma safra
+   * específica (ver plot_season_id). */
+  farm_id: string | null;
   buyer_id: string | null;
   sale_date: string;
   quantity_sacas: number;
@@ -841,7 +853,7 @@ export interface Database {
       };
       harvest_entries: {
         Row: HarvestEntry;
-        Insert: Partial<HarvestEntry> & { plot_season_id: string; quantity_sacas: number };
+        Insert: Partial<HarvestEntry> & { quantity_sacas: number };
         Update: Partial<HarvestEntry>;
         Relationships: [];
       };
@@ -854,7 +866,6 @@ export interface Database {
       grain_sales: {
         Row: GrainSale;
         Insert: Partial<GrainSale> & {
-          plot_season_id: string;
           quantity_sacas: number;
           price_per_saca: number;
         };

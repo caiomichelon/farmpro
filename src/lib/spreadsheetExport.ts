@@ -90,47 +90,84 @@ const SHEETS: ExportSheet[] = [
   {
     name: 'Colheitas',
     fetch: async (farmId) => {
-      const { data, error } = await supabase
-        .from('harvest_entries')
-        .select('*, plot_seasons!inner(season_label, crop, plots!inner(farm_id, name))')
-        .eq('plot_seasons.plots.farm_id', farmId);
-      if (error) throw error;
-      return (
-        (data ?? []) as unknown as (Row & {
-          plot_seasons: { season_label: string; crop: string; plots: { name: string } | null } | null;
-        })[]
-      ).map((r) => ({
-        Talhão: r.plot_seasons?.plots?.name ?? '',
-        Safra: r.plot_seasons?.season_label ?? '',
-        Cultura: r.plot_seasons?.crop ?? '',
-        'Colhido em': formatDate(r.harvested_at as string),
-        'Quantidade (sacas)': r.quantity_sacas,
-        Observações: r.notes ?? '',
-      }));
+      // Lançamentos amarrados a talhão/safra e lançamentos soltos direto na
+      // fazenda (sem talhão) são buscados em duas consultas separadas — o
+      // Supabase não faz "OR" entre uma junção e uma coluna direta na mesma
+      // query — e depois combinados numa lista só.
+      const [bySeason, direct] = await Promise.all([
+        supabase
+          .from('harvest_entries')
+          .select('*, plot_seasons!inner(season_label, crop, plots!inner(farm_id, name))')
+          .eq('plot_seasons.plots.farm_id', farmId),
+        supabase.from('harvest_entries').select('*').eq('farm_id', farmId),
+      ]);
+      if (bySeason.error) throw bySeason.error;
+      if (direct.error) throw direct.error;
+
+      const seasonRows = (bySeason.data ?? []) as unknown as (Row & {
+        plot_seasons: { season_label: string; crop: string; plots: { name: string } | null } | null;
+      })[];
+      const directRows = (direct.data ?? []) as Row[];
+
+      return [
+        ...seasonRows.map((r) => ({
+          Talhão: r.plot_seasons?.plots?.name ?? '',
+          Safra: r.plot_seasons?.season_label ?? '',
+          Cultura: r.plot_seasons?.crop ?? '',
+          'Colhido em': formatDate(r.harvested_at as string),
+          'Quantidade (sacas)': r.quantity_sacas,
+          Observações: r.notes ?? '',
+        })),
+        ...directRows.map((r) => ({
+          Talhão: '',
+          Safra: '',
+          Cultura: '',
+          'Colhido em': formatDate(r.harvested_at as string),
+          'Quantidade (sacas)': r.quantity_sacas,
+          Observações: r.notes ?? '',
+        })),
+      ];
     },
   },
   {
     name: 'Vendas de grão',
     fetch: async (farmId) => {
-      const { data, error } = await supabase
-        .from('grain_sales')
-        .select('*, grain_buyers(name), plot_seasons!inner(season_label, crop, plots!inner(farm_id, name))')
-        .eq('plot_seasons.plots.farm_id', farmId);
-      if (error) throw error;
-      return (
-        (data ?? []) as unknown as (Row & {
-          grain_buyers: { name: string } | null;
-          plot_seasons: { season_label: string; crop: string; plots: { name: string } | null } | null;
-        })[]
-      ).map((r) => ({
-        Talhão: r.plot_seasons?.plots?.name ?? '',
-        Safra: r.plot_seasons?.season_label ?? '',
-        Cultura: r.plot_seasons?.crop ?? '',
-        Comprador: r.grain_buyers?.name ?? '',
-        'Vendido em': formatDate(r.sale_date as string),
-        'Quantidade (sacas)': r.quantity_sacas,
-        'Preço por saca': r.price_per_saca,
-      }));
+      const [bySeason, direct] = await Promise.all([
+        supabase
+          .from('grain_sales')
+          .select('*, grain_buyers(name), plot_seasons!inner(season_label, crop, plots!inner(farm_id, name))')
+          .eq('plot_seasons.plots.farm_id', farmId),
+        supabase.from('grain_sales').select('*, grain_buyers(name)').eq('farm_id', farmId),
+      ]);
+      if (bySeason.error) throw bySeason.error;
+      if (direct.error) throw direct.error;
+
+      const seasonRows = (bySeason.data ?? []) as unknown as (Row & {
+        grain_buyers: { name: string } | null;
+        plot_seasons: { season_label: string; crop: string; plots: { name: string } | null } | null;
+      })[];
+      const directRows = (direct.data ?? []) as unknown as (Row & { grain_buyers: { name: string } | null })[];
+
+      return [
+        ...seasonRows.map((r) => ({
+          Talhão: r.plot_seasons?.plots?.name ?? '',
+          Safra: r.plot_seasons?.season_label ?? '',
+          Cultura: r.plot_seasons?.crop ?? '',
+          Comprador: r.grain_buyers?.name ?? '',
+          'Vendido em': formatDate(r.sale_date as string),
+          'Quantidade (sacas)': r.quantity_sacas,
+          'Preço por saca': r.price_per_saca,
+        })),
+        ...directRows.map((r) => ({
+          Talhão: '',
+          Safra: '',
+          Cultura: '',
+          Comprador: r.grain_buyers?.name ?? '',
+          'Vendido em': formatDate(r.sale_date as string),
+          'Quantidade (sacas)': r.quantity_sacas,
+          'Preço por saca': r.price_per_saca,
+        })),
+      ];
     },
   },
   {

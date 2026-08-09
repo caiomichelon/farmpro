@@ -3,22 +3,30 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import type { HarvestEntry } from '../types/database';
 
-/** Acompanhamento de colheita em tempo real de uma safra (lançamentos por dia). */
-export function useHarvestEntries(seasonId: string | undefined) {
+/** Onde os lançamentos de colheita ficam amarrados — a uma safra específica
+ * (seasonId, o jeito "organizado" por talhão) ou direto na fazenda (farmId,
+ * pra quem só quer lançar sem se preocupar com talhão/safra). Exatamente um
+ * dos dois deve vir preenchido. */
+export interface HarvestTarget {
+  seasonId?: string;
+  farmId?: string;
+}
+
+/** Acompanhamento de colheita em tempo real (lançamentos por dia) — de uma
+ * safra específica, ou soltos direto na fazenda quando não há talhão. */
+export function useHarvestEntries({ seasonId, farmId }: HarvestTarget) {
   const [entries, setEntries] = useState<HarvestEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
-    if (!seasonId) return;
+    if (!seasonId && !farmId) return;
     setIsLoading(true);
     setError(null);
     try {
-      const { data, error: fetchError } = await supabase
-        .from('harvest_entries')
-        .select('*')
-        .eq('plot_season_id', seasonId)
-        .order('harvested_at', { ascending: false });
+      let query = supabase.from('harvest_entries').select('*');
+      query = seasonId ? query.eq('plot_season_id', seasonId) : query.eq('farm_id', farmId as string);
+      const { data, error: fetchError } = await query.order('harvested_at', { ascending: false });
 
       if (fetchError) throw fetchError;
       setEntries(data ?? []);
@@ -27,7 +35,7 @@ export function useHarvestEntries(seasonId: string | undefined) {
     } finally {
       setIsLoading(false);
     }
-  }, [seasonId]);
+  }, [seasonId, farmId]);
 
   useEffect(() => {
     reload();
@@ -45,12 +53,13 @@ export function useHarvestEntries(seasonId: string | undefined) {
       kg_per_saca?: number;
       photo_url?: string;
     }) => {
-      if (!seasonId) return { error: 'Safra não encontrada.', id: null };
+      if (!seasonId && !farmId) return { error: 'Fazenda não encontrada.', id: null };
 
       const { data, error: insertError } = await supabase
         .from('harvest_entries')
         .insert({
-          plot_season_id: seasonId,
+          plot_season_id: seasonId ?? null,
+          farm_id: seasonId ? null : (farmId as string),
           quantity_sacas: input.quantity_sacas,
           harvested_at: input.harvested_at || new Date().toISOString().slice(0, 10),
           notes: input.notes || null,
@@ -69,7 +78,7 @@ export function useHarvestEntries(seasonId: string | undefined) {
       await reload();
       return { error: null, id: data.id as string };
     },
-    [seasonId, reload]
+    [seasonId, farmId, reload]
   );
 
   const totalSacas = entries.reduce((sum, e) => sum + Number(e.quantity_sacas), 0);

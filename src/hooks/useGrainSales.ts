@@ -2,27 +2,27 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { supabase } from '../lib/supabase';
 import type { GrainSale } from '../types/database';
+import type { HarvestTarget } from './useHarvestEntries';
 
 export interface GrainSaleWithBuyer extends GrainSale {
   buyerName: string | null;
 }
 
-/** Vendas de grão de uma safra — lançada dentro da área de colheita. */
-export function useGrainSales(seasonId: string | undefined) {
+/** Vendas de grão de uma safra — lançada dentro da área de colheita — ou
+ * soltas direto na fazenda quando não há talhão (ver HarvestTarget). */
+export function useGrainSales({ seasonId, farmId }: HarvestTarget) {
   const [sales, setSales] = useState<GrainSaleWithBuyer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
-    if (!seasonId) return;
+    if (!seasonId && !farmId) return;
     setIsLoading(true);
     setError(null);
     try {
-      const { data, error: fetchError } = await supabase
-        .from('grain_sales')
-        .select('*, grain_buyers(name)')
-        .eq('plot_season_id', seasonId)
-        .order('sale_date', { ascending: false });
+      let query = supabase.from('grain_sales').select('*, grain_buyers(name)');
+      query = seasonId ? query.eq('plot_season_id', seasonId) : query.eq('farm_id', farmId as string);
+      const { data, error: fetchError } = await query.order('sale_date', { ascending: false });
 
       if (fetchError) throw fetchError;
 
@@ -33,7 +33,7 @@ export function useGrainSales(seasonId: string | undefined) {
     } finally {
       setIsLoading(false);
     }
-  }, [seasonId]);
+  }, [seasonId, farmId]);
 
   useEffect(() => {
     reload();
@@ -52,10 +52,11 @@ export function useGrainSales(seasonId: string | undefined) {
       freight_cost?: number;
       harvest_entry_id?: string;
     }) => {
-      if (!seasonId) return { error: 'Safra não encontrada.' };
+      if (!seasonId && !farmId) return { error: 'Fazenda não encontrada.' };
 
       const { error: insertError } = await supabase.from('grain_sales').insert({
-        plot_season_id: seasonId,
+        plot_season_id: seasonId ?? null,
+        farm_id: seasonId ? null : (farmId as string),
         buyer_id: input.buyer_id || null,
         quantity_sacas: input.quantity_sacas,
         price_per_saca: input.price_per_saca,
@@ -73,7 +74,7 @@ export function useGrainSales(seasonId: string | undefined) {
       await reload();
       return { error: null };
     },
-    [seasonId, reload]
+    [seasonId, farmId, reload]
   );
 
   const totalSacasSold = sales.reduce((sum, s) => sum + Number(s.quantity_sacas), 0);

@@ -24,7 +24,13 @@ const EMPTY: LavouraSummary = {
 
 /** Números da Lavoura pra fazenda inteira — inclui o resultado financeiro
  * (custo x receita das vendas de grão), não só contagens. Usado na tela
- * principal da Lavoura pra mostrar indicadores assim que abre. */
+ * principal da Lavoura pra mostrar indicadores assim que abre.
+ *
+ * Conta tanto o que está organizado por talhão/safra quanto o que foi
+ * lançado solto, direto na fazenda (sem talhão) — a receita das vendas
+ * soltas entra no resultado financeiro; produtividade (sc/ha) continua só
+ * com dados de safra, porque lançamento solto não tem área pra dividir
+ * (senão o número ficaria inventado). */
 export function useLavouraSummary(farmId: string | undefined) {
   const [summary, setSummary] = useState<LavouraSummary>(EMPTY);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,18 +41,20 @@ export function useLavouraSummary(farmId: string | undefined) {
     setIsLoading(true);
     setError(null);
     try {
-      const { data: plots, error: plotsError } = await supabase
-        .from('plots')
-        .select('id, area_hectares')
-        .eq('farm_id', farmId)
-        .eq('type', 'lavoura');
+      const [{ data: plots, error: plotsError }, { data: generalSales, error: generalSalesError }] = await Promise.all([
+        supabase.from('plots').select('id, area_hectares').eq('farm_id', farmId).eq('type', 'lavoura'),
+        supabase.from('grain_sales').select('quantity_sacas, price_per_saca').eq('farm_id', farmId),
+      ]);
       if (plotsError) throw plotsError;
+      if (generalSalesError) throw generalSalesError;
+
+      const generalRevenue = (generalSales ?? []).reduce((sum, s) => sum + Number(s.quantity_sacas) * Number(s.price_per_saca), 0);
 
       const plotIds = (plots ?? []).map((p) => p.id);
       const totalHectares = (plots ?? []).reduce((sum, p) => sum + Number(p.area_hectares), 0);
 
       if (plotIds.length === 0) {
-        setSummary({ ...EMPTY, totalPlots: 0 });
+        setSummary({ ...EMPTY, totalRevenue: generalRevenue, margin: generalRevenue });
         return;
       }
 
@@ -62,7 +70,7 @@ export function useLavouraSummary(farmId: string | undefined) {
       let totalHarvestedSacas = 0;
       let harvestedArea = 0;
       let totalCost = 0;
-      let totalRevenue = 0;
+      let totalRevenue = generalRevenue;
 
       if (seasonIds.length > 0) {
         const [{ data: harvests, error: harvestsError }, { data: costs, error: costsError }, { data: sales, error: salesError }] =
@@ -82,7 +90,7 @@ export function useLavouraSummary(farmId: string | undefined) {
           .reduce((sum, s) => sum + Number(s.planted_area_hectares), 0);
 
         totalCost = (costs ?? []).reduce((sum, c) => sum + Number(c.total_cost), 0);
-        totalRevenue = (sales ?? []).reduce((sum, s) => sum + Number(s.quantity_sacas) * Number(s.price_per_saca), 0);
+        totalRevenue += (sales ?? []).reduce((sum, s) => sum + Number(s.quantity_sacas) * Number(s.price_per_saca), 0);
       }
 
       setSummary({
