@@ -145,7 +145,14 @@ export default function HarvestScreen() {
                 onClose={() => setIsAdding(false)}
               />
             ) : (
-              <Button label={t('harvest.newEntry')} variant="secondary" onPress={() => setIsAdding(true)} />
+              <>
+                <Button label={t('harvest.newEntry')} variant="secondary" onPress={() => setIsAdding(true)} />
+                <Button
+                  label={t('harvest.importButton')}
+                  variant="ghost"
+                  onPress={() => router.push(`/farms/${farmId}/lavoura/safra/${seasonId}/colheita-importar`)}
+                />
+              </>
             )}
             {error ? <Text style={styles.error}>{error}</Text> : null}
           </View>

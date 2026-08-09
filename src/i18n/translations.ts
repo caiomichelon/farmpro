@@ -648,6 +648,10 @@ export const pt = {
   'harvest.entryUnsold': 'Ainda não vendida',
   'harvest.entrySaleInfo': '{{buyer}} · {{price}}/sc',
   'harvest.linkSale': 'Vincular venda',
+  'harvest.importButton': 'Importar várias notas de uma planilha',
+
+  'harvestImport.title': 'Importar notas de colheita',
+  'harvestImport.subtitle': 'De uma planilha Excel ou CSV — uma linha por nota de caminhão',
 } as const;
 
 export type TranslationKey = keyof typeof pt;
@@ -1270,6 +1274,10 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'harvest.entryUnsold': 'Not sold yet',
   'harvest.entrySaleInfo': '{{buyer}} · {{price}}/bag',
   'harvest.linkSale': 'Link sale',
+  'harvest.importButton': 'Import several tickets from a spreadsheet',
+
+  'harvestImport.title': 'Import harvest tickets',
+  'harvestImport.subtitle': 'From an Excel or CSV spreadsheet — one row per truck ticket',
 };
 
 export const es: Partial<Record<TranslationKey, string>> = {
@@ -1890,4 +1898,8 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'harvest.entryUnsold': 'Todavía no vendida',
   'harvest.entrySaleInfo': '{{buyer}} · {{price}}/bolsa',
   'harvest.linkSale': 'Vincular venta',
+  'harvest.importButton': 'Importar varios comprobantes de una planilla',
+
+  'harvestImport.title': 'Importar comprobantes de cosecha',
+  'harvestImport.subtitle': 'De una planilla Excel o CSV — una fila por comprobante de camión',
 };

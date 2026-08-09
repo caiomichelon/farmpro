@@ -16,6 +16,19 @@ import { Card } from './Card';
 import { ChipSelect } from './ChipSelect';
 import { DataTable, type DataTableColumn } from './DataTable';
 
+/** Campo que não vem direto de uma coluna da planilha, mas é calculado a
+ * partir de outros campos já mapeados na mesma linha — ex.: sacas colhidas
+ * calculadas a partir do peso líquido ÷ kg por saca. Só roda quando o campo
+ * não foi preenchido diretamente (permite que o usuário também mapeie uma
+ * coluna própria, se a planilha já tiver esse valor pronto). */
+export interface ImportComputedField {
+  key: string;
+  label: string;
+  /** Mensagem de erro na linha quando o cálculo não é possível (ex.: faltou peso). */
+  requiredMessage: string;
+  compute: (row: Record<string, unknown>) => number | null;
+}
+
 interface ImportWizardProps {
   /** Nome da tabela do Supabase onde as linhas válidas serão inseridas. */
   table: string;
@@ -23,6 +36,8 @@ interface ImportWizardProps {
   accentColor: string;
   /** Campos fixos (não vêm da planilha) — ex.: farm_id, lot_id da rota atual. */
   fixedValues?: Record<string, unknown>;
+  /** Campos derivados de outros campos da mesma linha (opcional). */
+  computedFields?: ImportComputedField[];
   onDone: () => void;
 }
 
@@ -30,7 +45,7 @@ type Step = 'pick' | 'map' | 'preview' | 'done';
 
 const NONE = '__none__';
 
-export function ImportWizard({ table, fields, accentColor, fixedValues, onDone }: ImportWizardProps) {
+export function ImportWizard({ table, fields, accentColor, fixedValues, computedFields, onDone }: ImportWizardProps) {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [step, setStep] = useState<Step>('pick');
@@ -82,6 +97,13 @@ export function ImportWizard({ table, fields, accentColor, fixedValues, onDone }
         else if (value !== null) mappedRow[field.key] = value;
       }
 
+      for (const computed of computedFields ?? []) {
+        if (mappedRow[computed.key] !== undefined && mappedRow[computed.key] !== null) continue;
+        const value = computed.compute(mappedRow);
+        if (value === null) problems.push(computed.requiredMessage);
+        else mappedRow[computed.key] = value;
+      }
+
       if (problems.length > 0) {
         rowErrors.push({ row: rowIndex + 2, message: problems.join('; ') }); // +2: linha 1 é cabeçalho
       } else {
@@ -107,7 +129,7 @@ export function ImportWizard({ table, fields, accentColor, fixedValues, onDone }
   const requiredMissing = fields.filter((f) => f.required && mapping[f.key] === null);
   const { valid: previewRows, rowErrors: previewErrors } = sheet ? buildRows() : { valid: [], rowErrors: [] };
 
-  const previewColumns: DataTableColumn<Record<string, unknown>>[] = fields.map((f) => ({
+  const previewColumns: DataTableColumn<Record<string, unknown>>[] = [...fields, ...(computedFields ?? [])].map((f) => ({
     key: f.key,
     label: f.label,
     width: 130,
