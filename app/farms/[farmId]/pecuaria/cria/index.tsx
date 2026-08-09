@@ -46,6 +46,7 @@ export default function CriaHomeScreen() {
 
   const pregnantCount = cows.filter((c) => c.isPregnant).length;
   const attentionCount = cows.filter((c) => c.reproductiveStatus === 'vazia_atencao').length;
+  const repasseCount = cows.filter((c) => c.reproductiveStatus === 'vazia').length;
   const totalCalves = cows.reduce((sum, c) => sum + c.calfCount, 0);
   const pregnancyRate = cows.length > 0 ? (pregnantCount / cows.length) * 100 : 0;
   const totalCost = cows.reduce((sum, c) => sum + c.totalCost, 0);
@@ -113,6 +114,19 @@ export default function CriaHomeScreen() {
                 </Pressable>
               ) : null}
 
+              {repasseCount > 0 ? (
+                <Pressable
+                  style={({ pressed }) => [styles.repasseBanner, pressed && styles.rowPressed]}
+                  onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/atencao`)}
+                >
+                  <Text style={styles.repasseBannerText}>
+                    🔄 {repasseCount} {repasseCount === 1 ? t('criaHome.repasseCowSingular') : t('criaHome.repasseCowPlural')}{' '}
+                    {t('criaHome.repasseSuffix')}
+                  </Text>
+                  <Text style={styles.repasseBannerChevron}>→</Text>
+                </Pressable>
+              ) : null}
+
               <Card style={styles.financialCard}>
                 <Text style={styles.financialTitle}>{t('criaHome.costTitle')}</Text>
                 <View style={styles.financialRow}>
@@ -151,6 +165,10 @@ export default function CriaHomeScreen() {
                 <Text style={styles.linkDivider}>·</Text>
                 <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/comparativo-regional`)} hitSlop={8}>
                   <Text style={styles.link}>{t('criaHome.linkRegionalComparison')}</Text>
+                </Pressable>
+                <Text style={styles.linkDivider}>·</Text>
+                <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/indicadores`)} hitSlop={8}>
+                  <Text style={styles.link}>{t('criaHome.linkIndicators')}</Text>
                 </Pressable>
               </View>
 
@@ -251,6 +269,25 @@ function createStyles(colors: Colors) {
     attentionBannerChevron: {
       ...typography.heading,
       color: colors.danger,
+    },
+    repasseBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: colors.warningLight,
+      borderWidth: 1,
+      borderColor: colors.warning,
+      borderRadius: radius.md,
+      padding: spacing.md,
+    },
+    repasseBannerText: {
+      ...typography.bodyMedium,
+      color: colors.warning,
+      flex: 1,
+    },
+    repasseBannerChevron: {
+      ...typography.heading,
+      color: colors.warning,
     },
     financialCard: {
       gap: spacing.sm,
