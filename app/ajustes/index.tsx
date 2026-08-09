@@ -4,28 +4,41 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ScreenHeader } from '../../src/components/ScreenHeader';
+import { isAdminEmail } from '../../src/config/admin';
+import { useAuth } from '../../src/context/AuthContext';
 import { useT, type TFunction } from '../../src/i18n';
 import { spacing, typography, useColors, type Colors } from '../../src/theme';
 
-function buildItems(t: TFunction) {
-  return [
+function buildItems(t: TFunction, isAdmin: boolean) {
+  const items = [
     { title: t('settings.account'), subtitle: t('settings.accountSubtitle'), href: '/ajustes/conta', marker: 'primary' },
     { title: t('settings.appearance'), subtitle: t('settings.appearanceSubtitle'), href: '/ajustes/aparencia', marker: 'lavoura' },
     { title: t('settings.notifications'), subtitle: t('settings.notificationsSubtitle'), href: '/ajustes/notificacoes', marker: 'pecuaria' },
     { title: t('settings.language'), subtitle: t('settings.languageSubtitle'), href: '/ajustes/idioma', marker: 'funcionarios' },
-  ] as const;
+  ];
+  if (isAdmin) {
+    items.push({
+      title: '📈 Painel administrativo',
+      subtitle: 'Fazendas, usuários e atividade — dado real do banco',
+      href: '/admin',
+      marker: 'admin',
+    });
+  }
+  return items;
 }
 
 export default function AjustesScreen() {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const t = useT();
-  const items = buildItems(t);
+  const { session } = useAuth();
+  const items = buildItems(t, isAdminEmail(session?.user?.email));
   const markerColor: Record<string, string> = {
     primary: colors.primary,
     lavoura: colors.lavoura,
     pecuaria: colors.pecuaria,
     funcionarios: colors.funcionarios,
+    admin: colors.accent,
   };
 
   return (

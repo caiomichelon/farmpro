@@ -1091,6 +1091,10 @@ export interface Database {
         Args: { p_farm_id: string };
         Returns: { regional_avg_yield_sacas_ha: number | null; participant_farm_count: number }[];
       };
+      admin_dashboard_stats: {
+        Args: Record<string, never>;
+        Returns: unknown;
+      };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
