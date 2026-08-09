@@ -71,15 +71,15 @@ export function FarmScene({ variant = 'hero' }: FarmSceneProps) {
   const furrows = useMemo(() => buildFurrowLines(9, 6, 96, isCover ? 78 : 46, 5), [isCover]);
 
   const sunGlowScale = sunPulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.22] });
-  const sunGlowOpacity = sunPulse.interpolate({ inputRange: [0, 1], outputRange: [0.22, 0.05] });
+  const sunGlowOpacity = sunPulse.interpolate({ inputRange: [0, 1], outputRange: [0.32, 0.1] });
   // Faixa em pontos (não %) porque translateX com string percentual não é
   // suportado de forma confiável fora da web pelo driver nativo — a faixa
   // cobre a largura típica de tela de celular de sobra.
   const bird1X = bird1.interpolate({ inputRange: [0, 1], outputRange: [-24, 420] });
   const bird2X = bird2.interpolate({ inputRange: [0, 1], outputRange: [-24, 420] });
 
-  const sunTop = isCover ? '30%' : '8%';
-  const sunSize = isCover ? 34 : 26;
+  const sunTop = isCover ? '28%' : '6%';
+  const sunSize = isCover ? 38 : 30;
 
   return (
     <Animated.View
@@ -121,14 +121,19 @@ export function FarmScene({ variant = 'hero' }: FarmSceneProps) {
       {/* Colinas em camadas + sulcos de plantio */}
       <Svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" style={styles.svg}>
         <Path
-          d={isCover ? 'M0,72 C22,60 45,80 68,66 C82,58 92,66 100,60 L100,100 L0,100 Z' : 'M0,82 C24,70 46,90 70,76 C84,68 92,76 100,70 L100,100 L0,100 Z'}
+          d={isCover ? 'M0,68 C22,54 45,76 68,60 C82,50 92,60 100,54 L100,100 L0,100 Z' : 'M0,78 C24,66 46,86 70,70 C84,60 92,70 100,64 L100,100 L0,100 Z'}
           fill={colors.primaryDark}
           opacity={0.85}
         />
         <Path
+          d={isCover ? 'M0,79 C22,68 48,87 72,74 C86,66 94,74 100,68 L100,100 L0,100 Z' : 'M0,87 C22,78 48,96 74,84 C86,78 94,84 100,80 L100,100 L0,100 Z'}
+          fill={colors.pecuaria}
+          opacity={0.55}
+        />
+        <Path
           d={isCover ? 'M0,86 C20,78 50,94 76,82 C88,76 94,84 100,80 L100,100 L0,100 Z' : 'M0,92 C20,86 50,100 76,90 C88,86 94,92 100,90 L100,100 L0,100 Z'}
           fill={colors.lavoura}
-          opacity={0.9}
+          opacity={0.92}
         />
         {furrows.map((line, index) => (
           <Line
@@ -138,8 +143,8 @@ export function FarmScene({ variant = 'hero' }: FarmSceneProps) {
             x2={line.x2}
             y2={line.y2}
             stroke={colors.textInverse}
-            strokeWidth={0.6}
-            opacity={0.16}
+            strokeWidth={0.7}
+            opacity={0.2}
             strokeLinecap="round"
           />
         ))}

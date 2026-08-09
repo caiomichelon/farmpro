@@ -45,6 +45,10 @@ export const pt = {
   'auth.login.benefit3Description': 'Vacina vencendo, documento vencendo, safra no prejuízo — o app avisa sozinho.',
   'auth.login.benefit4Title': 'Excel e gráfico com um toque',
   'auth.login.benefit4Description': 'Qualquer planilha do app vira arquivo Excel ou gráfico na hora.',
+  'auth.login.benefit5Title': 'Calculadoras prontas',
+  'auth.login.benefit5Description': 'Preço mínimo, calda, adubação, população de plantas — direto no app.',
+  'auth.login.benefit6Title': 'Funciona sem sinal',
+  'auth.login.benefit6Description': 'Ponto e coleta de campo offline — sincroniza sozinho quando pegar sinal.',
   'auth.login.newsTitle': 'Notícias do agro',
 
   // Fazendas
@@ -599,6 +603,10 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'auth.login.benefit3Description': 'Expiring vaccine, expiring document, season at a loss — the app warns you on its own.',
   'auth.login.benefit4Title': 'Excel and charts in one tap',
   'auth.login.benefit4Description': 'Any spreadsheet in the app becomes an Excel file or a chart instantly.',
+  'auth.login.benefit5Title': 'Built-in calculators',
+  'auth.login.benefit5Description': 'Break-even price, spray mix, fertilizer, plant population — right in the app.',
+  'auth.login.benefit6Title': 'Works with no signal',
+  'auth.login.benefit6Description': 'Offline time clock and field collection — syncs on its own once back online.',
   'auth.login.newsTitle': 'Agribusiness news',
 
   'farms.eyebrow': 'FarmPro',
@@ -1131,6 +1139,10 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'auth.login.benefit3Description': 'Vacuna por vencer, documento por vencer, cosecha con pérdida — la app avisa sola.',
   'auth.login.benefit4Title': 'Excel y gráfico con un toque',
   'auth.login.benefit4Description': 'Cualquier planilla de la app se convierte en archivo Excel o gráfico al instante.',
+  'auth.login.benefit5Title': 'Calculadoras listas',
+  'auth.login.benefit5Description': 'Precio mínimo, caldo, fertilización, población de plantas — directo en la app.',
+  'auth.login.benefit6Title': 'Funciona sin señal',
+  'auth.login.benefit6Description': 'Fichaje y relevamiento de campo offline — se sincroniza solo al volver la señal.',
   'auth.login.newsTitle': 'Noticias del agro',
 
   'farms.eyebrow': 'FarmPro',

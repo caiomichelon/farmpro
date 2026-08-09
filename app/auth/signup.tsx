@@ -2,6 +2,7 @@ import { Link, router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { AuthBenefits } from '../../src/components/AuthBenefits';
 import { AuthHero } from '../../src/components/AuthHero';
 import { Button } from '../../src/components/Button';
 import { FadeSlideIn } from '../../src/components/FadeSlideIn';
@@ -61,6 +62,7 @@ export default function SignupScreen() {
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <AuthHero title="FarmPro" tagline={t('auth.login.tagline')} />
+        <AuthBenefits />
 
         <FadeSlideIn delay={80} style={styles.body}>
           <Text style={styles.title}>{t('auth.signup.title')}</Text>
