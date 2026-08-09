@@ -33,7 +33,7 @@ export function AuthHero({ title, tagline }: AuthHeroProps) {
 
   return (
     <View style={styles.hero}>
-      <BrandMark size={40} />
+      <BrandMark size={40} showRings />
       <Animated.Text
         style={[
           styles.heroTitle,

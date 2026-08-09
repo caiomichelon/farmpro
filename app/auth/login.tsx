@@ -11,12 +11,27 @@ import { useT, type TFunction } from '../../src/i18n';
 import { fetchAgroNews, type AgroNewsItem } from '../../src/lib/agroNews';
 import { radius, spacing, typography, useColors, type Colors } from '../../src/theme';
 
-function buildBenefits(t: TFunction): { icon: string; title: string; description: string }[] {
+type BenefitAccent = 'lavoura' | 'funcionarios' | 'warning' | 'accent';
+
+function benefitAccentColors(colors: Colors, accent: BenefitAccent): { color: string; tint: string } {
+  switch (accent) {
+    case 'lavoura':
+      return { color: colors.lavoura, tint: colors.lavouraLight };
+    case 'funcionarios':
+      return { color: colors.funcionarios, tint: colors.funcionariosLight };
+    case 'warning':
+      return { color: colors.warning, tint: colors.warningLight };
+    case 'accent':
+      return { color: colors.accent, tint: `${colors.accent}1F` };
+  }
+}
+
+function buildBenefits(t: TFunction): { icon: string; title: string; description: string; accent: BenefitAccent }[] {
   return [
-    { icon: '🌱', title: t('auth.login.benefit1Title'), description: t('auth.login.benefit1Description') },
-    { icon: '☁️', title: t('auth.login.benefit2Title'), description: t('auth.login.benefit2Description') },
-    { icon: '🔔', title: t('auth.login.benefit3Title'), description: t('auth.login.benefit3Description') },
-    { icon: '📊', title: t('auth.login.benefit4Title'), description: t('auth.login.benefit4Description') },
+    { icon: '🌱', title: t('auth.login.benefit1Title'), description: t('auth.login.benefit1Description'), accent: 'lavoura' },
+    { icon: '☁️', title: t('auth.login.benefit2Title'), description: t('auth.login.benefit2Description'), accent: 'funcionarios' },
+    { icon: '🔔', title: t('auth.login.benefit3Title'), description: t('auth.login.benefit3Description'), accent: 'warning' },
+    { icon: '📊', title: t('auth.login.benefit4Title'), description: t('auth.login.benefit4Description'), accent: 'accent' },
   ];
 }
 
@@ -97,15 +112,20 @@ export default function LoginScreen() {
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>{t('auth.login.benefitsTitle')}</Text>
               <View style={styles.benefitsList}>
-                {benefits.map((benefit) => (
-                  <View key={benefit.title} style={styles.benefitRow}>
-                    <Text style={styles.benefitIcon}>{benefit.icon}</Text>
-                    <View style={styles.benefitTextBlock}>
-                      <Text style={styles.benefitTitle}>{benefit.title}</Text>
-                      <Text style={styles.benefitDescription}>{benefit.description}</Text>
+                {benefits.map((benefit) => {
+                  const { color: accentColor, tint } = benefitAccentColors(colors, benefit.accent);
+                  return (
+                    <View key={benefit.title} style={[styles.benefitRow, { backgroundColor: tint }]}>
+                      <View style={[styles.benefitIconBadge, { backgroundColor: colors.surface }]}>
+                        <Text style={styles.benefitIcon}>{benefit.icon}</Text>
+                      </View>
+                      <View style={styles.benefitTextBlock}>
+                        <Text style={[styles.benefitTitle, { color: accentColor }]}>{benefit.title}</Text>
+                        <Text style={styles.benefitDescription}>{benefit.description}</Text>
+                      </View>
                     </View>
-                  </View>
-                ))}
+                  );
+                })}
               </View>
             </View>
           </FadeSlideIn>
@@ -194,16 +214,20 @@ function createStyles(colors: Colors) {
     },
     benefitRow: {
       flexDirection: 'row',
-      alignItems: 'flex-start',
+      alignItems: 'center',
       gap: spacing.md,
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
       borderRadius: radius.lg,
       padding: spacing.md,
     },
+    benefitIconBadge: {
+      width: 40,
+      height: 40,
+      borderRadius: radius.full,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
     benefitIcon: {
-      fontSize: 22,
+      fontSize: 20,
     },
     benefitTextBlock: {
       flex: 1,

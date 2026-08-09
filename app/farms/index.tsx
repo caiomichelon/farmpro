@@ -4,12 +4,12 @@ import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from '
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../src/components/Button';
-import { EmptyState } from '../../src/components/EmptyState';
 import { FadeSlideIn } from '../../src/components/FadeSlideIn';
+import { SectorDotsCluster } from '../../src/components/SectorDotsCluster';
 import { TextField } from '../../src/components/TextField';
 import { useFarms, type FarmSummary } from '../../src/hooks/useFarms';
 import { joinFarmByCode } from '../../src/hooks/useFarmMembers';
-import { useT } from '../../src/i18n';
+import { useT, type TFunction } from '../../src/i18n';
 import { radius, spacing, typography, useColors, type Colors } from '../../src/theme';
 
 type FooterMode = 'none' | 'creating' | 'joining';
@@ -26,13 +26,17 @@ export default function FarmSelectionScreen() {
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <FadeSlideIn>
         <View style={styles.header}>
-          <View>
+          <View style={styles.headerTopRow}>
             <Text style={styles.eyebrow}>{t('farms.eyebrow')}</Text>
-            <Text style={styles.title}>{t('farms.title')}</Text>
+            <Pressable onPress={() => router.push('/ajustes')} hitSlop={12}>
+              <Text style={styles.settingsIcon}>{t('farms.settings')}</Text>
+            </Pressable>
           </View>
-          <Pressable onPress={() => router.push('/ajustes')} hitSlop={12}>
-            <Text style={styles.settingsIcon}>{t('farms.settings')}</Text>
-          </Pressable>
+          <Text style={styles.title}>{t('farms.title')}</Text>
+          <Text style={styles.subtitle}>{t('farms.subtitle')}</Text>
+          <View style={styles.dotsRow}>
+            <SectorDotsCluster size={8} />
+          </View>
         </View>
       </FadeSlideIn>
 
@@ -43,10 +47,10 @@ export default function FarmSelectionScreen() {
           data={farms}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
-          ListEmptyComponent={!isCreating ? <EmptyState text={t('farms.empty')} /> : null}
+          ListEmptyComponent={!isCreating ? <FarmsEmptyState styles={styles} t={t} /> : null}
           renderItem={({ item, index }) => (
             <FadeSlideIn delay={Math.min(index, 6) * 60}>
-              <FarmCard farm={item} styles={styles} t={t} onPress={() => router.push(`/farms/${item.id}`)} />
+              <FarmCard farm={item} styles={styles} colors={colors} t={t} onPress={() => router.push(`/farms/${item.id}`)} />
             </FadeSlideIn>
           )}
         />
@@ -92,18 +96,28 @@ function FarmCard({
   farm,
   onPress,
   styles,
+  colors,
   t,
 }: {
   farm: FarmSummary;
   onPress: () => void;
   styles: ReturnType<typeof createStyles>;
-  t: ReturnType<typeof useT>;
+  colors: Colors;
+  t: TFunction;
 }) {
   const location = [farm.city, farm.state].filter(Boolean).join(' / ');
+  const initial = farm.name.trim().charAt(0).toUpperCase() || '?';
   return (
     <Pressable style={({ pressed }) => [styles.card, pressed && styles.cardPressed]} onPress={onPress}>
-      <Text style={styles.cardTitle}>{farm.name}</Text>
-      {location ? <Text style={styles.cardLocation}>{location}</Text> : null}
+      <View style={styles.cardTopRow}>
+        <View style={styles.cardAvatar}>
+          <Text style={styles.cardAvatarText}>{initial}</Text>
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.cardTitle}>{farm.name}</Text>
+          {location ? <Text style={styles.cardLocation}>{location}</Text> : null}
+        </View>
+      </View>
       <View style={styles.cardStatsRow}>
         <Text style={styles.cardStat}>
           {farm.totalHectares.toLocaleString('pt-BR')} {t('farms.hectares')}
@@ -113,7 +127,39 @@ function FarmCard({
           {farm.totalPlots} {farm.totalPlots === 1 ? t('farms.plot') : t('farms.plots')}
         </Text>
       </View>
+      {farm.lavouraHectares > 0 || farm.pecuariaHectares > 0 ? (
+        <View style={styles.cardChipsRow}>
+          {farm.lavouraHectares > 0 ? (
+            <View style={[styles.cardChip, { backgroundColor: colors.lavouraLight }]}>
+              <Text style={[styles.cardChipText, { color: colors.lavoura }]}>
+                🌱 {t('farms.lavouraChip')} · {farm.lavouraHectares.toLocaleString('pt-BR')} ha
+              </Text>
+            </View>
+          ) : null}
+          {farm.pecuariaHectares > 0 ? (
+            <View style={[styles.cardChip, { backgroundColor: colors.pecuariaLight }]}>
+              <Text style={[styles.cardChipText, { color: colors.pecuaria }]}>
+                🐄 {t('farms.pecuariaChip')} · {farm.pecuariaHectares.toLocaleString('pt-BR')} ha
+              </Text>
+            </View>
+          ) : null}
+        </View>
+      ) : null}
     </Pressable>
+  );
+}
+
+function FarmsEmptyState({ styles, t }: { styles: ReturnType<typeof createStyles>; t: TFunction }) {
+  return (
+    <FadeSlideIn delay={80}>
+      <View style={styles.emptyState}>
+        <View style={styles.emptyBadge}>
+          <Text style={styles.emptyBadgeIcon}>🌾</Text>
+        </View>
+        <Text style={styles.emptyTitle}>{t('farms.emptyTitle')}</Text>
+        <Text style={styles.emptySubtitle}>{t('farms.emptySubtitle')}</Text>
+      </View>
+    </FadeSlideIn>
   );
 }
 
@@ -206,30 +252,45 @@ function createStyles(colors: Colors) {
       backgroundColor: colors.background,
     },
     header: {
+      backgroundColor: colors.primary,
+      paddingHorizontal: spacing.xl,
+      paddingTop: spacing.md,
+      paddingBottom: spacing.xl,
+      gap: spacing.xs,
+    },
+    headerTopRow: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      paddingHorizontal: spacing.xl,
-      paddingTop: spacing.md,
-      paddingBottom: spacing.lg,
     },
     eyebrow: {
       ...typography.label,
-      color: colors.textMuted,
+      color: colors.textInverse,
+      opacity: 0.7,
     },
     title: {
       ...typography.displayMd,
-      color: colors.textPrimary,
+      color: colors.textInverse,
+    },
+    subtitle: {
+      ...typography.body,
+      color: colors.textInverse,
+      opacity: 0.85,
     },
     settingsIcon: {
       ...typography.bodyMedium,
-      color: colors.textSecondary,
+      color: colors.textInverse,
+      opacity: 0.9,
+    },
+    dotsRow: {
+      marginTop: spacing.sm,
     },
     loading: {
       marginTop: spacing.xxl,
     },
     listContent: {
       paddingHorizontal: spacing.xl,
+      paddingTop: spacing.lg,
       gap: spacing.md,
     },
     card: {
@@ -239,9 +300,27 @@ function createStyles(colors: Colors) {
       borderColor: colors.border,
       padding: spacing.lg,
       marginBottom: spacing.md,
+      gap: spacing.sm,
     },
     cardPressed: {
       opacity: 0.8,
+    },
+    cardTopRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+    },
+    cardAvatar: {
+      width: 44,
+      height: 44,
+      borderRadius: radius.full,
+      backgroundColor: colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    cardAvatarText: {
+      ...typography.subheading,
+      color: colors.textInverse,
     },
     cardTitle: {
       ...typography.subheading,
@@ -256,7 +335,6 @@ function createStyles(colors: Colors) {
       flexDirection: 'row',
       alignItems: 'center',
       gap: spacing.xs,
-      marginTop: spacing.sm,
     },
     cardStat: {
       ...typography.captionMedium,
@@ -264,6 +342,47 @@ function createStyles(colors: Colors) {
     },
     cardStatDivider: {
       color: colors.textMuted,
+    },
+    cardChipsRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.xs,
+    },
+    cardChip: {
+      borderRadius: radius.sm,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: 4,
+    },
+    cardChipText: {
+      ...typography.captionMedium,
+    },
+    emptyState: {
+      alignItems: 'center',
+      paddingVertical: spacing.xxl,
+      paddingHorizontal: spacing.xl,
+      gap: spacing.sm,
+    },
+    emptyBadge: {
+      width: 64,
+      height: 64,
+      borderRadius: radius.full,
+      backgroundColor: colors.lavouraLight,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: spacing.xs,
+    },
+    emptyBadgeIcon: {
+      fontSize: 30,
+    },
+    emptyTitle: {
+      ...typography.subheading,
+      color: colors.textPrimary,
+    },
+    emptySubtitle: {
+      ...typography.body,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      maxWidth: 300,
     },
     errorText: {
       ...typography.caption,

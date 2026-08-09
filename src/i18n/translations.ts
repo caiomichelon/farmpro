@@ -67,6 +67,11 @@ export const pt = {
   'farms.hectares': 'ha',
   'farms.plot': 'talhão',
   'farms.plots': 'talhões',
+  'farms.subtitle': 'Escolha uma fazenda pra continuar',
+  'farms.emptyTitle': 'Vamos começar!',
+  'farms.emptySubtitle': 'Crie sua primeira fazenda ou entre com um código de convite pra acessar uma já existente.',
+  'farms.lavouraChip': 'Lavoura',
+  'farms.pecuariaChip': 'Pecuária',
 
   // Home da fazenda
   'farmHome.switchFarm': '← Trocar fazenda',
@@ -517,6 +522,11 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'farms.hectares': 'ha',
   'farms.plot': 'plot',
   'farms.plots': 'plots',
+  'farms.subtitle': 'Pick a farm to continue',
+  'farms.emptyTitle': "Let's get started!",
+  'farms.emptySubtitle': 'Create your first farm or join an existing one with an invite code.',
+  'farms.lavouraChip': 'Crops',
+  'farms.pecuariaChip': 'Livestock',
 
   'farmHome.switchFarm': '← Switch farm',
   'farmHome.totalHectares': 'Total hectares',
@@ -946,6 +956,11 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'farms.hectares': 'ha',
   'farms.plot': 'parcela',
   'farms.plots': 'parcelas',
+  'farms.subtitle': 'Elegí una finca para continuar',
+  'farms.emptyTitle': '¡Empecemos!',
+  'farms.emptySubtitle': 'Creá tu primera finca o entrá con un código de invitación para acceder a una existente.',
+  'farms.lavouraChip': 'Agricultura',
+  'farms.pecuariaChip': 'Ganadería',
 
   'farmHome.switchFarm': '← Cambiar finca',
   'farmHome.totalHectares': 'Hectáreas totales',
