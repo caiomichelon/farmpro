@@ -34,7 +34,17 @@ export function useHarvestEntries(seasonId: string | undefined) {
   }, [reload]);
 
   const createEntry = useCallback(
-    async (input: { quantity_sacas: number; harvested_at?: string; notes?: string }) => {
+    async (input: {
+      quantity_sacas: number;
+      harvested_at?: string;
+      notes?: string;
+      truck_plate?: string;
+      driver_name?: string;
+      gross_weight_kg?: number;
+      net_weight_kg?: number;
+      kg_per_saca?: number;
+      photo_url?: string;
+    }) => {
       if (!seasonId) return { error: 'Safra não encontrada.' };
 
       const { error: insertError } = await supabase.from('harvest_entries').insert({
@@ -42,6 +52,12 @@ export function useHarvestEntries(seasonId: string | undefined) {
         quantity_sacas: input.quantity_sacas,
         harvested_at: input.harvested_at || new Date().toISOString().slice(0, 10),
         notes: input.notes || null,
+        truck_plate: input.truck_plate || null,
+        driver_name: input.driver_name || null,
+        gross_weight_kg: input.gross_weight_kg ?? null,
+        net_weight_kg: input.net_weight_kg ?? null,
+        kg_per_saca: input.kg_per_saca ?? null,
+        photo_url: input.photo_url || null,
       });
 
       if (insertError) return { error: insertError.message };

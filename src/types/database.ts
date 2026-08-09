@@ -199,6 +199,20 @@ export type HarvestEntry = {
   harvested_at: string;
   quantity_sacas: number;
   notes: string | null;
+  /** Placa do caminhão que carregou essa carga — opcional. */
+  truck_plate: string | null;
+  /** Nome do motorista — opcional. */
+  driver_name: string | null;
+  /** Peso bruto (caminhão + carga), em kg — opcional, só informativo. */
+  gross_weight_kg: number | null;
+  /** Peso líquido (só grão), em kg — quando informado, é a base do
+   * cálculo de quantity_sacas (junto com kg_per_saca). */
+  net_weight_kg: number | null;
+  /** Kg por saca usado no cálculo deste lançamento — guardado junto pra
+   * não bagunçar o histórico se o padrão da fazenda mudar depois. */
+  kg_per_saca: number | null;
+  /** Foto da nota de pesagem física — opcional. */
+  photo_url: string | null;
   created_at: string;
 };
 

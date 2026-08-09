@@ -619,6 +619,25 @@ export const pt = {
   'newSale.netPreview': 'Total líquido (bruto − frete): {{value}}',
   'newSale.save': 'Salvar venda',
   'newSale.validationError': 'Preencha a quantidade e o preço por saca.',
+
+  // Nota de caminhão na colheita
+  'harvest.truckSectionTitle': 'Nota do caminhão (opcional)',
+  'harvest.truckSectionSubtitle': 'Preencha o peso pra o app calcular a saca sozinho — ou pule direto pra "Sacas" se não tiver balança.',
+  'harvest.truckPlateLabel': 'Placa do caminhão',
+  'harvest.truckPlatePlaceholder': 'Ex.: ABC1D23',
+  'harvest.driverLabel': 'Motorista',
+  'harvest.driverPlaceholder': 'Nome do motorista',
+  'harvest.grossWeightLabel': 'Peso bruto (kg)',
+  'harvest.grossWeightPlaceholder': 'Caminhão + carga',
+  'harvest.netWeightLabel': 'Peso líquido — só grão (kg)',
+  'harvest.netWeightPlaceholder': 'Ex.: 30000',
+  'harvest.kgPerSacaLabel': 'Kg por saca',
+  'harvest.kgPerSacaHelp': 'Padrão 60kg (soja/milho/café/trigo) — ajuste se a sua cultura for diferente.',
+  'harvest.computedSacas': '= {{sacas}} sacas',
+  'harvest.useComputedValue': 'Usar esse valor',
+  'harvest.photoLabel': 'Foto da nota de pesagem (opcional)',
+  'harvest.entryTruckInfo': '🚚 {{info}}',
+  'harvest.entryWeightInfo': '{{net}} kg líquido ({{kgPerSaca}} kg/sc)',
 } as const;
 
 export type TranslationKey = keyof typeof pt;
@@ -1212,6 +1231,25 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'newSale.netPreview': 'Net total (gross − freight): {{value}}',
   'newSale.save': 'Save sale',
   'newSale.validationError': 'Fill in the quantity and the price per bag.',
+
+  // Truck ticket on harvest
+  'harvest.truckSectionTitle': 'Truck ticket (optional)',
+  'harvest.truckSectionSubtitle': "Fill in the weight to have the app calculate the bags on its own — or skip straight to \"Bags\" if you don't have a scale.",
+  'harvest.truckPlateLabel': 'Truck plate',
+  'harvest.truckPlatePlaceholder': 'E.g.: ABC1D23',
+  'harvest.driverLabel': 'Driver',
+  'harvest.driverPlaceholder': "Driver's name",
+  'harvest.grossWeightLabel': 'Gross weight (kg)',
+  'harvest.grossWeightPlaceholder': 'Truck + load',
+  'harvest.netWeightLabel': 'Net weight — grain only (kg)',
+  'harvest.netWeightPlaceholder': 'E.g.: 30000',
+  'harvest.kgPerSacaLabel': 'Kg per bag',
+  'harvest.kgPerSacaHelp': 'Default 60kg (soybean/corn/coffee/wheat) — adjust if your crop differs.',
+  'harvest.computedSacas': '= {{sacas}} bags',
+  'harvest.useComputedValue': 'Use this value',
+  'harvest.photoLabel': 'Weighing ticket photo (optional)',
+  'harvest.entryTruckInfo': '🚚 {{info}}',
+  'harvest.entryWeightInfo': '{{net}} kg net ({{kgPerSaca}} kg/bag)',
 };
 
 export const es: Partial<Record<TranslationKey, string>> = {
@@ -1803,4 +1841,23 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'newSale.netPreview': 'Total neto (bruto − flete): {{value}}',
   'newSale.save': 'Guardar venta',
   'newSale.validationError': 'Completá la cantidad y el precio por bolsa.',
+
+  // Comprobante del camión en la cosecha
+  'harvest.truckSectionTitle': 'Comprobante del camión (opcional)',
+  'harvest.truckSectionSubtitle': 'Completá el peso para que la app calcule las bolsas sola — o saltá directo a "Bolsas" si no tenés balanza.',
+  'harvest.truckPlateLabel': 'Patente del camión',
+  'harvest.truckPlatePlaceholder': 'Ej.: ABC1D23',
+  'harvest.driverLabel': 'Chofer',
+  'harvest.driverPlaceholder': 'Nombre del chofer',
+  'harvest.grossWeightLabel': 'Peso bruto (kg)',
+  'harvest.grossWeightPlaceholder': 'Camión + carga',
+  'harvest.netWeightLabel': 'Peso neto — solo grano (kg)',
+  'harvest.netWeightPlaceholder': 'Ej.: 30000',
+  'harvest.kgPerSacaLabel': 'Kg por bolsa',
+  'harvest.kgPerSacaHelp': 'Por defecto 60kg (soja/maíz/café/trigo) — ajustalo si tu cultivo es distinto.',
+  'harvest.computedSacas': '= {{sacas}} bolsas',
+  'harvest.useComputedValue': 'Usar este valor',
+  'harvest.photoLabel': 'Foto del comprobante de pesaje (opcional)',
+  'harvest.entryTruckInfo': '🚚 {{info}}',
+  'harvest.entryWeightInfo': '{{net}} kg neto ({{kgPerSaca}} kg/bolsa)',
 };

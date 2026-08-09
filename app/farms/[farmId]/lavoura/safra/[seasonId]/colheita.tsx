@@ -1,17 +1,19 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../../../../src/components/Button';
 import { Card } from '../../../../../../src/components/Card';
 import { EmptyState } from '../../../../../../src/components/EmptyState';
 import { FadeSlideIn } from '../../../../../../src/components/FadeSlideIn';
+import { PhotoPicker } from '../../../../../../src/components/PhotoPicker';
 import { ScreenHeader } from '../../../../../../src/components/ScreenHeader';
 import { TextField } from '../../../../../../src/components/TextField';
 import { useGrainSales } from '../../../../../../src/hooks/useGrainSales';
 import { useHarvestEntries } from '../../../../../../src/hooks/useHarvestEntries';
 import { useT } from '../../../../../../src/i18n';
+import { DEFAULT_KG_PER_SACA, calcSacasFromWeight } from '../../../../../../src/lib/harvestWeight';
 import { radius, spacing, typography, useColors, type Colors } from '../../../../../../src/theme';
 
 export default function HarvestScreen() {
@@ -67,21 +69,39 @@ export default function HarvestScreen() {
             ) : entries.length === 0 ? (
               <EmptyState text={t('harvest.entriesEmpty')} />
             ) : (
-              entries.map((entry) => (
-                <Card key={entry.id} style={styles.rowCard}>
-                  <View style={styles.rowBetween}>
-                    <Text style={styles.rowValue}>{Number(entry.quantity_sacas).toLocaleString('pt-BR')} sc</Text>
-                    <Text style={styles.rowDate}>{formatDate(entry.harvested_at)}</Text>
-                  </View>
-                  {entry.notes ? <Text style={styles.rowNotes}>{entry.notes}</Text> : null}
-                </Card>
-              ))
+              entries.map((entry) => {
+                const transportInfo = [entry.driver_name, entry.truck_plate].filter(Boolean).join(' · ');
+                return (
+                  <Card key={entry.id} style={styles.rowCard}>
+                    <View style={styles.rowTopRow}>
+                      {entry.photo_url ? <Image source={{ uri: entry.photo_url }} style={styles.rowThumbnail} /> : null}
+                      <View style={{ flex: 1, gap: 2 }}>
+                        <View style={styles.rowBetween}>
+                          <Text style={styles.rowValue}>{Number(entry.quantity_sacas).toLocaleString('pt-BR')} sc</Text>
+                          <Text style={styles.rowDate}>{formatDate(entry.harvested_at)}</Text>
+                        </View>
+                        {transportInfo ? <Text style={styles.rowTransport}>{t('harvest.entryTruckInfo', { info: transportInfo })}</Text> : null}
+                        {entry.net_weight_kg !== null ? (
+                          <Text style={styles.rowNotes}>
+                            {t('harvest.entryWeightInfo', {
+                              net: Number(entry.net_weight_kg).toLocaleString('pt-BR'),
+                              kgPerSaca: String(entry.kg_per_saca ?? DEFAULT_KG_PER_SACA),
+                            })}
+                          </Text>
+                        ) : null}
+                        {entry.notes ? <Text style={styles.rowNotes}>{entry.notes}</Text> : null}
+                      </View>
+                    </View>
+                  </Card>
+                );
+              })
             )}
 
             {isAdding ? (
               <NewHarvestForm
                 t={t}
                 styles={styles}
+                colors={colors}
                 onCancel={() => setIsAdding(false)}
                 onCreate={async (values) => {
                   const { error: createError } = await createEntry(values);
@@ -100,42 +120,99 @@ export default function HarvestScreen() {
   );
 }
 
+interface HarvestFormValues {
+  quantity_sacas: number;
+  notes?: string;
+  truck_plate?: string;
+  driver_name?: string;
+  gross_weight_kg?: number;
+  net_weight_kg?: number;
+  kg_per_saca?: number;
+  photo_url?: string;
+}
+
 function NewHarvestForm({
   onCancel,
   onCreate,
   t,
   styles,
+  colors,
 }: {
   onCancel: () => void;
-  onCreate: (values: { quantity_sacas: number; notes?: string }) => Promise<string | null>;
+  onCreate: (values: HarvestFormValues) => Promise<string | null>;
   t: ReturnType<typeof useT>;
   styles: ReturnType<typeof createStyles>;
+  colors: Colors;
 }) {
+  const [truckPlate, setTruckPlate] = useState('');
+  const [driverName, setDriverName] = useState('');
+  const [grossWeight, setGrossWeight] = useState('');
+  const [netWeight, setNetWeight] = useState('');
+  const [kgPerSaca, setKgPerSaca] = useState(String(DEFAULT_KG_PER_SACA));
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [quantity, setQuantity] = useState('');
   const [notes, setNotes] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const netWeightNum = Number(netWeight.replace(',', '.')) || 0;
+  const kgPerSacaNum = Number(kgPerSaca.replace(',', '.')) || DEFAULT_KG_PER_SACA;
+  const computedSacas = calcSacasFromWeight(netWeightNum, kgPerSacaNum);
+
   async function handleSubmit() {
-    const value = Number(quantity.replace(',', '.'));
-    if (!value || value <= 0) {
+    const manualValue = Number(quantity.replace(',', '.'));
+    const finalQuantity = manualValue > 0 ? manualValue : computedSacas;
+    if (!finalQuantity || finalQuantity <= 0) {
       setError(t('harvest.validationError'));
       return;
     }
+
     setIsSubmitting(true);
-    const createError = await onCreate({ quantity_sacas: value, notes: notes.trim() || undefined });
+    const grossWeightNum = Number(grossWeight.replace(',', '.'));
+    const createError = await onCreate({
+      quantity_sacas: finalQuantity,
+      notes: notes.trim() || undefined,
+      truck_plate: truckPlate.trim() || undefined,
+      driver_name: driverName.trim() || undefined,
+      gross_weight_kg: grossWeightNum > 0 ? grossWeightNum : undefined,
+      net_weight_kg: netWeightNum > 0 ? netWeightNum : undefined,
+      kg_per_saca: netWeightNum > 0 ? kgPerSacaNum : undefined,
+      photo_url: photoUrl ?? undefined,
+    });
     setIsSubmitting(false);
     if (createError) setError(createError);
   }
 
   return (
     <View style={styles.form}>
+      <Card style={styles.truckCard}>
+        <Text style={styles.truckTitle}>{t('harvest.truckSectionTitle')}</Text>
+        <Text style={styles.truckSubtitle}>{t('harvest.truckSectionSubtitle')}</Text>
+        <TextField label={t('harvest.truckPlateLabel')} value={truckPlate} onChangeText={setTruckPlate} placeholder={t('harvest.truckPlatePlaceholder')} autoCapitalize="characters" />
+        <TextField label={t('harvest.driverLabel')} value={driverName} onChangeText={setDriverName} placeholder={t('harvest.driverPlaceholder')} />
+        <TextField label={t('harvest.grossWeightLabel')} value={grossWeight} onChangeText={setGrossWeight} keyboardType="decimal-pad" placeholder={t('harvest.grossWeightPlaceholder')} />
+        <TextField label={t('harvest.netWeightLabel')} value={netWeight} onChangeText={setNetWeight} keyboardType="decimal-pad" placeholder={t('harvest.netWeightPlaceholder')} />
+        {netWeightNum > 0 ? (
+          <>
+            <TextField label={t('harvest.kgPerSacaLabel')} value={kgPerSaca} onChangeText={setKgPerSaca} keyboardType="decimal-pad" />
+            <Text style={styles.truckHelp}>{t('harvest.kgPerSacaHelp')}</Text>
+            {computedSacas !== null ? (
+              <Pressable style={styles.computedRow} onPress={() => setQuantity(String(computedSacas))}>
+                <Text style={styles.computedText}>{t('harvest.computedSacas', { sacas: computedSacas.toLocaleString('pt-BR') })}</Text>
+                <Text style={styles.computedLink}>{t('harvest.useComputedValue')}</Text>
+              </Pressable>
+            ) : null}
+          </>
+        ) : null}
+        <PhotoPicker label={t('harvest.photoLabel')} photoUrl={photoUrl} onChange={setPhotoUrl} folder="harvest-entries" accentColor={colors.lavoura} />
+      </Card>
+
       <TextField label={t('harvest.quantityLabel')} value={quantity} onChangeText={setQuantity} keyboardType="decimal-pad" placeholder={t('harvest.quantityPlaceholder')} />
       <TextField label={t('harvest.notesLabel')} value={notes} onChangeText={setNotes} placeholder={t('harvest.notesPlaceholder')} />
       {error ? <Text style={styles.error}>{error}</Text> : null}
       <View style={styles.formActions}>
         <Button label={t('harvest.cancel')} variant="ghost" onPress={onCancel} style={{ flex: 1 }} />
-        <Button label={t('harvest.save')} onPress={handleSubmit} loading={isSubmitting} disabled={!quantity} style={{ flex: 1 }} />
+        <Button label={t('harvest.save')} onPress={handleSubmit} loading={isSubmitting} disabled={!quantity && computedSacas === null} style={{ flex: 1 }} />
       </View>
     </View>
   );
@@ -191,6 +268,17 @@ function createStyles(colors: Colors) {
     rowCard: {
       gap: 2,
     },
+    rowTopRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: spacing.md,
+    },
+    rowThumbnail: {
+      width: 48,
+      height: 48,
+      borderRadius: radius.sm,
+      backgroundColor: colors.surfaceAlt,
+    },
     rowBetween: {
       flexDirection: 'row',
       justifyContent: 'space-between',
@@ -208,11 +296,51 @@ function createStyles(colors: Colors) {
       ...typography.caption,
       color: colors.textSecondary,
     },
+    rowTransport: {
+      ...typography.captionMedium,
+      color: colors.pecuaria,
+    },
     form: {
       gap: spacing.md,
       backgroundColor: colors.surfaceAlt,
       borderRadius: radius.lg,
       padding: spacing.lg,
+    },
+    truckCard: {
+      gap: spacing.md,
+      backgroundColor: colors.pecuariaLight,
+      borderRadius: radius.md,
+    },
+    truckTitle: {
+      ...typography.subheading,
+      color: colors.pecuaria,
+    },
+    truckSubtitle: {
+      ...typography.caption,
+      color: colors.textSecondary,
+      marginTop: -spacing.sm,
+    },
+    truckHelp: {
+      ...typography.caption,
+      color: colors.textMuted,
+      marginTop: -spacing.sm,
+    },
+    computedRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      backgroundColor: colors.surface,
+      borderRadius: radius.sm,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+    },
+    computedText: {
+      ...typography.bodyMedium,
+      color: colors.pecuaria,
+    },
+    computedLink: {
+      ...typography.captionMedium,
+      color: colors.pecuaria,
     },
     formActions: {
       flexDirection: 'row',
