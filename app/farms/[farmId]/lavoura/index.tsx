@@ -90,6 +90,10 @@ export default function LavouraHomeScreen() {
                   <Pressable onPress={() => router.push(`/farms/${farmId}/lavoura/populacao`)} hitSlop={8}>
                     <Text style={styles.link}>{t('lavouraHome.linkPopulationCalculator')}</Text>
                   </Pressable>
+                  <Text style={styles.linkDivider}>·</Text>
+                  <Pressable onPress={() => router.push(`/farms/${farmId}/lavoura/adubacao`)} hitSlop={8}>
+                    <Text style={styles.link}>{t('lavouraHome.linkFertilizerCalculator')}</Text>
+                  </Pressable>
                 </View>
               </View>
             </FadeSlideIn>
