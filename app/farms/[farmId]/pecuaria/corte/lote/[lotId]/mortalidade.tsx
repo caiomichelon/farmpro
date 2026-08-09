@@ -7,11 +7,13 @@ import { Button } from '../../../../../../../src/components/Button';
 import { ScreenHeader } from '../../../../../../../src/components/ScreenHeader';
 import { TextField } from '../../../../../../../src/components/TextField';
 import { useCattleMortalityEvents } from '../../../../../../../src/hooks/useCattleMortality';
+import { useT } from '../../../../../../../src/i18n';
 import { colors, spacing } from '../../../../../../../src/theme';
 
 export default function MortalityScreen() {
   const { lotId } = useLocalSearchParams<{ lotId: string }>();
   const { createEvent } = useCattleMortalityEvents(lotId);
+  const t = useT();
 
   const [headCount, setHeadCount] = useState('');
   const [cause, setCause] = useState('');
@@ -21,7 +23,7 @@ export default function MortalityScreen() {
   async function handleSubmit() {
     const value = Number(headCount);
     if (!value || value <= 0) {
-      setError('Informe quantas cabeças foram perdidas.');
+      setError(t('mortality.validationError'));
       return;
     }
     setIsSubmitting(true);
@@ -36,19 +38,19 @@ export default function MortalityScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <ScreenHeader title="Registrar mortalidade" />
+      <ScreenHeader title={t('mortality.title')} />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={styles.form}>
           <TextField
-            label="Cabeças perdidas"
+            label={t('mortality.headCount')}
             value={headCount}
             onChangeText={setHeadCount}
             placeholder="Ex.: 2"
             keyboardType="number-pad"
           />
-          <TextField label="Causa" value={cause} onChangeText={setCause} placeholder="Opcional" />
+          <TextField label={t('mortality.cause')} value={cause} onChangeText={setCause} placeholder={t('mortality.optional')} />
           {error ? <Text style={styles.error}>{error}</Text> : null}
-          <Button label="Salvar" onPress={handleSubmit} loading={isSubmitting} disabled={!headCount} />
+          <Button label={t('mortality.save')} onPress={handleSubmit} loading={isSubmitting} disabled={!headCount} />
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

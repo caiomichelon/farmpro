@@ -434,6 +434,29 @@ export const pt = {
   'breakEven.targetMarginLabel': 'Margem alvo (%)',
   'breakEven.targetPriceLabel': 'Preço pra bater a margem',
   'breakEven.hint': 'Precisa de custo lançado e quantidade maior que zero pra calcular.',
+
+  // Registrar mortalidade (Corte)
+  'mortality.title': 'Registrar mortalidade',
+  'mortality.headCount': 'Cabeças perdidas',
+  'mortality.cause': 'Causa',
+  'mortality.optional': 'Opcional',
+  'mortality.save': 'Salvar',
+  'mortality.validationError': 'Informe quantas cabeças foram perdidas.',
+
+  // Nova pesagem (Corte)
+  'newWeighing.title': 'Nova pesagem',
+  'newWeighing.avgWeight': 'Peso médio (kg)',
+  'newWeighing.bodyScore': 'Escore de condição corporal',
+  'newWeighing.notes': 'Observação',
+  'newWeighing.save': 'Salvar pesagem',
+  'newWeighing.validationError': 'Informe um peso médio válido.',
+
+  // Comparativo histórico (lote)
+  'lotComparison.title': 'Você, no passado',
+  'lotComparison.subtitleWithLot': 'Lote {{name}} — evolução de peso ao longo do tempo',
+  'lotComparison.subtitle': 'Evolução de peso ao longo do tempo',
+  'lotComparison.empty': 'Ainda não tem pesagens suficientes pra comparar. Volte depois de lançar mais algumas.',
+  'lotComparison.row': '{{date}}: {{past}} kg → hoje: {{current}} kg',
 } as const;
 
 export type TranslationKey = keyof typeof pt;
@@ -845,6 +868,26 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'breakEven.targetMarginLabel': 'Target margin (%)',
   'breakEven.targetPriceLabel': 'Price to hit the margin',
   'breakEven.hint': 'Needs logged cost and a quantity greater than zero to calculate.',
+
+  'mortality.title': 'Record mortality',
+  'mortality.headCount': 'Head lost',
+  'mortality.cause': 'Cause',
+  'mortality.optional': 'Optional',
+  'mortality.save': 'Save',
+  'mortality.validationError': 'Enter how many head were lost.',
+
+  'newWeighing.title': 'New weighing',
+  'newWeighing.avgWeight': 'Average weight (kg)',
+  'newWeighing.bodyScore': 'Body condition score',
+  'newWeighing.notes': 'Notes',
+  'newWeighing.save': 'Save weighing',
+  'newWeighing.validationError': 'Enter a valid average weight.',
+
+  'lotComparison.title': 'You, in the past',
+  'lotComparison.subtitleWithLot': 'Lot {{name}} — weight evolution over time',
+  'lotComparison.subtitle': 'Weight evolution over time',
+  'lotComparison.empty': "Not enough weighings to compare yet. Come back after logging a few more.",
+  'lotComparison.row': '{{date}}: {{past}} kg → today: {{current}} kg',
 };
 
 export const es: Partial<Record<TranslationKey, string>> = {
@@ -1254,4 +1297,24 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'breakEven.targetMarginLabel': 'Margen objetivo (%)',
   'breakEven.targetPriceLabel': 'Precio para alcanzar el margen',
   'breakEven.hint': 'Necesita costo registrado y una cantidad mayor que cero para calcular.',
+
+  'mortality.title': 'Registrar mortalidad',
+  'mortality.headCount': 'Cabezas perdidas',
+  'mortality.cause': 'Causa',
+  'mortality.optional': 'Opcional',
+  'mortality.save': 'Guardar',
+  'mortality.validationError': 'Indica cuántas cabezas se perdieron.',
+
+  'newWeighing.title': 'Nuevo pesaje',
+  'newWeighing.avgWeight': 'Peso promedio (kg)',
+  'newWeighing.bodyScore': 'Condición corporal',
+  'newWeighing.notes': 'Observación',
+  'newWeighing.save': 'Guardar pesaje',
+  'newWeighing.validationError': 'Indica un peso promedio válido.',
+
+  'lotComparison.title': 'Vos, en el pasado',
+  'lotComparison.subtitleWithLot': 'Lote {{name}} — evolución de peso a lo largo del tiempo',
+  'lotComparison.subtitle': 'Evolución de peso a lo largo del tiempo',
+  'lotComparison.empty': 'Todavía no hay suficientes pesajes para comparar. Volvé después de registrar algunos más.',
+  'lotComparison.row': '{{date}}: {{past}} kg → hoy: {{current}} kg',
 };
