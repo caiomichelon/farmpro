@@ -13,6 +13,7 @@ import {
   EMPLOYEE_SECTOR_OPTIONS,
 } from '../../../../src/data/employeeOptions';
 import { useEmployees } from '../../../../src/hooks/useEmployees';
+import { useT } from '../../../../src/i18n';
 import type { EmployeeCostType, EmployeeSector } from '../../../../src/types/database';
 import { colors, spacing, typography } from '../../../../src/theme';
 
@@ -24,6 +25,7 @@ const COST_TYPE_OPTIONS = Object.entries(EMPLOYEE_COST_TYPE_LABELS).map(([value,
 export default function NewEmployeeScreen() {
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const { createEmployee } = useEmployees(farmId);
+  const t = useT();
 
   const [fullName, setFullName] = useState('');
   const [sector, setSector] = useState<EmployeeSector | null>(null);
@@ -42,7 +44,7 @@ export default function NewEmployeeScreen() {
   async function handleSubmit() {
     const costValueNumber = Number(costValue.replace(',', '.'));
     if (!fullName.trim() || !sector || !role.trim() || !costValueNumber || costValueNumber < 0) {
-      setError('Preencha nome, setor, função e o custo associado.');
+      setError(t('newEmployee.validationError'));
       return;
     }
 
@@ -71,35 +73,41 @@ export default function NewEmployeeScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <ScreenHeader title="Novo funcionário" subtitle="Ficha completa" />
+      <ScreenHeader title={t('newEmployee.title')} subtitle={t('newEmployee.subtitle')} />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
-          <Section title="Identificação">
-            <TextField label="Nome completo" value={fullName} onChangeText={setFullName} placeholder="Ex.: José da Silva" />
-            <TextField label="CPF" value={cpf} onChangeText={setCpf} placeholder="Opcional" keyboardType="numbers-and-punctuation" />
-            <TextField label="Telefone" value={phone} onChangeText={setPhone} placeholder="Opcional" keyboardType="phone-pad" />
-            <TextField label="Data de nascimento" value={birthDate} onChangeText={setBirthDate} placeholder="DD/MM/AAAA (opcional)" keyboardType="numbers-and-punctuation" />
-            <TextField label="Endereço" value={address} onChangeText={setAddress} placeholder="Opcional" />
+          <Section title={t('newEmployee.sectionIdentification')}>
+            <TextField label={t('newEmployee.fullName')} value={fullName} onChangeText={setFullName} placeholder={t('newEmployee.fullNamePlaceholder')} />
+            <TextField label={t('newEmployee.cpf')} value={cpf} onChangeText={setCpf} placeholder={t('newEmployee.optional')} keyboardType="numbers-and-punctuation" />
+            <TextField label={t('newEmployee.phone')} value={phone} onChangeText={setPhone} placeholder={t('newEmployee.optional')} keyboardType="phone-pad" />
+            <TextField label={t('newEmployee.birthDate')} value={birthDate} onChangeText={setBirthDate} placeholder={t('newEmployee.birthDatePlaceholder')} keyboardType="numbers-and-punctuation" />
+            <TextField label={t('newEmployee.address')} value={address} onChangeText={setAddress} placeholder={t('newEmployee.optional')} />
           </Section>
 
-          <Section title="Trabalho">
+          <Section title={t('newEmployee.sectionWork')}>
             <ChipSelect
-              label="Setor"
+              label={t('newEmployee.sector')}
               options={EMPLOYEE_SECTOR_OPTIONS.map((s) => ({ value: s, label: EMPLOYEE_SECTOR_LABELS[s] }))}
               value={sector}
               onChange={setSector}
               accentColor={colors.funcionarios}
             />
-            <TextField label="Função" value={role} onChangeText={setRole} placeholder="Ex.: Tratorista, Vaqueiro, Auxiliar administrativo" />
+            <TextField label={t('newEmployee.role')} value={role} onChangeText={setRole} placeholder={t('newEmployee.rolePlaceholder')} />
             <ChipSelect
-              label="Tipo de custo"
+              label={t('newEmployee.costType')}
               options={COST_TYPE_OPTIONS}
               value={costType}
               onChange={setCostType}
               accentColor={colors.funcionarios}
             />
             <TextField
-              label={costType === 'diarista' ? 'Valor da diária' : costType === 'tarefa' ? 'Valor por tarefa' : 'Salário mensal'}
+              label={
+                costType === 'diarista'
+                  ? t('newEmployee.costValueDaily')
+                  : costType === 'tarefa'
+                  ? t('newEmployee.costValueTask')
+                  : t('newEmployee.costValueMonthly')
+              }
               value={costValue}
               onChangeText={setCostValue}
               placeholder="R$"
@@ -107,14 +115,14 @@ export default function NewEmployeeScreen() {
             />
           </Section>
 
-          <Section title="Contato de emergência">
-            <TextField label="Nome" value={emergencyName} onChangeText={setEmergencyName} placeholder="Opcional" />
-            <TextField label="Telefone" value={emergencyPhone} onChangeText={setEmergencyPhone} placeholder="Opcional" keyboardType="phone-pad" />
+          <Section title={t('newEmployee.sectionEmergency')}>
+            <TextField label={t('newEmployee.emergencyName')} value={emergencyName} onChangeText={setEmergencyName} placeholder={t('newEmployee.optional')} />
+            <TextField label={t('newEmployee.emergencyPhone')} value={emergencyPhone} onChangeText={setEmergencyPhone} placeholder={t('newEmployee.optional')} keyboardType="phone-pad" />
           </Section>
 
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <Button
-            label="Salvar funcionário"
+            label={t('newEmployee.save')}
             onPress={handleSubmit}
             loading={isSubmitting}
             disabled={!fullName || !sector || !role || !costValue}

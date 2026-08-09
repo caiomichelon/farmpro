@@ -7,11 +7,13 @@ import { Button } from '../../../../../src/components/Button';
 import { ScreenHeader } from '../../../../../src/components/ScreenHeader';
 import { TextField } from '../../../../../src/components/TextField';
 import { useCattleLots } from '../../../../../src/hooks/useCattleLots';
+import { useT } from '../../../../../src/i18n';
 import { colors, spacing } from '../../../../../src/theme';
 
 export default function NewLotScreen() {
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const { createLot } = useCattleLots(farmId);
+  const t = useT();
 
   const [name, setName] = useState('');
   const [headCount, setHeadCount] = useState('');
@@ -25,7 +27,7 @@ export default function NewLotScreen() {
     const avgWeightValue = Number(avgWeight.replace(',', '.'));
     const targetWeightValue = targetWeight ? Number(targetWeight.replace(',', '.')) : undefined;
     if (!name.trim() || !headCountValue || headCountValue <= 0 || !avgWeightValue || avgWeightValue <= 0) {
-      setError('Preencha o nome, o número de cabeças e o peso médio de entrada.');
+      setError(t('newLot.validationError'));
       return;
     }
 
@@ -47,34 +49,34 @@ export default function NewLotScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <ScreenHeader title="Novo lote" subtitle="Dados de entrada do lote" />
+      <ScreenHeader title={t('newLot.title')} subtitle={t('newLot.subtitle')} />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={styles.form}>
-          <TextField label="Nome do lote" value={name} onChangeText={setName} placeholder="Ex.: Lote 3 — Confinamento" />
+          <TextField label={t('newLot.name')} value={name} onChangeText={setName} placeholder={t('newLot.namePlaceholder')} />
           <TextField
-            label="Cabeças na entrada"
+            label={t('newLot.headCount')}
             value={headCount}
             onChangeText={setHeadCount}
             placeholder="Ex.: 120"
             keyboardType="number-pad"
           />
           <TextField
-            label="Peso médio de entrada (kg)"
+            label={t('newLot.avgWeight')}
             value={avgWeight}
             onChangeText={setAvgWeight}
             placeholder="Ex.: 380"
             keyboardType="decimal-pad"
           />
           <TextField
-            label="Meta de peso pra abate (kg)"
+            label={t('newLot.targetWeight')}
             value={targetWeight}
             onChangeText={setTargetWeight}
-            placeholder="Opcional — ex.: 540. Sem isso, não dá pra saber quando o lote fica pronto"
+            placeholder={t('newLot.targetWeightPlaceholder')}
             keyboardType="decimal-pad"
           />
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <Button
-            label="Salvar lote"
+            label={t('newLot.save')}
             onPress={handleSubmit}
             loading={isSubmitting}
             disabled={!name || !headCount || !avgWeight}

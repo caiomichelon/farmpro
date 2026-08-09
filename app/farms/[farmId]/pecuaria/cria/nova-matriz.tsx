@@ -8,6 +8,7 @@ import { ChipSelect } from '../../../../../src/components/ChipSelect';
 import { ScreenHeader } from '../../../../../src/components/ScreenHeader';
 import { TextField } from '../../../../../src/components/TextField';
 import { useBreedingCows } from '../../../../../src/hooks/useBreedingCows';
+import { useT } from '../../../../../src/i18n';
 import { spacing, useColors, type Colors } from '../../../../../src/theme';
 
 const NO_DAM = '__nenhuma__';
@@ -17,6 +18,7 @@ export default function NewCowScreen() {
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const { cows, createCow } = useBreedingCows(farmId);
+  const t = useT();
 
   const [identification, setIdentification] = useState('');
   const [birthDate, setBirthDate] = useState('');
@@ -24,11 +26,11 @@ export default function NewCowScreen() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const damOptions = [{ value: NO_DAM, label: 'Nenhuma / não sei' }, ...cows.map((c) => ({ value: c.id, label: c.identification }))];
+  const damOptions = [{ value: NO_DAM, label: t('newCow.noDam') }, ...cows.map((c) => ({ value: c.id, label: c.identification }))];
 
   async function handleSubmit() {
     if (!identification.trim()) {
-      setError('Informe a identificação da matriz (brinco ou nome).');
+      setError(t('newCow.validationError'));
       return;
     }
     setIsSubmitting(true);
@@ -47,27 +49,27 @@ export default function NewCowScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <ScreenHeader title="Nova matriz" />
+      <ScreenHeader title={t('newCow.title')} />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={styles.form}>
           <TextField
-            label="Identificação"
+            label={t('newCow.identification')}
             value={identification}
             onChangeText={setIdentification}
-            placeholder="Ex.: Brinco 452"
+            placeholder={t('newCow.identificationPlaceholder')}
           />
           <TextField
-            label="Data de nascimento"
+            label={t('newCow.birthDate')}
             value={birthDate}
             onChangeText={setBirthDate}
-            placeholder="DD/MM/AAAA (opcional)"
+            placeholder={t('newCow.birthDatePlaceholder')}
             keyboardType="numbers-and-punctuation"
           />
           {cows.length > 0 ? (
-            <ChipSelect label="Mãe (opcional)" options={damOptions} value={damId} onChange={setDamId} accentColor={colors.pecuaria} />
+            <ChipSelect label={t('newCow.dam')} options={damOptions} value={damId} onChange={setDamId} accentColor={colors.pecuaria} />
           ) : null}
           {error ? <Text style={styles.error}>{error}</Text> : null}
-          <Button label="Salvar matriz" onPress={handleSubmit} loading={isSubmitting} disabled={!identification} />
+          <Button label={t('newCow.save')} onPress={handleSubmit} loading={isSubmitting} disabled={!identification} />
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

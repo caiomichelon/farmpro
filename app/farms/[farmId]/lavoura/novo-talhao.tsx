@@ -7,11 +7,13 @@ import { Button } from '../../../../src/components/Button';
 import { ScreenHeader } from '../../../../src/components/ScreenHeader';
 import { TextField } from '../../../../src/components/TextField';
 import { usePlots } from '../../../../src/hooks/usePlots';
+import { useT } from '../../../../src/i18n';
 import { colors, spacing } from '../../../../src/theme';
 
 export default function NewPlotScreen() {
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const { createPlot } = usePlots(farmId, 'lavoura');
+  const t = useT();
 
   const [name, setName] = useState('');
   const [area, setArea] = useState('');
@@ -21,7 +23,7 @@ export default function NewPlotScreen() {
   async function handleSubmit() {
     const areaValue = Number(area.replace(',', '.'));
     if (!name.trim() || !areaValue || areaValue <= 0) {
-      setError('Preencha o nome e uma área válida em hectares.');
+      setError(t('newPlot.validationError'));
       return;
     }
 
@@ -38,19 +40,19 @@ export default function NewPlotScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <ScreenHeader title="Novo talhão" subtitle="Cadastro básico — a safra entra no próximo passo" />
+      <ScreenHeader title={t('newPlot.title')} subtitle={t('newPlot.subtitle')} />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={styles.form}>
-          <TextField label="Nome do talhão" value={name} onChangeText={setName} placeholder="Ex.: Talhão 12" />
+          <TextField label={t('newPlot.name')} value={name} onChangeText={setName} placeholder={t('newPlot.namePlaceholder')} />
           <TextField
-            label="Área (hectares)"
+            label={t('newPlot.area')}
             value={area}
             onChangeText={setArea}
-            placeholder="Ex.: 42.5"
+            placeholder={t('newPlot.areaPlaceholder')}
             keyboardType="decimal-pad"
           />
           {error ? <Text style={styles.error}>{error}</Text> : null}
-          <Button label="Salvar talhão" onPress={handleSubmit} loading={isSubmitting} disabled={!name || !area} />
+          <Button label={t('newPlot.save')} onPress={handleSubmit} loading={isSubmitting} disabled={!name || !area} />
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
