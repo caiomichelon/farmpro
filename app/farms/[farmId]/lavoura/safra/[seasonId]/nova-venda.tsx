@@ -18,18 +18,24 @@ export default function NewSaleScreen() {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const t = useT();
-  const { farmId, seasonId } = useLocalSearchParams<{ farmId: string; seasonId: string }>();
+  const { farmId, seasonId, harvestEntryId, quantity: prefillQuantity, truckPlate: prefillTruckPlate } = useLocalSearchParams<{
+    farmId: string;
+    seasonId: string;
+    harvestEntryId?: string;
+    quantity?: string;
+    truckPlate?: string;
+  }>();
   const { buyers, createBuyer } = useGrainBuyers(farmId);
   const { createSale } = useGrainSales(seasonId);
 
   const [buyerId, setBuyerId] = useState<string | null>(null);
   const [isAddingBuyer, setIsAddingBuyer] = useState(false);
   const [newBuyerName, setNewBuyerName] = useState('');
-  const [quantity, setQuantity] = useState('');
+  const [quantity, setQuantity] = useState(prefillQuantity ?? '');
   const [pricePerSaca, setPricePerSaca] = useState('');
   const [notes, setNotes] = useState('');
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
-  const [truckPlate, setTruckPlate] = useState('');
+  const [truckPlate, setTruckPlate] = useState(prefillTruckPlate ?? '');
   const [carrierName, setCarrierName] = useState('');
   const [freightCost, setFreightCost] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -37,11 +43,12 @@ export default function NewSaleScreen() {
 
   async function handleAddBuyer() {
     if (!newBuyerName.trim()) return;
-    const { error: createError } = await createBuyer({ name: newBuyerName.trim() });
+    const { error: createError, id } = await createBuyer({ name: newBuyerName.trim() });
     if (createError) {
       setError(createError);
       return;
     }
+    if (id) setBuyerId(id);
     setNewBuyerName('');
     setIsAddingBuyer(false);
   }
@@ -65,6 +72,7 @@ export default function NewSaleScreen() {
       truck_plate: truckPlate.trim() || undefined,
       carrier_name: carrierName.trim() || undefined,
       freight_cost: freightValue,
+      harvest_entry_id: harvestEntryId || undefined,
     });
     setIsSubmitting(false);
 
@@ -84,6 +92,8 @@ export default function NewSaleScreen() {
       <ScreenHeader title={t('newSale.title')} subtitle={t('newSale.subtitle')} />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
+          {harvestEntryId ? <Text style={styles.linkedBanner}>{t('newSale.linkedBanner')}</Text> : null}
+
           <ChipSelect
             label={t('newSale.buyerLabel')}
             options={buyers.map((b) => ({ value: b.id, label: b.name }))}
@@ -154,6 +164,13 @@ function createStyles(colors: Colors) {
       paddingHorizontal: spacing.xl,
       paddingBottom: spacing.xxxl,
       gap: spacing.lg,
+    },
+    linkedBanner: {
+      ...typography.captionMedium,
+      color: colors.lavoura,
+      backgroundColor: colors.lavouraLight,
+      borderRadius: radius.sm,
+      padding: spacing.md,
     },
     inlineRow: {
       flexDirection: 'row',

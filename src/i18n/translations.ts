@@ -619,6 +619,7 @@ export const pt = {
   'newSale.netPreview': 'Total líquido (bruto − frete): {{value}}',
   'newSale.save': 'Salvar venda',
   'newSale.validationError': 'Preencha a quantidade e o preço por saca.',
+  'newSale.linkedBanner': 'Vinculando essa venda à nota de caminhão já lançada na colheita — placa e quantidade vieram de lá.',
 
   // Nota de caminhão na colheita
   'harvest.truckSectionTitle': 'Nota do caminhão (opcional)',
@@ -638,6 +639,15 @@ export const pt = {
   'harvest.photoLabel': 'Foto da nota de pesagem (opcional)',
   'harvest.entryTruckInfo': '🚚 {{info}}',
   'harvest.entryWeightInfo': '{{net}} kg líquido ({{kgPerSaca}} kg/sc)',
+  'harvest.saleSectionTitle': 'Venda (opcional)',
+  'harvest.saleSectionSubtitle': 'Já sabe pra quem vai vender essa carga? Preencha aqui — a venda fica ligada direto a essa nota, sem digitar caminhão de novo.',
+  'harvest.saveAndAddAnother': 'Salvar e lançar outra',
+  'harvest.saveAndFinish': 'Salvar e concluir',
+  'harvest.savedCount': '✓ {{count}} nota(s) lançada(s) agora',
+  'harvest.entrySold': '✓ Vendida',
+  'harvest.entryUnsold': 'Ainda não vendida',
+  'harvest.entrySaleInfo': '{{buyer}} · {{price}}/sc',
+  'harvest.linkSale': 'Vincular venda',
 } as const;
 
 export type TranslationKey = keyof typeof pt;
@@ -1231,6 +1241,7 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'newSale.netPreview': 'Net total (gross − freight): {{value}}',
   'newSale.save': 'Save sale',
   'newSale.validationError': 'Fill in the quantity and the price per bag.',
+  'newSale.linkedBanner': 'Linking this sale to a truck ticket already logged in the harvest — plate and quantity came from there.',
 
   // Truck ticket on harvest
   'harvest.truckSectionTitle': 'Truck ticket (optional)',
@@ -1250,6 +1261,15 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'harvest.photoLabel': 'Weighing ticket photo (optional)',
   'harvest.entryTruckInfo': '🚚 {{info}}',
   'harvest.entryWeightInfo': '{{net}} kg net ({{kgPerSaca}} kg/bag)',
+  'harvest.saleSectionTitle': 'Sale (optional)',
+  'harvest.saleSectionSubtitle': "Already know who you're selling this load to? Fill it in here — the sale gets linked straight to this ticket, no need to re-enter the truck.",
+  'harvest.saveAndAddAnother': 'Save and log another',
+  'harvest.saveAndFinish': 'Save and finish',
+  'harvest.savedCount': '✓ {{count}} ticket(s) logged now',
+  'harvest.entrySold': '✓ Sold',
+  'harvest.entryUnsold': 'Not sold yet',
+  'harvest.entrySaleInfo': '{{buyer}} · {{price}}/bag',
+  'harvest.linkSale': 'Link sale',
 };
 
 export const es: Partial<Record<TranslationKey, string>> = {
@@ -1841,6 +1861,7 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'newSale.netPreview': 'Total neto (bruto − flete): {{value}}',
   'newSale.save': 'Guardar venta',
   'newSale.validationError': 'Completá la cantidad y el precio por bolsa.',
+  'newSale.linkedBanner': 'Vinculando esta venta a un comprobante de camión ya registrado en la cosecha — la patente y la cantidad vinieron de ahí.',
 
   // Comprobante del camión en la cosecha
   'harvest.truckSectionTitle': 'Comprobante del camión (opcional)',
@@ -1860,4 +1881,13 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'harvest.photoLabel': 'Foto del comprobante de pesaje (opcional)',
   'harvest.entryTruckInfo': '🚚 {{info}}',
   'harvest.entryWeightInfo': '{{net}} kg neto ({{kgPerSaca}} kg/bolsa)',
+  'harvest.saleSectionTitle': 'Venta (opcional)',
+  'harvest.saleSectionSubtitle': '¿Ya sabés a quién le vas a vender esta carga? Completá acá — la venta queda vinculada directo a este comprobante, sin volver a escribir el camión.',
+  'harvest.saveAndAddAnother': 'Guardar y registrar otra',
+  'harvest.saveAndFinish': 'Guardar y finalizar',
+  'harvest.savedCount': '✓ {{count}} comprobante(s) registrado(s) ahora',
+  'harvest.entrySold': '✓ Vendida',
+  'harvest.entryUnsold': 'Todavía no vendida',
+  'harvest.entrySaleInfo': '{{buyer}} · {{price}}/bolsa',
+  'harvest.linkSale': 'Vincular venta',
 };

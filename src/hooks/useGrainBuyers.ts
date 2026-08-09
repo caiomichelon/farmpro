@@ -35,18 +35,22 @@ export function useGrainBuyers(farmId: string | undefined) {
 
   const createBuyer = useCallback(
     async (input: { name: string; notes?: string }) => {
-      if (!farmId) return { error: 'Fazenda não encontrada.' };
+      if (!farmId) return { error: 'Fazenda não encontrada.', id: null };
 
-      const { error: insertError } = await supabase.from('grain_buyers').insert({
-        farm_id: farmId,
-        name: input.name,
-        notes: input.notes || null,
-      });
+      const { data, error: insertError } = await supabase
+        .from('grain_buyers')
+        .insert({
+          farm_id: farmId,
+          name: input.name,
+          notes: input.notes || null,
+        })
+        .select('id')
+        .single();
 
-      if (insertError) return { error: insertError.message };
+      if (insertError) return { error: insertError.message, id: null };
 
       await reload();
-      return { error: null };
+      return { error: null, id: data.id as string };
     },
     [farmId, reload]
   );

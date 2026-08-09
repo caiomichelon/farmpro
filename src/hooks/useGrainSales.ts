@@ -50,6 +50,7 @@ export function useGrainSales(seasonId: string | undefined) {
       truck_plate?: string;
       carrier_name?: string;
       freight_cost?: number;
+      harvest_entry_id?: string;
     }) => {
       if (!seasonId) return { error: 'Safra não encontrada.' };
 
@@ -64,6 +65,7 @@ export function useGrainSales(seasonId: string | undefined) {
         truck_plate: input.truck_plate || null,
         carrier_name: input.carrier_name || null,
         freight_cost: input.freight_cost ?? null,
+        harvest_entry_id: input.harvest_entry_id || null,
       });
 
       if (insertError) return { error: insertError.message };

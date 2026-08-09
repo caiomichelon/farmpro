@@ -241,6 +241,9 @@ export type GrainSale = {
   carrier_name: string | null;
   /** Valor pago de frete — opcional, entra na conta do valor líquido. */
   freight_cost: number | null;
+  /** Lançamento de colheita (nota de caminhão) que originou essa venda —
+   * opcional, null quando a venda não veio de um caminhão recém-pesado. */
+  harvest_entry_id: string | null;
   created_at: string;
 };
 

@@ -45,25 +45,29 @@ export function useHarvestEntries(seasonId: string | undefined) {
       kg_per_saca?: number;
       photo_url?: string;
     }) => {
-      if (!seasonId) return { error: 'Safra não encontrada.' };
+      if (!seasonId) return { error: 'Safra não encontrada.', id: null };
 
-      const { error: insertError } = await supabase.from('harvest_entries').insert({
-        plot_season_id: seasonId,
-        quantity_sacas: input.quantity_sacas,
-        harvested_at: input.harvested_at || new Date().toISOString().slice(0, 10),
-        notes: input.notes || null,
-        truck_plate: input.truck_plate || null,
-        driver_name: input.driver_name || null,
-        gross_weight_kg: input.gross_weight_kg ?? null,
-        net_weight_kg: input.net_weight_kg ?? null,
-        kg_per_saca: input.kg_per_saca ?? null,
-        photo_url: input.photo_url || null,
-      });
+      const { data, error: insertError } = await supabase
+        .from('harvest_entries')
+        .insert({
+          plot_season_id: seasonId,
+          quantity_sacas: input.quantity_sacas,
+          harvested_at: input.harvested_at || new Date().toISOString().slice(0, 10),
+          notes: input.notes || null,
+          truck_plate: input.truck_plate || null,
+          driver_name: input.driver_name || null,
+          gross_weight_kg: input.gross_weight_kg ?? null,
+          net_weight_kg: input.net_weight_kg ?? null,
+          kg_per_saca: input.kg_per_saca ?? null,
+          photo_url: input.photo_url || null,
+        })
+        .select('id')
+        .single();
 
-      if (insertError) return { error: insertError.message };
+      if (insertError) return { error: insertError.message, id: null };
 
       await reload();
-      return { error: null };
+      return { error: null, id: data.id as string };
     },
     [seasonId, reload]
   );
