@@ -18,6 +18,7 @@ import {
   type CattleLotReadiness,
   type CattleLotSummary,
 } from '../../../../../src/hooks/useCattleLots';
+import { useT, type TFunction } from '../../../../../src/i18n';
 import { buildSellRecommendations } from '../../../../../src/lib/sellRecommendation';
 import { radius, spacing, typography, useColors, type Colors } from '../../../../../src/theme';
 
@@ -33,6 +34,7 @@ export default function CorteHomeScreen() {
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const { lots, isLoading, error, reload } = useCattleLots(farmId);
   const [boiGordoPrice, setBoiGordoPrice] = useState(0);
+  const t = useT();
 
   // "Novo lote" é uma rota separada — refaz a busca ao voltar pra cá.
   useFocusEffect(
@@ -61,15 +63,15 @@ export default function CorteHomeScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScreenHeader
-        title="Corte"
-        subtitle={`${lots.length} ${lots.length === 1 ? 'lote' : 'lotes'} · ${totalHead.toLocaleString('pt-BR')} cabeças`}
+        title={t('corteHome.title')}
+        subtitle={`${lots.length} ${lots.length === 1 ? t('corteHome.lotSingular') : t('corteHome.lotPlural')} · ${totalHead.toLocaleString('pt-BR')} ${t('corteHome.headsSuffix')}`}
         right={
           <View style={styles.headerLinks}>
             <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/animais`)} hitSlop={12}>
-              <Text style={styles.headerLink}>Animais</Text>
+              <Text style={styles.headerLink}>{t('corteHome.animals')}</Text>
             </Pressable>
             <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/frigorificos`)} hitSlop={12}>
-              <Text style={styles.headerLink}>Frigoríficos</Text>
+              <Text style={styles.headerLink}>{t('corteHome.packingPlants')}</Text>
             </Pressable>
           </View>
         }
@@ -87,10 +89,10 @@ export default function CorteHomeScreen() {
             <View style={styles.headerContent}>
               <StatGrid
                 stats={[
-                  { label: 'Lotes ativos', value: String(activeLots.length) },
-                  { label: 'Total de cabeças', value: totalHead.toLocaleString('pt-BR') },
-                  { label: 'GMD médio', value: avgGmd !== null ? `${avgGmd.toFixed(2)} kg/dia` : '—' },
-                  { label: 'Mortalidade média', value: `${avgMortality.toFixed(1)}%` },
+                  { label: t('corteHome.statActiveLots'), value: String(activeLots.length) },
+                  { label: t('corteHome.statTotalHeads'), value: totalHead.toLocaleString('pt-BR') },
+                  { label: t('corteHome.statAvgGmd'), value: avgGmd !== null ? `${avgGmd.toFixed(2)} kg/dia` : '—' },
+                  { label: t('corteHome.statAvgMortality'), value: `${avgMortality.toFixed(1)}%` },
                 ]}
               />
 
@@ -100,7 +102,8 @@ export default function CorteHomeScreen() {
                   onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/prontos-para-abate`)}
                 >
                   <Text style={styles.readyBannerText}>
-                    ✓ {readyLots.length} {readyLots.length === 1 ? 'lote pronto' : 'lotes prontos'} pra abate agora
+                    ✓ {readyLots.length} {readyLots.length === 1 ? t('corteHome.readyLotSingular') : t('corteHome.readyLotPlural')}{' '}
+                    {t('corteHome.readyBannerSuffix')}
                   </Text>
                   <Text style={styles.readyBannerChevron}>→</Text>
                 </Pressable>
@@ -108,7 +111,7 @@ export default function CorteHomeScreen() {
 
               {sellRecommendations.length > 0 ? (
                 <View style={styles.sellBanner}>
-                  <Text style={styles.sellBannerTitle}>💰 Hoje é um bom dia pra vender</Text>
+                  <Text style={styles.sellBannerTitle}>{t('corteHome.sellBannerTitle')}</Text>
                   {sellRecommendations.map((rec) => (
                     <Pressable
                       key={rec.lotId}
@@ -116,9 +119,12 @@ export default function CorteHomeScreen() {
                       onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${rec.lotId}`)}
                     >
                       <Text style={styles.sellBannerRowText}>
-                        Lote {rec.lotName}: margem de {rec.marginPct.toFixed(0)}% na arroba (custo{' '}
-                        {rec.costPerArroba.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} × cotação{' '}
-                        {rec.currentPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})
+                        {t('corteHome.sellBannerRow', {
+                          name: rec.lotName,
+                          margin: rec.marginPct.toFixed(0),
+                          cost: rec.costPerArroba.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+                          price: rec.currentPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+                        })}
                       </Text>
                     </Pressable>
                   ))}
@@ -129,58 +135,58 @@ export default function CorteHomeScreen() {
 
               <View style={styles.linksRow}>
                 <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/planilha`)} hitSlop={8}>
-                  <Text style={styles.link}>Planilha de lotes</Text>
+                  <Text style={styles.link}>{t('corteHome.linkLotSheet')}</Text>
                 </Pressable>
                 <Text style={styles.linkDivider}>·</Text>
                 <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/abates`)} hitSlop={8}>
-                  <Text style={styles.link}>Planilha de abates</Text>
+                  <Text style={styles.link}>{t('corteHome.linkSlaughterSheet')}</Text>
                 </Pressable>
                 <Text style={styles.linkDivider}>·</Text>
                 <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/financeiro`)} hitSlop={8}>
-                  <Text style={styles.link}>Financeiro por lote</Text>
+                  <Text style={styles.link}>{t('corteHome.linkFinancialByLot')}</Text>
                 </Pressable>
                 <Text style={styles.linkDivider}>·</Text>
                 <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/benchmarking`)} hitSlop={8}>
-                  <Text style={styles.link}>Benchmarking</Text>
+                  <Text style={styles.link}>{t('corteHome.linkBenchmarking')}</Text>
                 </Pressable>
               </View>
               <View style={styles.linksRow}>
                 <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/prontos-para-abate`)} hitSlop={8}>
-                  <Text style={styles.link}>Prontos pra abate</Text>
+                  <Text style={styles.link}>{t('corteHome.linkReadyForSlaughter')}</Text>
                 </Pressable>
                 <Text style={styles.linkDivider}>·</Text>
                 <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/repasse`)} hitSlop={8}>
-                  <Text style={styles.link}>Repasse</Text>
+                  <Text style={styles.link}>{t('corteHome.linkTransfer')}</Text>
                 </Pressable>
                 <Text style={styles.linkDivider}>·</Text>
                 <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/vacinas-pendentes`)} hitSlop={8}>
-                  <Text style={styles.link}>Vacinas pendentes</Text>
+                  <Text style={styles.link}>{t('corteHome.linkPendingVaccines')}</Text>
                 </Pressable>
               </View>
               <View style={styles.linksRow}>
                 <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/importar`)} hitSlop={8}>
-                  <Text style={styles.link}>Importar lotes</Text>
+                  <Text style={styles.link}>{t('corteHome.linkImportLots')}</Text>
                 </Pressable>
                 <Text style={styles.linkDivider}>·</Text>
                 <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/protocolos`)} hitSlop={8}>
-                  <Text style={styles.link}>Protocolos sanitários</Text>
+                  <Text style={styles.link}>{t('corteHome.linkProtocols')}</Text>
                 </Pressable>
                 <Text style={styles.linkDivider}>·</Text>
                 <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/painel-de-campo`)} hitSlop={8}>
-                  <Text style={styles.link}>Painel de campo</Text>
+                  <Text style={styles.link}>{t('corteHome.linkFieldPanel')}</Text>
                 </Pressable>
                 <Text style={styles.linkDivider}>·</Text>
                 <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/comparativo-regional`)} hitSlop={8}>
-                  <Text style={styles.link}>🌎 Comparativo regional</Text>
+                  <Text style={styles.link}>{t('corteHome.linkRegionalComparison')}</Text>
                 </Pressable>
               </View>
             </View>
             </FadeSlideIn>
           }
-          ListEmptyComponent={<EmptyState text="Nenhum lote cadastrado ainda. Comece criando o primeiro." />}
+          ListEmptyComponent={<EmptyState text={t('corteHome.empty')} />}
           renderItem={({ item, index }) => (
             <FadeSlideIn delay={Math.min(index, 6) * 50}>
-              <LotCard lot={item} styles={styles} colors={colors} onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${item.id}`)} />
+              <LotCard lot={item} styles={styles} colors={colors} t={t} onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${item.id}`)} />
             </FadeSlideIn>
           )}
         />
@@ -189,7 +195,7 @@ export default function CorteHomeScreen() {
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
       <View style={styles.footer}>
-        <Button label="+ Novo lote" onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/novo-lote`)} />
+        <Button label={t('corteHome.newLot')} onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/novo-lote`)} />
       </View>
     </SafeAreaView>
   );
@@ -200,11 +206,13 @@ function LotCard({
   onPress,
   styles,
   colors,
+  t,
 }: {
   lot: CattleLotSummary;
   onPress: () => void;
   styles: ReturnType<typeof createStyles>;
   colors: Colors;
+  t: TFunction;
 }) {
   const readinessColor = colors[READINESS_COLOR_KEY[lot.readiness]];
   return (
@@ -223,9 +231,9 @@ function LotCard({
         </View>
       ) : null}
       <View style={styles.cardStatsRow}>
-        <Text style={styles.cardStat}>{lot.currentHeadCount} cabeças</Text>
+        <Text style={styles.cardStat}>{lot.currentHeadCount} {t('corteHome.headsSuffix')}</Text>
         <Text style={styles.cardStatDivider}>·</Text>
-        <Text style={styles.cardStat}>{lot.latestWeightKg.toFixed(0)} kg méd.</Text>
+        <Text style={styles.cardStat}>{lot.latestWeightKg.toFixed(0)} {t('corteHome.avgWeightSuffix')}</Text>
         {lot.gmdKgPerDay !== null ? (
           <>
             <Text style={styles.cardStatDivider}>·</Text>

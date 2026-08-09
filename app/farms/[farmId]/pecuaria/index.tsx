@@ -4,34 +4,36 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FadeSlideIn } from '../../../../src/components/FadeSlideIn';
 import { ScreenHeader } from '../../../../src/components/ScreenHeader';
+import { useT } from '../../../../src/i18n';
 import { colors, radius, spacing, typography } from '../../../../src/theme';
 
 export default function PecuariaHomeScreen() {
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
+  const t = useT();
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <ScreenHeader title="Pecuária" subtitle="Corte e Cria/Reprodução" />
+      <ScreenHeader title={t('pecuariaHome.title')} subtitle={t('pecuariaHome.subtitle')} />
 
       <View style={styles.content}>
         <FadeSlideIn>
           <AreaCard
-            title="Corte"
-            description="Lotes, indicadores zootécnicos, frigoríficos e registro de abate."
+            title={t('pecuariaHome.corteTitle')}
+            description={t('pecuariaHome.corteDescription')}
             onPress={() => router.push(`/farms/${farmId}/pecuaria/corte`)}
           />
         </FadeSlideIn>
         <FadeSlideIn delay={70}>
           <AreaCard
-            title="Cria / Reprodução"
-            description="Matrizes, inseminação, previsão de parto e histórico de bezerros."
+            title={t('pecuariaHome.criaTitle')}
+            description={t('pecuariaHome.criaDescription')}
             onPress={() => router.push(`/farms/${farmId}/pecuaria/cria`)}
           />
         </FadeSlideIn>
         <FadeSlideIn delay={140}>
           <AreaCard
-            title="Estoque"
-            description="Ração, núcleo/sal mineral e medicamentos — entradas, saídas e alerta de estoque baixo."
+            title={t('pecuariaHome.estoqueTitle')}
+            description={t('pecuariaHome.estoqueDescription')}
             onPress={() => router.push(`/farms/${farmId}/pecuaria/estoque`)}
           />
         </FadeSlideIn>

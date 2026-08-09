@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { useT } from '../i18n';
 import { radius, spacing, typography, useColors, type Colors } from '../theme';
 
 function formatBRL(value: number): string {
@@ -14,23 +15,24 @@ function formatBRL(value: number): string {
 export function FinancialSummary({ cost, revenue, margin }: { cost: number; revenue: number; margin: number }) {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const t = useT();
   const isPositive = margin >= 0;
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Resultado financeiro</Text>
+      <Text style={styles.title}>{t('financialSummary.title')}</Text>
       <View style={styles.row}>
         <View style={styles.cell}>
-          <Text style={styles.cellLabel}>Custo</Text>
+          <Text style={styles.cellLabel}>{t('financialSummary.cost')}</Text>
           <Text style={[styles.cellValue, { color: colors.danger }]}>{formatBRL(cost)}</Text>
         </View>
         <View style={styles.divider} />
         <View style={styles.cell}>
-          <Text style={styles.cellLabel}>Receita</Text>
+          <Text style={styles.cellLabel}>{t('financialSummary.revenue')}</Text>
           <Text style={[styles.cellValue, { color: colors.success }]}>{formatBRL(revenue)}</Text>
         </View>
         <View style={styles.divider} />
         <View style={styles.cell}>
-          <Text style={styles.cellLabel}>Margem</Text>
+          <Text style={styles.cellLabel}>{t('financialSummary.margin')}</Text>
           <Text style={[styles.cellValue, { color: isPositive ? colors.success : colors.danger }]}>
             {isPositive ? '+' : ''}
             {formatBRL(margin)}

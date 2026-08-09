@@ -12,12 +12,14 @@ import { ScreenHeader } from '../../../../src/components/ScreenHeader';
 import { StatGrid } from '../../../../src/components/StatGrid';
 import { useLavouraSummary } from '../../../../src/hooks/useLavouraSummary';
 import { usePlotsWithLatestSeason, type PlotWithLatestSeason } from '../../../../src/hooks/usePlots';
+import { useT } from '../../../../src/i18n';
 import { colors, radius, spacing, typography } from '../../../../src/theme';
 
 export default function LavouraHomeScreen() {
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const { plots, isLoading, error, reload } = usePlotsWithLatestSeason(farmId);
   const { summary, reload: reloadSummary } = useLavouraSummary(farmId);
+  const t = useT();
 
   // A tela de "novo talhão" é uma rota separada — ao voltar pra cá o hook
   // desta tela não recarrega sozinho (ela já estava montada, nada mudou nas
@@ -33,11 +35,11 @@ export default function LavouraHomeScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScreenHeader
-        title="Lavoura"
-        subtitle={`${summary.totalPlots} ${summary.totalPlots === 1 ? 'talhão' : 'talhões'} · ${summary.totalHectares.toLocaleString('pt-BR')} ha`}
+        title={t('lavouraHome.title')}
+        subtitle={`${summary.totalPlots} ${summary.totalPlots === 1 ? t('lavouraHome.subtitlePlotSingular') : t('lavouraHome.subtitlePlotPlural')} · ${summary.totalHectares.toLocaleString('pt-BR')} ha`}
         right={
           <Pressable onPress={() => router.push(`/farms/${farmId}/lavoura/compradores`)} hitSlop={12}>
-            <Text style={styles.headerLink}>Compradores</Text>
+            <Text style={styles.headerLink}>{t('lavouraHome.buyers')}</Text>
           </Pressable>
         }
       />
@@ -54,11 +56,11 @@ export default function LavouraHomeScreen() {
               <View style={styles.headerContent}>
                 <StatGrid
                   stats={[
-                    { label: 'Talhões', value: String(summary.totalPlots) },
-                    { label: 'Área total', value: `${summary.totalHectares.toLocaleString('pt-BR')} ha` },
-                    { label: 'Safras em andamento', value: String(summary.activeSeasons) },
+                    { label: t('lavouraHome.statPlots'), value: String(summary.totalPlots) },
+                    { label: t('lavouraHome.statArea'), value: `${summary.totalHectares.toLocaleString('pt-BR')} ha` },
+                    { label: t('lavouraHome.statActiveSeasons'), value: String(summary.activeSeasons) },
                     {
-                      label: 'Produtividade média',
+                      label: t('lavouraHome.statYield'),
                       value: summary.avgYieldPerHectare !== null ? `${summary.avgYieldPerHectare.toFixed(1)} sc/ha` : '—',
                     },
                   ]}
@@ -66,36 +68,40 @@ export default function LavouraHomeScreen() {
                 <FinancialSummary cost={summary.totalCost} revenue={summary.totalRevenue} margin={summary.margin} />
                 <View style={styles.linksRow}>
                   <Pressable onPress={() => router.push(`/farms/${farmId}/lavoura/planilha`)} hitSlop={8}>
-                    <Text style={styles.link}>Planilha de talhões</Text>
+                    <Text style={styles.link}>{t('lavouraHome.linkPlotSheet')}</Text>
                   </Pressable>
                   <Text style={styles.linkDivider}>·</Text>
                   <Pressable onPress={() => router.push(`/farms/${farmId}/lavoura/safras`)} hitSlop={8}>
-                    <Text style={styles.link}>Planilha de safras</Text>
+                    <Text style={styles.link}>{t('lavouraHome.linkSeasonSheet')}</Text>
                   </Pressable>
                   <Text style={styles.linkDivider}>·</Text>
                   <Pressable onPress={() => router.push(`/farms/${farmId}/lavoura/estoque`)} hitSlop={8}>
-                    <Text style={styles.link}>Estoque</Text>
+                    <Text style={styles.link}>{t('lavouraHome.linkStock')}</Text>
                   </Pressable>
                   <Text style={styles.linkDivider}>·</Text>
                   <Pressable onPress={() => router.push(`/farms/${farmId}/lavoura/comparativo-regional`)} hitSlop={8}>
-                    <Text style={styles.link}>🌎 Comparativo regional</Text>
+                    <Text style={styles.link}>{t('lavouraHome.linkRegionalComparison')}</Text>
                   </Pressable>
                   <Text style={styles.linkDivider}>·</Text>
                   <Pressable onPress={() => router.push(`/farms/${farmId}/lavoura/calda`)} hitSlop={8}>
-                    <Text style={styles.link}>🧪 Calculadora de calda</Text>
+                    <Text style={styles.link}>{t('lavouraHome.linkSprayCalculator')}</Text>
                   </Pressable>
                   <Text style={styles.linkDivider}>·</Text>
                   <Pressable onPress={() => router.push(`/farms/${farmId}/lavoura/populacao`)} hitSlop={8}>
-                    <Text style={styles.link}>🌱 Calculadora de estande</Text>
+                    <Text style={styles.link}>{t('lavouraHome.linkPopulationCalculator')}</Text>
                   </Pressable>
                 </View>
               </View>
             </FadeSlideIn>
           }
-          ListEmptyComponent={<EmptyState text="Nenhum talhão cadastrado ainda. Comece criando o primeiro." />}
+          ListEmptyComponent={<EmptyState text={t('lavouraHome.empty')} />}
           renderItem={({ item, index }) => (
             <FadeSlideIn delay={Math.min(index, 6) * 50}>
-              <PlotCard plot={item} onPress={() => router.push(`/farms/${farmId}/lavoura/talhao/${item.id}`)} />
+              <PlotCard
+                plot={item}
+                onPress={() => router.push(`/farms/${farmId}/lavoura/talhao/${item.id}`)}
+                noSeasonLabel={t('lavouraHome.noSeason')}
+              />
             </FadeSlideIn>
           )}
         />
@@ -104,13 +110,13 @@ export default function LavouraHomeScreen() {
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
       <View style={styles.footer}>
-        <Button label="+ Novo talhão" onPress={() => router.push(`/farms/${farmId}/lavoura/novo-talhao`)} />
+        <Button label={t('lavouraHome.newPlot')} onPress={() => router.push(`/farms/${farmId}/lavoura/novo-talhao`)} />
       </View>
     </SafeAreaView>
   );
 }
 
-function PlotCard({ plot, onPress }: { plot: PlotWithLatestSeason; onPress: () => void }) {
+function PlotCard({ plot, onPress, noSeasonLabel }: { plot: PlotWithLatestSeason; onPress: () => void; noSeasonLabel: string }) {
   return (
     <Card onPress={onPress} style={styles.card}>
       <View style={styles.cardTopRow}>
@@ -125,7 +131,7 @@ function PlotCard({ plot, onPress }: { plot: PlotWithLatestSeason; onPress: () =
           </Text>
         </View>
       ) : (
-        <Text style={styles.noCropText}>Sem safra lançada</Text>
+        <Text style={styles.noCropText}>{noSeasonLabel}</Text>
       )}
     </Card>
   );

@@ -17,6 +17,7 @@ import {
   type BreedingCowSummary,
   type ReproductiveStatus,
 } from '../../../../../src/hooks/useBreedingCows';
+import { useT, type TFunction } from '../../../../../src/i18n';
 import { radius, spacing, typography, useColors, type Colors } from '../../../../../src/theme';
 
 const STATUS_COLOR_KEY: Record<ReproductiveStatus, 'pecuaria' | 'textMuted' | 'danger' | 'warning'> = {
@@ -34,6 +35,7 @@ export default function CriaHomeScreen() {
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const { cows, isLoading, error, reload } = useBreedingCows(farmId);
   const [search, setSearch] = useState('');
+  const t = useT();
 
   // "Nova matriz" é uma rota separada — refaz a busca ao voltar pra cá.
   useFocusEffect(
@@ -61,15 +63,15 @@ export default function CriaHomeScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScreenHeader
-        title="Cria / Reprodução"
-        subtitle={`${cows.length} ${cows.length === 1 ? 'matriz' : 'matrizes'}`}
+        title={t('criaHome.title')}
+        subtitle={`${cows.length} ${cows.length === 1 ? t('criaHome.cowSingular') : t('criaHome.cowPlural')}`}
         right={
           <View style={styles.headerLinks}>
             <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/importar`)} hitSlop={12}>
-              <Text style={styles.headerLink}>Importar</Text>
+              <Text style={styles.headerLink}>{t('criaHome.import')}</Text>
             </Pressable>
             <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/planilha`)} hitSlop={12}>
-              <Text style={styles.headerLink}>Planilha</Text>
+              <Text style={styles.headerLink}>{t('criaHome.sheet')}</Text>
             </Pressable>
           </View>
         }
@@ -87,12 +89,12 @@ export default function CriaHomeScreen() {
             <View style={styles.headerContent}>
               <StatGrid
                 stats={[
-                  { label: 'Matrizes', value: String(cows.length) },
-                  { label: 'Prenhas agora', value: String(pregnantCount) },
-                  { label: 'Bezerros até hoje', value: String(totalCalves) },
-                  { label: 'Taxa de prenhez', value: `${pregnancyRate.toFixed(0)}%` },
+                  { label: t('criaHome.statCows'), value: String(cows.length) },
+                  { label: t('criaHome.statPregnantNow'), value: String(pregnantCount) },
+                  { label: t('criaHome.statCalvesSoFar'), value: String(totalCalves) },
+                  { label: t('criaHome.statPregnancyRate'), value: `${pregnancyRate.toFixed(0)}%` },
                   {
-                    label: 'Intervalo entre partos',
+                    label: t('criaHome.statCalvingInterval'),
                     value: avgHerdCalvingInterval !== null ? `${Math.round(avgHerdCalvingInterval)} dias` : '—',
                   },
                 ]}
@@ -104,24 +106,25 @@ export default function CriaHomeScreen() {
                   onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/atencao`)}
                 >
                   <Text style={styles.attentionBannerText}>
-                    ⚠ {attentionCount} {attentionCount === 1 ? 'matriz vazia' : 'matrizes vazias'} há mais de 90 dias
+                    ⚠ {attentionCount} {attentionCount === 1 ? t('criaHome.attentionCowSingular') : t('criaHome.attentionCowPlural')}{' '}
+                    {t('criaHome.attentionSuffix')}
                   </Text>
                   <Text style={styles.attentionBannerChevron}>→</Text>
                 </Pressable>
               ) : null}
 
               <Card style={styles.financialCard}>
-                <Text style={styles.financialTitle}>Custo</Text>
+                <Text style={styles.financialTitle}>{t('criaHome.costTitle')}</Text>
                 <View style={styles.financialRow}>
                   <View style={styles.financialCell}>
-                    <Text style={styles.financialLabel}>Custo total</Text>
+                    <Text style={styles.financialLabel}>{t('criaHome.costTotal')}</Text>
                     <Text style={[styles.financialValue, { color: colors.danger }]}>
                       {totalCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                     </Text>
                   </View>
                   <View style={styles.financialDivider} />
                   <View style={styles.financialCell}>
-                    <Text style={styles.financialLabel}>Custo por bezerro</Text>
+                    <Text style={styles.financialLabel}>{t('criaHome.costPerCalf')}</Text>
                     <Text style={styles.financialValue}>
                       {costPerCalf !== null ? costPerCalf.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '—'}
                     </Text>
@@ -131,34 +134,34 @@ export default function CriaHomeScreen() {
 
               <View style={styles.linksRow}>
                 <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/partos-previstos`)} hitSlop={8}>
-                  <Text style={styles.link}>Partos previstos</Text>
+                  <Text style={styles.link}>{t('criaHome.linkExpectedCalvings')}</Text>
                 </Pressable>
                 <Text style={styles.linkDivider}>·</Text>
                 <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/financeiro`)} hitSlop={8}>
-                  <Text style={styles.link}>Financeiro por matriz</Text>
+                  <Text style={styles.link}>{t('criaHome.linkFinancialByCow')}</Text>
                 </Pressable>
                 <Text style={styles.linkDivider}>·</Text>
                 <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/atencao`)} hitSlop={8}>
-                  <Text style={styles.link}>Atenção</Text>
+                  <Text style={styles.link}>{t('criaHome.linkAttention')}</Text>
                 </Pressable>
                 <Text style={styles.linkDivider}>·</Text>
                 <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/benchmarking`)} hitSlop={8}>
-                  <Text style={styles.link}>Benchmarking</Text>
+                  <Text style={styles.link}>{t('criaHome.linkBenchmarking')}</Text>
                 </Pressable>
                 <Text style={styles.linkDivider}>·</Text>
                 <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/comparativo-regional`)} hitSlop={8}>
-                  <Text style={styles.link}>🌎 Comparativo regional</Text>
+                  <Text style={styles.link}>{t('criaHome.linkRegionalComparison')}</Text>
                 </Pressable>
               </View>
 
-              <TextField label="Buscar matriz" value={search} onChangeText={setSearch} placeholder="Digite a identificação" />
+              <TextField label={t('criaHome.searchLabel')} value={search} onChangeText={setSearch} placeholder={t('criaHome.searchPlaceholder')} />
             </View>
             </FadeSlideIn>
           }
-          ListEmptyComponent={<EmptyState text="Nenhuma matriz cadastrada ainda. Comece criando a primeira." />}
+          ListEmptyComponent={<EmptyState text={t('criaHome.empty')} />}
           renderItem={({ item, index }) => (
             <FadeSlideIn delay={Math.min(index, 6) * 50}>
-              <CowCard cow={item} styles={styles} colors={colors} onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/matriz/${item.id}`)} />
+              <CowCard cow={item} styles={styles} colors={colors} t={t} onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/matriz/${item.id}`)} />
             </FadeSlideIn>
           )}
         />
@@ -167,7 +170,7 @@ export default function CriaHomeScreen() {
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
       <View style={styles.footer}>
-        <Button label="+ Nova matriz" onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/nova-matriz`)} />
+        <Button label={t('criaHome.newCow')} onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/nova-matriz`)} />
       </View>
     </SafeAreaView>
   );
@@ -178,11 +181,13 @@ function CowCard({
   onPress,
   styles,
   colors,
+  t,
 }: {
   cow: BreedingCowSummary;
   onPress: () => void;
   styles: ReturnType<typeof createStyles>;
   colors: Colors;
+  t: TFunction;
 }) {
   const statusColor = colors[STATUS_COLOR_KEY[cow.reproductiveStatus]];
   return (
@@ -190,7 +195,7 @@ function CowCard({
       <View style={styles.cardTopRow}>
         <Text style={styles.cardTitle}>{cow.identification}</Text>
         <Text style={styles.cardStat}>
-          {cow.calfCount} {cow.calfCount === 1 ? 'bezerro' : 'bezerros'}
+          {cow.calfCount} {cow.calfCount === 1 ? t('criaHome.calfSingular') : t('criaHome.calfPlural')}
         </Text>
       </View>
       <View style={styles.cardBadgesRow}>

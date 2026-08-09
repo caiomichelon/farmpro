@@ -11,6 +11,7 @@ import { FadeSlideIn } from '../../../../src/components/FadeSlideIn';
 import { ScreenHeader } from '../../../../src/components/ScreenHeader';
 import { EMPLOYEE_SECTOR_LABELS, EMPLOYEE_SECTOR_OPTIONS } from '../../../../src/data/employeeOptions';
 import { useEmployees, type EmployeeSummary } from '../../../../src/hooks/useEmployees';
+import { useT, type TFunction } from '../../../../src/i18n';
 import type { EmployeeSector } from '../../../../src/types/database';
 import { colors, radius, spacing, typography } from '../../../../src/theme';
 
@@ -18,6 +19,7 @@ export default function EmployeesHomeScreen() {
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const [sectorFilter, setSectorFilter] = useState<EmployeeSector | null>(null);
   const { employees, isLoading, error, reload } = useEmployees(farmId, sectorFilter ?? undefined);
+  const t = useT();
 
   // "Novo funcionário" é uma rota separada — sem isso, o funcionário recém
   // cadastrado só apareceria depois de um refresh manual desta tela.
@@ -29,22 +31,24 @@ export default function EmployeesHomeScreen() {
 
   const totalAlerts = employees.reduce((sum, e) => sum + e.expiredDocumentCount + e.expiringSoonDocumentCount, 0);
   const totalUnread = employees.reduce((sum, e) => sum + e.unreadMessageCount, 0);
-  const subtitleParts = [`${employees.length} ${employees.length === 1 ? 'funcionário' : 'funcionários'}`];
-  if (totalAlerts > 0) subtitleParts.push(`${totalAlerts} ${totalAlerts === 1 ? 'alerta de documento' : 'alertas de documento'}`);
-  if (totalUnread > 0) subtitleParts.push(`${totalUnread} ${totalUnread === 1 ? 'mensagem não lida' : 'mensagens não lidas'}`);
+  const subtitleParts = [`${employees.length} ${employees.length === 1 ? t('employeesHome.singular') : t('employeesHome.plural')}`];
+  if (totalAlerts > 0)
+    subtitleParts.push(`${totalAlerts} ${totalAlerts === 1 ? t('employeesHome.documentAlertSingular') : t('employeesHome.documentAlertPlural')}`);
+  if (totalUnread > 0)
+    subtitleParts.push(`${totalUnread} ${totalUnread === 1 ? t('employeesHome.unreadSingular') : t('employeesHome.unreadPlural')}`);
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScreenHeader
-        title="Funcionários"
+        title={t('employeesHome.title')}
         subtitle={subtitleParts.join(' · ')}
         right={
           <View style={styles.headerLinks}>
             <Pressable onPress={() => router.push(`/farms/${farmId}/funcionarios/planilha`)} hitSlop={12}>
-              <Text style={styles.headerLink}>Planilha</Text>
+              <Text style={styles.headerLink}>{t('employeesHome.sheet')}</Text>
             </Pressable>
             <Pressable onPress={() => router.push(`/farms/${farmId}/funcionarios/importar`)} hitSlop={12}>
-              <Text style={styles.headerLink}>Importar</Text>
+              <Text style={styles.headerLink}>{t('employeesHome.import')}</Text>
             </Pressable>
           </View>
         }
@@ -52,9 +56,9 @@ export default function EmployeesHomeScreen() {
 
       <View style={styles.filterRow}>
         <ChipSelect
-          label="Setor"
+          label={t('employeesHome.sectorFilter')}
           options={[
-            { value: '__all__', label: 'Todos' },
+            { value: '__all__', label: t('employeesHome.allSectors') },
             ...EMPLOYEE_SECTOR_OPTIONS.map((s) => ({ value: s, label: EMPLOYEE_SECTOR_LABELS[s] })),
           ]}
           value={sectorFilter ?? '__all__'}
@@ -70,12 +74,13 @@ export default function EmployeesHomeScreen() {
           data={employees}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
-          ListEmptyComponent={<EmptyState text="Nenhum funcionário cadastrado ainda." />}
+          ListEmptyComponent={<EmptyState text={t('employeesHome.empty')} />}
           renderItem={({ item, index }) => (
             <FadeSlideIn delay={Math.min(index, 6) * 50}>
               <EmployeeCard
                 employee={item}
                 onPress={() => router.push(`/farms/${farmId}/funcionarios/funcionario/${item.id}`)}
+                t={t}
               />
             </FadeSlideIn>
           )}
@@ -86,7 +91,7 @@ export default function EmployeesHomeScreen() {
 
       <View style={styles.footer}>
         <Button
-          label="+ Novo funcionário"
+          label={t('employeesHome.newEmployee')}
           onPress={() => router.push(`/farms/${farmId}/funcionarios/novo-funcionario`)}
         />
       </View>
@@ -94,7 +99,7 @@ export default function EmployeesHomeScreen() {
   );
 }
 
-function EmployeeCard({ employee, onPress }: { employee: EmployeeSummary; onPress: () => void }) {
+function EmployeeCard({ employee, onPress, t }: { employee: EmployeeSummary; onPress: () => void; t: TFunction }) {
   const hasAlert = employee.expiredDocumentCount > 0 || employee.expiringSoonDocumentCount > 0;
   const hasUnread = employee.unreadMessageCount > 0;
 
@@ -109,14 +114,14 @@ function EmployeeCard({ employee, onPress }: { employee: EmployeeSummary; onPres
           {hasAlert ? (
             <View style={styles.alertBadge}>
               <Text style={styles.alertBadgeText}>
-                {employee.expiredDocumentCount > 0 ? 'Doc. vencido' : 'Doc. vence em breve'}
+                {employee.expiredDocumentCount > 0 ? t('employeesHome.docExpired') : t('employeesHome.docExpiringSoon')}
               </Text>
             </View>
           ) : null}
           {hasUnread ? (
             <View style={styles.messageBadge}>
               <Text style={styles.messageBadgeText}>
-                {employee.unreadMessageCount} {employee.unreadMessageCount === 1 ? 'mensagem' : 'mensagens'}
+                {employee.unreadMessageCount} {employee.unreadMessageCount === 1 ? t('employeesHome.messageSingular') : t('employeesHome.messagePlural')}
               </Text>
             </View>
           ) : null}
@@ -128,7 +133,7 @@ function EmployeeCard({ employee, onPress }: { employee: EmployeeSummary; onPres
         </View>
         {employee.currentStreakDays >= 3 ? (
           <Text style={styles.streakText}>
-            🔥 {employee.currentStreakDays} {employee.currentStreakDays === 1 ? 'dia' : 'dias'}
+            🔥 {employee.currentStreakDays} {employee.currentStreakDays === 1 ? t('employeesHome.daySingular') : t('employeesHome.dayPlural')}
           </Text>
         ) : null}
       </View>
