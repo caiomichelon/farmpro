@@ -1,17 +1,34 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { supabase } from '../lib/supabase';
-import type { Plot, PlotType } from '../types/database';
+import type { Plot, PlotType, SeasonStatus } from '../types/database';
 
 export interface PlotWithLatestSeason extends Plot {
   latestCrop: string | null;
   latestSeasonLabel: string | null;
+  latestSeasonId: string | null;
+  latestSeasonStatus: SeasonStatus | null;
+}
+
+/** Safra "certa" pra oferecer como atalho de colheita na home da Lavoura —
+ * prioriza a que já está com status "colhendo"; sem nenhuma, cai pra safra
+ * mais recente cadastrada em qualquer talhão. `null` quando nenhum talhão
+ * tem safra nenhuma ainda (precisa cadastrar uma primeiro). */
+export interface ActiveHarvestSeason {
+  seasonId: string;
+  plotId: string;
+  plotName: string;
+  crop: string;
+  seasonLabel: string;
+  status: SeasonStatus;
 }
 
 /** Talhões de uma fazenda, com a cultura da safra mais recente de cada um
- * (usado na lista da tela inicial da Lavoura). */
+ * (usado na lista da tela inicial da Lavoura), além da safra mais indicada
+ * pra oferecer como atalho de "lançar colheita" na mesma tela. */
 export function usePlotsWithLatestSeason(farmId: string | undefined) {
   const [plots, setPlots] = useState<PlotWithLatestSeason[]>([]);
+  const [activeSeason, setActiveSeason] = useState<ActiveHarvestSeason | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,19 +51,45 @@ export function usePlotsWithLatestSeason(farmId: string | undefined) {
         plotIds.length > 0
           ? await supabase
               .from('plot_seasons')
-              .select('plot_id, crop, season_label, created_at')
+              .select('id, plot_id, crop, season_label, status, created_at')
               .in('plot_id', plotIds)
               .order('created_at', { ascending: false })
           : { data: [], error: null };
 
       if (seasonsError) throw seasonsError;
 
+      const seasons = seasonRows ?? [];
+
       setPlots(
         (plotRows ?? []).map((plot) => {
-          const latest = (seasonRows ?? []).find((s) => s.plot_id === plot.id);
-          return { ...plot, latestCrop: latest?.crop ?? null, latestSeasonLabel: latest?.season_label ?? null };
+          const latest = seasons.find((s) => s.plot_id === plot.id);
+          return {
+            ...plot,
+            latestCrop: latest?.crop ?? null,
+            latestSeasonLabel: latest?.season_label ?? null,
+            latestSeasonId: latest?.id ?? null,
+            latestSeasonStatus: latest?.status ?? null,
+          };
         })
       );
+
+      // `seasons` já vem ordenado por created_at desc — a primeira com
+      // status "colhendo" é a escolha óbvia; sem nenhuma, usa a mais
+      // recente de todas (provavelmente a que a pessoa quer lançar agora).
+      const best = seasons.find((s) => s.status === 'colhendo') ?? seasons[0] ?? null;
+      if (best) {
+        const plot = (plotRows ?? []).find((p) => p.id === best.plot_id);
+        setActiveSeason({
+          seasonId: best.id,
+          plotId: best.plot_id,
+          plotName: plot?.name ?? '',
+          crop: best.crop,
+          seasonLabel: best.season_label,
+          status: best.status,
+        });
+      } else {
+        setActiveSeason(null);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível carregar os talhões.');
     } finally {
@@ -58,7 +101,7 @@ export function usePlotsWithLatestSeason(farmId: string | undefined) {
     reload();
   }, [reload]);
 
-  return { plots, isLoading, error, reload };
+  return { plots, activeSeason, isLoading, error, reload };
 }
 
 /** Talhões de uma fazenda, filtrados por tipo (lavoura ou pecuária). */
@@ -94,20 +137,24 @@ export function usePlots(farmId: string | undefined, type: PlotType) {
 
   const createPlot = useCallback(
     async (input: { name: string; area_hectares: number; max_stocking_rate_ua_ha?: number }) => {
-      if (!farmId) return { error: 'Fazenda não encontrada.' };
+      if (!farmId) return { error: 'Fazenda não encontrada.', id: null };
 
-      const { error: insertError } = await supabase.from('plots').insert({
-        farm_id: farmId,
-        name: input.name,
-        area_hectares: input.area_hectares,
-        type,
-        max_stocking_rate_ua_ha: input.max_stocking_rate_ua_ha ?? null,
-      });
+      const { data, error: insertError } = await supabase
+        .from('plots')
+        .insert({
+          farm_id: farmId,
+          name: input.name,
+          area_hectares: input.area_hectares,
+          type,
+          max_stocking_rate_ua_ha: input.max_stocking_rate_ua_ha ?? null,
+        })
+        .select('id')
+        .single();
 
-      if (insertError) return { error: insertError.message };
+      if (insertError) return { error: insertError.message, id: null };
 
       await reload();
-      return { error: null };
+      return { error: null, id: data.id as string };
     },
     [farmId, type, reload]
   );

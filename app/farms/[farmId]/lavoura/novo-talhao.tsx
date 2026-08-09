@@ -28,14 +28,17 @@ export default function NewPlotScreen() {
     }
 
     setIsSubmitting(true);
-    const { error: createError } = await createPlot({ name: name.trim(), area_hectares: areaValue });
+    const { error: createError, id } = await createPlot({ name: name.trim(), area_hectares: areaValue });
     setIsSubmitting(false);
 
-    if (createError) {
-      setError(createError);
+    if (createError || !id) {
+      setError(createError ?? t('newPlot.validationError'));
       return;
     }
-    router.back();
+    // Um talhão sozinho ainda não basta pra lançar colheita — segue direto
+    // pro cadastro da safra, em vez de voltar pra lista e deixar a pessoa
+    // procurar o próximo passo sozinha.
+    router.replace(`/farms/${farmId}/lavoura/talhao/${id}/nova-safra`);
   }
 
   return (

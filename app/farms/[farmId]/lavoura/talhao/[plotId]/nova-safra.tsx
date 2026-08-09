@@ -18,7 +18,7 @@ function defaultSeasonLabel() {
 }
 
 export default function NewSeasonScreen() {
-  const { plotId } = useLocalSearchParams<{ farmId: string; plotId: string }>();
+  const { farmId, plotId } = useLocalSearchParams<{ farmId: string; plotId: string }>();
   const { plot } = usePlot(plotId);
   const { createSeason } = usePlotSeasons(plotId);
 
@@ -45,7 +45,7 @@ export default function NewSeasonScreen() {
     }
 
     setIsSubmitting(true);
-    const { error: createError } = await createSeason({
+    const { error: createError, id } = await createSeason({
       crop: crop.trim(),
       variety: variety.trim() || undefined,
       season_label: seasonLabel.trim(),
@@ -54,11 +54,13 @@ export default function NewSeasonScreen() {
     });
     setIsSubmitting(false);
 
-    if (createError) {
-      setError(createError);
+    if (createError || !id) {
+      setError(createError ?? 'Não foi possível salvar a safra.');
       return;
     }
-    router.back();
+    // Vai direto pro hub da safra — de lá "Colheita e venda" já é um toque,
+    // em vez de voltar pra lista e a pessoa ter que reabrir o talhão de novo.
+    router.replace(`/farms/${farmId}/lavoura/safra/${id}`);
   }
 
   return (

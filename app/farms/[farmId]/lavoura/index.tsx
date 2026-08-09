@@ -17,9 +17,31 @@ import { colors, radius, spacing, typography } from '../../../../src/theme';
 
 export default function LavouraHomeScreen() {
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
-  const { plots, isLoading, error, reload } = usePlotsWithLatestSeason(farmId);
+  const { plots, activeSeason, isLoading, error, reload } = usePlotsWithLatestSeason(farmId);
   const { summary, reload: reloadSummary } = useLavouraSummary(farmId);
   const t = useT();
+
+  function handleHarvestPress() {
+    if (activeSeason) {
+      router.push(`/farms/${farmId}/lavoura/safra/${activeSeason.seasonId}/colheita`);
+    } else if (plots.length > 0) {
+      // Já tem talhão, mas nenhum tem safra lançada — o passo que falta é
+      // cadastrar a safra, não abrir a lista de novo.
+      router.push(`/farms/${farmId}/lavoura/talhao/${plots[0].id}/nova-safra`);
+    } else {
+      router.push(`/farms/${farmId}/lavoura/novo-talhao`);
+    }
+  }
+
+  const harvestCtaSubtitle = activeSeason
+    ? t('lavouraHome.harvestCtaSubtitleActive', {
+        crop: activeSeason.crop,
+        plot: activeSeason.plotName,
+        season: activeSeason.seasonLabel,
+      })
+    : plots.length > 0
+      ? t('lavouraHome.harvestCtaSubtitleNeedsSeason', { plot: plots[0].name })
+      : t('lavouraHome.harvestCtaSubtitleNeedsPlot');
 
   // A tela de "novo talhão" é uma rota separada — ao voltar pra cá o hook
   // desta tela não recarrega sozinho (ela já estava montada, nada mudou nas
@@ -54,6 +76,17 @@ export default function LavouraHomeScreen() {
           ListHeaderComponent={
             <FadeSlideIn>
               <View style={styles.headerContent}>
+                <Pressable
+                  style={({ pressed }) => [styles.harvestCta, pressed && styles.harvestCtaPressed]}
+                  onPress={handleHarvestPress}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.harvestCtaTitle}>{t('lavouraHome.harvestCtaTitle')}</Text>
+                    <Text style={styles.harvestCtaSubtitle}>{harvestCtaSubtitle}</Text>
+                  </View>
+                  <Text style={styles.harvestCtaChevron}>→</Text>
+                </Pressable>
+
                 <StatGrid
                   stats={[
                     { label: t('lavouraHome.statPlots'), value: String(summary.totalPlots) },
@@ -157,6 +190,31 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
     gap: spacing.md,
     flexGrow: 1,
+  },
+  harvestCta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    backgroundColor: colors.lavoura,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+  },
+  harvestCtaPressed: {
+    opacity: 0.85,
+  },
+  harvestCtaTitle: {
+    ...typography.subheading,
+    color: colors.textInverse,
+  },
+  harvestCtaSubtitle: {
+    ...typography.caption,
+    color: colors.textInverse,
+    opacity: 0.85,
+    marginTop: 2,
+  },
+  harvestCtaChevron: {
+    ...typography.heading,
+    color: colors.textInverse,
   },
   headerContent: {
     gap: spacing.md,

@@ -122,22 +122,26 @@ export function usePlotSeasons(plotId: string | undefined) {
       planting_date?: string;
       status?: SeasonStatus;
     }) => {
-      if (!plotId) return { error: 'Talhão não encontrado.' };
+      if (!plotId) return { error: 'Talhão não encontrado.', id: null };
 
-      const { error: insertError } = await supabase.from('plot_seasons').insert({
-        plot_id: plotId,
-        season_label: input.season_label,
-        crop: input.crop,
-        variety: input.variety || null,
-        planted_area_hectares: input.planted_area_hectares,
-        planting_date: input.planting_date || null,
-        status: input.status ?? 'plantada',
-      });
+      const { data, error: insertError } = await supabase
+        .from('plot_seasons')
+        .insert({
+          plot_id: plotId,
+          season_label: input.season_label,
+          crop: input.crop,
+          variety: input.variety || null,
+          planted_area_hectares: input.planted_area_hectares,
+          planting_date: input.planting_date || null,
+          status: input.status ?? 'plantada',
+        })
+        .select('id')
+        .single();
 
-      if (insertError) return { error: insertError.message };
+      if (insertError) return { error: insertError.message, id: null };
 
       await reload();
-      return { error: null };
+      return { error: null, id: data.id as string };
     },
     [plotId, reload]
   );

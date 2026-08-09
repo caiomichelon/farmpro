@@ -205,6 +205,10 @@ export const pt = {
   'lavouraHome.empty': 'Nenhum talhão cadastrado ainda. Comece criando o primeiro.',
   'lavouraHome.newPlot': '+ Novo talhão',
   'lavouraHome.noSeason': 'Sem safra lançada',
+  'lavouraHome.harvestCtaTitle': '🚚 Colheita e venda',
+  'lavouraHome.harvestCtaSubtitleActive': '{{crop}} · {{plot}} · {{season}} — nota do caminhão, peso e sacas',
+  'lavouraHome.harvestCtaSubtitleNeedsSeason': 'Cadastre a safra de {{plot}} pra começar a lançar colheita',
+  'lavouraHome.harvestCtaSubtitleNeedsPlot': 'Crie seu primeiro talhão pra começar a lançar colheita',
 
   // Funcionários (hub)
   'employeesHome.title': 'Funcionários',
@@ -845,6 +849,10 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'lavouraHome.empty': 'No plots registered yet. Start by creating the first one.',
   'lavouraHome.newPlot': '+ New plot',
   'lavouraHome.noSeason': 'No season logged',
+  'lavouraHome.harvestCtaTitle': '🚚 Harvest and sale',
+  'lavouraHome.harvestCtaSubtitleActive': '{{crop}} · {{plot}} · {{season}} — truck ticket, weight and bags',
+  'lavouraHome.harvestCtaSubtitleNeedsSeason': 'Add a season to {{plot}} to start logging harvest',
+  'lavouraHome.harvestCtaSubtitleNeedsPlot': 'Create your first plot to start logging harvest',
 
   'employeesHome.title': 'Employees',
   'employeesHome.singular': 'employee',
@@ -1469,6 +1477,10 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'lavouraHome.empty': 'Ninguna parcela registrada todavía. Empieza creando la primera.',
   'lavouraHome.newPlot': '+ Nueva parcela',
   'lavouraHome.noSeason': 'Sin cosecha registrada',
+  'lavouraHome.harvestCtaTitle': '🚚 Cosecha y venta',
+  'lavouraHome.harvestCtaSubtitleActive': '{{crop}} · {{plot}} · {{season}} — comprobante del camión, peso y bolsas',
+  'lavouraHome.harvestCtaSubtitleNeedsSeason': 'Registrá la cosecha de {{plot}} para empezar a cargar datos',
+  'lavouraHome.harvestCtaSubtitleNeedsPlot': 'Creá tu primera parcela para empezar a cargar la cosecha',
 
   'employeesHome.title': 'Empleados',
   'employeesHome.singular': 'empleado',
