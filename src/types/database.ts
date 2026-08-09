@@ -221,6 +221,12 @@ export type GrainSale = {
   price_per_saca: number;
   notes: string | null;
   photo_url: string | null;
+  /** Placa do caminhão que buscou a carga — opcional. */
+  truck_plate: string | null;
+  /** Nome do motorista ou da transportadora — opcional. */
+  carrier_name: string | null;
+  /** Valor pago de frete — opcional, entra na conta do valor líquido. */
+  freight_cost: number | null;
   created_at: string;
 };
 

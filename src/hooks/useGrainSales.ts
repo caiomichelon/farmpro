@@ -47,6 +47,9 @@ export function useGrainSales(seasonId: string | undefined) {
       sale_date?: string;
       notes?: string;
       photo_url?: string;
+      truck_plate?: string;
+      carrier_name?: string;
+      freight_cost?: number;
     }) => {
       if (!seasonId) return { error: 'Safra não encontrada.' };
 
@@ -58,6 +61,9 @@ export function useGrainSales(seasonId: string | undefined) {
         sale_date: input.sale_date || new Date().toISOString().slice(0, 10),
         notes: input.notes || null,
         photo_url: input.photo_url || null,
+        truck_plate: input.truck_plate || null,
+        carrier_name: input.carrier_name || null,
+        freight_cost: input.freight_cost ?? null,
       });
 
       if (insertError) return { error: insertError.message };
@@ -70,6 +76,8 @@ export function useGrainSales(seasonId: string | undefined) {
 
   const totalSacasSold = sales.reduce((sum, s) => sum + Number(s.quantity_sacas), 0);
   const totalValue = sales.reduce((sum, s) => sum + Number(s.quantity_sacas) * Number(s.price_per_saca), 0);
+  const totalFreight = sales.reduce((sum, s) => sum + (s.freight_cost !== null ? Number(s.freight_cost) : 0), 0);
+  const netValue = totalValue - totalFreight;
 
-  return { sales, totalSacasSold, totalValue, isLoading, error, reload, createSale };
+  return { sales, totalSacasSold, totalValue, totalFreight, netValue, isLoading, error, reload, createSale };
 }
