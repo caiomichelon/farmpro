@@ -3,6 +3,7 @@ import { Animated, StyleSheet, View } from 'react-native';
 
 import { spacing, typography, useColors, type Colors } from '../theme';
 import { BrandMark } from './BrandMark';
+import { FarmScene } from './FarmScene';
 import { SectorDotsCluster } from './SectorDotsCluster';
 
 interface AuthHeroProps {
@@ -33,6 +34,7 @@ export function AuthHero({ title, tagline }: AuthHeroProps) {
 
   return (
     <View style={styles.hero}>
+      <FarmScene variant="hero" />
       <BrandMark size={40} showRings />
       <Animated.Text
         style={[
@@ -81,6 +83,8 @@ function createStyles(colors: Colors) {
       paddingHorizontal: spacing.xl,
       gap: spacing.xs,
       alignItems: 'flex-start',
+      position: 'relative',
+      overflow: 'hidden',
     },
     heroTitle: {
       ...typography.displayLg,

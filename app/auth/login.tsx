@@ -108,14 +108,16 @@ export default function LoginScreen() {
             </View>
           </FadeSlideIn>
 
-          <FadeSlideIn delay={160}>
-            <View style={styles.section}>
+          <View style={styles.section}>
+            <FadeSlideIn delay={160}>
               <Text style={styles.sectionTitle}>{t('auth.login.benefitsTitle')}</Text>
-              <View style={styles.benefitsList}>
-                {benefits.map((benefit) => {
-                  const { color: accentColor, tint } = benefitAccentColors(colors, benefit.accent);
-                  return (
-                    <View key={benefit.title} style={[styles.benefitRow, { backgroundColor: tint }]}>
+            </FadeSlideIn>
+            <View style={styles.benefitsList}>
+              {benefits.map((benefit, index) => {
+                const { color: accentColor, tint } = benefitAccentColors(colors, benefit.accent);
+                return (
+                  <FadeSlideIn key={benefit.title} delay={200 + index * 70}>
+                    <View style={[styles.benefitRow, { backgroundColor: tint }]}>
                       <View style={[styles.benefitIconBadge, { backgroundColor: colors.surface }]}>
                         <Text style={styles.benefitIcon}>{benefit.icon}</Text>
                       </View>
@@ -124,14 +126,14 @@ export default function LoginScreen() {
                         <Text style={styles.benefitDescription}>{benefit.description}</Text>
                       </View>
                     </View>
-                  );
-                })}
-              </View>
+                  </FadeSlideIn>
+                );
+              })}
             </View>
-          </FadeSlideIn>
+          </View>
 
           {news.length > 0 ? (
-            <FadeSlideIn delay={240}>
+            <FadeSlideIn delay={520}>
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>{t('auth.login.newsTitle')}</Text>
                 <View style={styles.newsList}>

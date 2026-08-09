@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 
 import { BrandMark } from '../src/components/BrandMark';
+import { FarmScene } from '../src/components/FarmScene';
 import { SectorDotsCluster } from '../src/components/SectorDotsCluster';
 import { useAuth } from '../src/context/AuthContext';
 import { useT } from '../src/i18n';
@@ -43,6 +44,7 @@ export default function CoverScreen() {
   if (isLoading || !minDisplayElapsed) {
     return (
       <View style={styles.container}>
+        <FarmScene variant="cover" />
         <BrandMark size={76} showRings />
         <Animated.Text
           style={[
@@ -92,6 +94,8 @@ function createStyles(colors: Colors) {
       backgroundColor: colors.primary,
       alignItems: 'center',
       justifyContent: 'center',
+      position: 'relative',
+      overflow: 'hidden',
     },
     title: {
       ...typography.displayLg,
