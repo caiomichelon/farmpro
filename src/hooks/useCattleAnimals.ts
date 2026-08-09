@@ -125,6 +125,7 @@ export function useCattleAnimals(lotId: string | undefined) {
       entry_weight_kg?: number;
       entry_date?: string;
       notes?: string;
+      official_id_number?: string;
     }) => {
       if (!lotId) return { error: 'Lote não encontrado.' };
 
@@ -137,6 +138,7 @@ export function useCattleAnimals(lotId: string | undefined) {
         entry_weight_kg: input.entry_weight_kg ?? null,
         entry_date: input.entry_date || new Date().toISOString().slice(0, 10),
         notes: input.notes || null,
+        official_id_number: input.official_id_number || null,
       });
 
       if (insertError) return { error: insertError.message };

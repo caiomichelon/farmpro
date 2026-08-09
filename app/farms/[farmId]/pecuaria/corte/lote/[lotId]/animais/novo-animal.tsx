@@ -21,6 +21,7 @@ export default function NewAnimalScreen() {
   const { createAnimal } = useCattleAnimals(lotId);
 
   const [tagNumber, setTagNumber] = useState('');
+  const [officialIdNumber, setOfficialIdNumber] = useState('');
   const [sex, setSex] = useState<CattleAnimalSex | null>(null);
   const [breed, setBreed] = useState('');
   const [entryWeight, setEntryWeight] = useState('');
@@ -37,6 +38,7 @@ export default function NewAnimalScreen() {
     const { error: createError } = await createAnimal({
       farm_id: farmId,
       tag_number: tagNumber.trim(),
+      official_id_number: officialIdNumber.trim() || undefined,
       sex: sex ?? undefined,
       breed: breed.trim() || undefined,
       entry_weight_kg: entryWeight ? Number(entryWeight.replace(',', '.')) : undefined,
@@ -56,6 +58,12 @@ export default function NewAnimalScreen() {
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={styles.form}>
           <TextField label="Brinco / identificação" value={tagNumber} onChangeText={setTagNumber} placeholder="Ex.: 4521" />
+          <TextField
+            label="Número oficial de rastreamento (opcional)"
+            value={officialIdNumber}
+            onChangeText={setOfficialIdNumber}
+            placeholder="SISBOV, SIAP/SENACSA — se tiver"
+          />
           <ChipSelect label="Sexo" options={SEX_OPTIONS} value={sex} onChange={setSex} accentColor={colors.pecuaria} />
           <TextField label="Raça" value={breed} onChangeText={setBreed} placeholder="Opcional — ex.: Nelore" />
           <TextField

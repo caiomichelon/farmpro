@@ -21,6 +21,7 @@ export default function NewCowScreen() {
   const t = useT();
 
   const [identification, setIdentification] = useState('');
+  const [officialIdNumber, setOfficialIdNumber] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [damId, setDamId] = useState<string>(NO_DAM);
   const [error, setError] = useState<string | null>(null);
@@ -36,6 +37,7 @@ export default function NewCowScreen() {
     setIsSubmitting(true);
     const { error: createError } = await createCow({
       identification: identification.trim(),
+      official_id_number: officialIdNumber.trim() || undefined,
       birth_date: parseDate(birthDate) ?? undefined,
       dam_id: damId === NO_DAM ? undefined : damId,
     });
@@ -57,6 +59,12 @@ export default function NewCowScreen() {
             value={identification}
             onChangeText={setIdentification}
             placeholder={t('newCow.identificationPlaceholder')}
+          />
+          <TextField
+            label={t('newCow.officialIdLabel')}
+            value={officialIdNumber}
+            onChangeText={setOfficialIdNumber}
+            placeholder={t('newCow.officialIdPlaceholder')}
           />
           <TextField
             label={t('newCow.birthDate')}

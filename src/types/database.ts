@@ -351,6 +351,9 @@ export type BreedingCow = {
    * da genealogia leve (o pai/sêmen fica por inseminação, em
    * inseminations.sire_or_semen). */
   dam_id: string | null;
+  /** Número oficial de rastreamento (SISBOV, SIAP/SITRAP etc.) — diferente
+   * da identificação de manejo. Opcional, formato livre (varia por país). */
+  official_id_number: string | null;
   created_at: string;
 };
 
@@ -514,6 +517,9 @@ export type CattleAnimal = {
   entry_date: string;
   status: CattleAnimalStatus;
   notes: string | null;
+  /** Número oficial de rastreamento (SISBOV, SIAP/SITRAP etc.) — diferente
+   * do brinco de manejo (tag_number). Opcional, formato livre (varia por país). */
+  official_id_number: string | null;
   created_at: string;
 };
 

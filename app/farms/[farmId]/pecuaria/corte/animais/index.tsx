@@ -25,6 +25,7 @@ const STATUS_LABELS: Record<string, string> = {
 function buildColumns(): DataTableColumn<CattleAnimalSummary>[] {
   return [
     { key: 'tag', label: 'Brinco', width: 100, render: (a) => a.tag_number },
+    { key: 'official_id', label: 'Nº oficial (SISBOV/SIAP)', width: 160, render: (a) => a.official_id_number ?? '—' },
     { key: 'lot', label: 'Lote', width: 140, render: (a) => a.lotName ?? '—' },
     { key: 'sex', label: 'Sexo', width: 90, render: (a) => (a.sex ? SEX_LABELS[a.sex] : '—') },
     { key: 'breed', label: 'Raça', width: 120, render: (a) => a.breed ?? '—' },
@@ -57,7 +58,10 @@ export default function AllAnimalsSpreadsheetScreen() {
   );
 
   const filteredAnimals = search.trim()
-    ? animals.filter((a) => a.tag_number.toLowerCase().includes(search.trim().toLowerCase()))
+    ? animals.filter((a) => {
+        const q = search.trim().toLowerCase();
+        return a.tag_number.toLowerCase().includes(q) || (a.official_id_number ?? '').toLowerCase().includes(q);
+      })
     : animals;
 
   return (
@@ -74,11 +78,11 @@ export default function AllAnimalsSpreadsheetScreen() {
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.searchRow}>
-            <TextField label="Buscar por brinco" value={search} onChangeText={setSearch} placeholder="Digite o brinco" />
+            <TextField label="Buscar por brinco ou nº oficial" value={search} onChangeText={setSearch} placeholder="Digite o brinco ou o SISBOV/SIAP" />
           </View>
 
           {filteredAnimals.length === 0 ? (
-            <EmptyState text="Nenhum animal encontrado com esse brinco." />
+            <EmptyState text="Nenhum animal encontrado com essa busca." />
           ) : (
             <DataTable
               title="Todos os animais"

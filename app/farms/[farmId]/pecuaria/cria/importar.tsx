@@ -8,6 +8,12 @@ import { colors } from '../../../../../src/theme';
 
 const FIELDS: ImportField[] = [
   { key: 'identification', label: 'Identificação', required: true, kind: 'text', aliases: ['brinco', 'matriz'] },
+  {
+    key: 'official_id_number',
+    label: 'Número oficial (SISBOV/SIAP)',
+    kind: 'text',
+    aliases: ['sisbov', 'siap', 'sitrap', 'rastreamento'],
+  },
   { key: 'birth_date', label: 'Data de nascimento', kind: 'date', aliases: ['nascimento'] },
   { key: 'notes', label: 'Observações', kind: 'text', aliases: ['obs'] },
 ];

@@ -124,6 +124,13 @@ export default function AnimalDetailScreen() {
           <SummaryStat label="Entrada" value={formatDate(animal.entry_date)} styles={styles} />
         </View>
 
+        {animal.official_id_number ? (
+          <View style={styles.officialIdRow}>
+            <Text style={styles.officialIdLabel}>Nº de rastreamento oficial</Text>
+            <Text style={styles.officialIdValue}>{animal.official_id_number}</Text>
+          </View>
+        ) : null}
+
         <Section
           title="Histórico completo"
           subtitle="Tudo o que já aconteceu com este animal, do mais recente pro mais antigo"
@@ -329,6 +336,20 @@ function createStyles(colors: Colors) {
       flexDirection: 'row',
       flexWrap: 'wrap',
       gap: spacing.md,
+    },
+    officialIdRow: {
+      backgroundColor: colors.surfaceAlt,
+      borderRadius: radius.md,
+      padding: spacing.md,
+      gap: 2,
+    },
+    officialIdLabel: {
+      ...typography.caption,
+      color: colors.textMuted,
+    },
+    officialIdValue: {
+      ...typography.bodyMedium,
+      color: colors.textPrimary,
     },
     summaryCell: {
       flexBasis: '47%',

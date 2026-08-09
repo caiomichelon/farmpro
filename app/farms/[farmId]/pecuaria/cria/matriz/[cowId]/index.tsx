@@ -130,6 +130,13 @@ export default function CowDetailScreen() {
           <StatCell label={t('cowDetail.statCategory')} value={COW_CATEGORY_LABELS[cow.category]} styles={styles} />
         </View>
 
+        {cow.official_id_number ? (
+          <View style={styles.officialIdRow}>
+            <Text style={styles.officialIdLabel}>{t('cowDetail.officialId')}</Text>
+            <Text style={styles.officialIdValue}>{cow.official_id_number}</Text>
+          </View>
+        ) : null}
+
         <Card style={styles.financialCard}>
           <Text style={styles.financialTitle}>{t('cowDetail.costTitle')}</Text>
           <View style={styles.financialRow}>
@@ -379,6 +386,20 @@ function createStyles(colors: Colors) {
       flexDirection: 'row',
       flexWrap: 'wrap',
       gap: spacing.md,
+    },
+    officialIdRow: {
+      backgroundColor: colors.surfaceAlt,
+      borderRadius: radius.md,
+      padding: spacing.md,
+      gap: 2,
+    },
+    officialIdLabel: {
+      ...typography.caption,
+      color: colors.textMuted,
+    },
+    officialIdValue: {
+      ...typography.bodyMedium,
+      color: colors.textPrimary,
     },
     statCell: {
       flexBasis: '47%',

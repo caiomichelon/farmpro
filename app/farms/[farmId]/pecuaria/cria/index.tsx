@@ -58,7 +58,10 @@ export default function CriaHomeScreen() {
       : null;
 
   const filteredCows = search.trim()
-    ? cows.filter((c) => c.identification.toLowerCase().includes(search.trim().toLowerCase()))
+    ? cows.filter((c) => {
+        const q = search.trim().toLowerCase();
+        return c.identification.toLowerCase().includes(q) || (c.official_id_number ?? '').toLowerCase().includes(q);
+      })
     : cows;
 
   return (

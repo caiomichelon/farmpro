@@ -205,7 +205,13 @@ export function useBreedingCows(farmId: string | undefined) {
   }, [reload]);
 
   const createCow = useCallback(
-    async (input: { identification: string; birth_date?: string; notes?: string; dam_id?: string }) => {
+    async (input: {
+      identification: string;
+      birth_date?: string;
+      notes?: string;
+      dam_id?: string;
+      official_id_number?: string;
+    }) => {
       if (!farmId) return { error: 'Fazenda não encontrada.' };
 
       const { error: insertError } = await supabase.from('breeding_cows').insert({
@@ -214,6 +220,7 @@ export function useBreedingCows(farmId: string | undefined) {
         birth_date: input.birth_date || null,
         notes: input.notes || null,
         dam_id: input.dam_id || null,
+        official_id_number: input.official_id_number || null,
       });
 
       if (insertError) return { error: insertError.message };

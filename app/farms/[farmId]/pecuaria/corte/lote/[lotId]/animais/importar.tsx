@@ -9,6 +9,12 @@ import { colors } from '../../../../../../../../src/theme';
 const FIELDS: ImportField[] = [
   { key: 'tag_number', label: 'Brinco', required: true, kind: 'text', aliases: ['identificacao', 'numero'] },
   {
+    key: 'official_id_number',
+    label: 'Número oficial (SISBOV/SIAP)',
+    kind: 'text',
+    aliases: ['sisbov', 'siap', 'sitrap', 'rastreamento'],
+  },
+  {
     key: 'sex',
     label: 'Sexo',
     kind: 'enum',

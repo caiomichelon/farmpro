@@ -12,6 +12,7 @@ import { spacing, typography, useColors, type Colors } from '../../../../../src/
 function buildColumns(): DataTableColumn<BreedingCowSummary>[] {
   return [
     { key: 'id', label: 'Identificação', width: 130, render: (c) => c.identification },
+    { key: 'official_id', label: 'Nº oficial (SISBOV/SIAP)', width: 160, render: (c) => c.official_id_number ?? '—' },
     { key: 'status', label: 'Status', width: 150, render: (c) => REPRODUCTIVE_STATUS_LABELS[c.reproductiveStatus] },
     { key: 'calves', label: 'Bezerros', width: 90, render: (c) => String(c.calfCount) },
     { key: 'lastInsem', label: 'Última inseminação', width: 150, render: (c) => (c.lastInseminationDate ? formatDate(c.lastInseminationDate) : '—') },
