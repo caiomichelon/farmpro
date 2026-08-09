@@ -29,7 +29,10 @@ export default function LavouraHomeScreen() {
       // cadastrar a safra, não abrir a lista de novo.
       router.push(`/farms/${farmId}/lavoura/talhao/${plots[0].id}/nova-safra`);
     } else {
-      router.push(`/farms/${farmId}/lavoura/novo-talhao`);
+      // Sem nenhum talhão ainda — pula direto pro atalho que pede só
+      // cultura e área, sem introduzir o conceito de talhão pra quem só
+      // quer lançar colheita.
+      router.push(`/farms/${farmId}/lavoura/colheita-inicio`);
     }
   }
 

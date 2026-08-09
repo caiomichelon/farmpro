@@ -208,7 +208,7 @@ export const pt = {
   'lavouraHome.harvestCtaTitle': '🚚 Colheita e venda',
   'lavouraHome.harvestCtaSubtitleActive': '{{crop}} · {{plot}} · {{season}} — nota do caminhão, peso e sacas',
   'lavouraHome.harvestCtaSubtitleNeedsSeason': 'Cadastre a safra de {{plot}} pra começar a lançar colheita',
-  'lavouraHome.harvestCtaSubtitleNeedsPlot': 'Crie seu primeiro talhão pra começar a lançar colheita',
+  'lavouraHome.harvestCtaSubtitleNeedsPlot': 'Toque aqui pra começar — só a cultura e a área, nada mais',
 
   // Funcionários (hub)
   'employeesHome.title': 'Funcionários',
@@ -319,6 +319,15 @@ export const pt = {
   'newPlot.areaPlaceholder': 'Ex.: 42.5',
   'newPlot.save': 'Salvar talhão',
   'newPlot.validationError': 'Preencha o nome e uma área válida em hectares.',
+
+  'harvestStart.title': 'Começar a lançar colheita',
+  'harvestStart.subtitle': 'Só precisamos da cultura e da área — o resto você ajusta depois, se quiser',
+  'harvestStart.cropLabel': 'Cultura',
+  'harvestStart.cropPlaceholder': 'Ou digite outra',
+  'harvestStart.areaLabel': 'Área (hectares)',
+  'harvestStart.areaPlaceholder': 'Ex.: 42.5',
+  'harvestStart.save': 'Começar',
+  'harvestStart.validationError': 'Escolha a cultura e informe uma área válida em hectares.',
 
   // Nova matriz (Cria)
   'newCow.title': 'Nova matriz',
@@ -852,7 +861,7 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'lavouraHome.harvestCtaTitle': '🚚 Harvest and sale',
   'lavouraHome.harvestCtaSubtitleActive': '{{crop}} · {{plot}} · {{season}} — truck ticket, weight and bags',
   'lavouraHome.harvestCtaSubtitleNeedsSeason': 'Add a season to {{plot}} to start logging harvest',
-  'lavouraHome.harvestCtaSubtitleNeedsPlot': 'Create your first plot to start logging harvest',
+  'lavouraHome.harvestCtaSubtitleNeedsPlot': 'Tap here to start — just the crop and the area, nothing else',
 
   'employeesHome.title': 'Employees',
   'employeesHome.singular': 'employee',
@@ -957,6 +966,15 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'newPlot.areaPlaceholder': 'E.g.: 42.5',
   'newPlot.save': 'Save plot',
   'newPlot.validationError': 'Fill in the name and a valid area in hectares.',
+
+  'harvestStart.title': 'Start logging harvest',
+  'harvestStart.subtitle': "We just need the crop and the area — you can adjust the rest later if you want",
+  'harvestStart.cropLabel': 'Crop',
+  'harvestStart.cropPlaceholder': 'Or type another one',
+  'harvestStart.areaLabel': 'Area (hectares)',
+  'harvestStart.areaPlaceholder': 'E.g.: 42.5',
+  'harvestStart.save': 'Start',
+  'harvestStart.validationError': 'Choose the crop and enter a valid area in hectares.',
 
   'newCow.title': 'New cow',
   'newCow.identification': 'ID',
@@ -1480,7 +1498,7 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'lavouraHome.harvestCtaTitle': '🚚 Cosecha y venta',
   'lavouraHome.harvestCtaSubtitleActive': '{{crop}} · {{plot}} · {{season}} — comprobante del camión, peso y bolsas',
   'lavouraHome.harvestCtaSubtitleNeedsSeason': 'Registrá la cosecha de {{plot}} para empezar a cargar datos',
-  'lavouraHome.harvestCtaSubtitleNeedsPlot': 'Creá tu primera parcela para empezar a cargar la cosecha',
+  'lavouraHome.harvestCtaSubtitleNeedsPlot': 'Tocá acá para empezar — solo el cultivo y el área, nada más',
 
   'employeesHome.title': 'Empleados',
   'employeesHome.singular': 'empleado',
@@ -1585,6 +1603,15 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'newPlot.areaPlaceholder': 'Ej.: 42.5',
   'newPlot.save': 'Guardar parcela',
   'newPlot.validationError': 'Completa el nombre y un área válida en hectáreas.',
+
+  'harvestStart.title': 'Empezar a cargar la cosecha',
+  'harvestStart.subtitle': 'Solo necesitamos el cultivo y el área — el resto lo ajustás después si querés',
+  'harvestStart.cropLabel': 'Cultivo',
+  'harvestStart.cropPlaceholder': 'O escribí otro',
+  'harvestStart.areaLabel': 'Área (hectáreas)',
+  'harvestStart.areaPlaceholder': 'Ej.: 42.5',
+  'harvestStart.save': 'Empezar',
+  'harvestStart.validationError': 'Elegí el cultivo e ingresá un área válida en hectáreas.',
 
   'newCow.title': 'Nueva vaca madre',
   'newCow.identification': 'Identificación',
