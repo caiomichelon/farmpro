@@ -22,6 +22,7 @@ import { CATTLE_LOT_READINESS_LABELS, useCattleLot, type CattleLotReadiness } fr
 import { useCattleLotWeighings } from '../../../../../../../src/hooks/useCattleLotWeighings';
 import { useCattleMortalityEvents } from '../../../../../../../src/hooks/useCattleMortality';
 import { useCattleSlaughters } from '../../../../../../../src/hooks/useCattleSlaughters';
+import { useLotFeedConversion } from '../../../../../../../src/hooks/useLotFeedConversion';
 import { useT } from '../../../../../../../src/i18n';
 import { radius, spacing, typography, useColors, type Colors } from '../../../../../../../src/theme';
 
@@ -40,6 +41,8 @@ export default function LotDetailScreen() {
   const { events: mortalityEvents, totalDeaths, reload: reloadMortality } = useCattleMortalityEvents(lotId);
   const { slaughters, reload: reloadSlaughters } = useCattleSlaughters(lotId);
   const { collections, reload: reloadCollections } = useCattleFieldCollections(lotId);
+  const kgGanho = lot ? Math.max(0, lot.latestWeightKg - Number(lot.entry_avg_weight_kg)) * lot.currentHeadCount : 0;
+  const { data: feedConversion, reload: reloadFeedConversion } = useLotFeedConversion(farmId, lotId, kgGanho);
   const [isEditingTarget, setIsEditingTarget] = useState(false);
   const [targetMarginPct, setTargetMarginPct] = useState('20');
   const t = useT();
@@ -54,7 +57,8 @@ export default function LotDetailScreen() {
       reloadMortality();
       reloadSlaughters();
       reloadCollections();
-    }, [reloadLot, reloadWeighings, reloadMortality, reloadSlaughters, reloadCollections])
+      reloadFeedConversion();
+    }, [reloadLot, reloadWeighings, reloadMortality, reloadSlaughters, reloadCollections, reloadFeedConversion])
   );
 
   if (isLoading || !lot) {
@@ -147,6 +151,31 @@ export default function LotDetailScreen() {
             variant="ghost"
             onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${lotId}/simulador`)}
           />
+        </Section>
+
+        <Section title={t('lotDetail.feedConversionTitle')} subtitle={t('lotDetail.feedConversionSubtitle')} styles={styles}>
+          {!feedConversion || feedConversion.totalKgRacao === 0 ? (
+            <EmptyState text={t('lotDetail.feedConversionNoRacao')} />
+          ) : (
+            <Card style={styles.rowCard}>
+              {feedConversion.conversionRatio !== null ? (
+                <Text style={styles.feedConversionRatio}>
+                  {t('lotDetail.feedConversionRatio', { ratio: feedConversion.conversionRatio.toFixed(1) })}
+                </Text>
+              ) : (
+                <Text style={styles.rowNotes}>{t('lotDetail.feedConversionNoGain')}</Text>
+              )}
+              <Text style={styles.rowNotes}>
+                {t('lotDetail.feedConversionKgRacao', { kg: feedConversion.totalKgRacao.toFixed(0) })}
+              </Text>
+              <Text style={styles.rowNotes}>
+                {t('lotDetail.feedConversionKgGanho', { kg: feedConversion.totalKgGanho.toFixed(0) })}
+              </Text>
+              {feedConversion.hasNonKgMovements ? (
+                <Text style={styles.feedConversionWarning}>{t('lotDetail.feedConversionNonKgWarning')}</Text>
+              ) : null}
+            </Card>
+          )}
         </Section>
 
         <Pressable
@@ -483,6 +512,14 @@ function createStyles(colors: Colors) {
     },
     collectionStatus: {
       ...typography.captionMedium,
+    },
+    feedConversionRatio: {
+      ...typography.subheading,
+      color: colors.pecuaria,
+    },
+    feedConversionWarning: {
+      ...typography.caption,
+      color: colors.warning,
     },
     animalsRow: {
       flexDirection: 'row',
