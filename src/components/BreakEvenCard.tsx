@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { useT } from '../i18n';
 import { calculateBreakEven } from '../lib/breakEven';
 import { radius, spacing, typography, useColors, type Colors } from '../theme';
 import { TextField } from './TextField';
@@ -30,17 +31,18 @@ export function BreakEvenCard({
 }: BreakEvenCardProps) {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const t = useT();
 
   const marginPct = Number(targetMarginPct.replace(',', '.')) || 0;
   const result = calculateBreakEven({ totalCost, quantity, targetMarginPct: marginPct });
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>💰 Preço mínimo (break-even)</Text>
+      <Text style={styles.title}>{t('breakEven.title')}</Text>
       {result ? (
         <>
           <View style={styles.row}>
-            <Text style={styles.label}>Pra empatar (custo ÷ quantidade)</Text>
+            <Text style={styles.label}>{t('breakEven.breakEvenLabel')}</Text>
             <Text style={styles.value}>
               {currency(result.breakEvenPrice)}/{unitLabel}
             </Text>
@@ -48,7 +50,7 @@ export function BreakEvenCard({
           <View style={styles.marginRow}>
             <View style={styles.marginInput}>
               <TextField
-                label="Margem alvo (%)"
+                label={t('breakEven.targetMarginLabel')}
                 value={targetMarginPct}
                 onChangeText={onChangeTargetMarginPct}
                 keyboardType="decimal-pad"
@@ -56,7 +58,7 @@ export function BreakEvenCard({
               />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.label}>Preço pra bater a margem</Text>
+              <Text style={styles.label}>{t('breakEven.targetPriceLabel')}</Text>
               <Text style={[styles.value, styles.highlight]}>
                 {currency(result.targetPrice)}/{unitLabel}
               </Text>
@@ -64,7 +66,7 @@ export function BreakEvenCard({
           </View>
         </>
       ) : (
-        <Text style={styles.hint}>Precisa de custo lançado e quantidade maior que zero pra calcular.</Text>
+        <Text style={styles.hint}>{t('breakEven.hint')}</Text>
       )}
     </View>
   );

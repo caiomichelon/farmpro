@@ -20,6 +20,7 @@ import {
   type ReproductiveStatus,
 } from '../../../../../../../src/hooks/useBreedingCows';
 import { fetchWeaningsByCalvingIds } from '../../../../../../../src/hooks/useWeanings';
+import { useT } from '../../../../../../../src/i18n';
 import type { PregnancyDiagnosis, Weaning } from '../../../../../../../src/types/database';
 import { radius, spacing, typography, useColors, type Colors } from '../../../../../../../src/theme';
 
@@ -45,6 +46,7 @@ export default function CowDetailScreen() {
   const [diagnosesByInsemination, setDiagnosesByInsemination] = useState<Record<string, PregnancyDiagnosis>>({});
   const [weaningByCalving, setWeaningByCalving] = useState<Record<string, Weaning>>({});
   const [targetMarginPct, setTargetMarginPct] = useState('20');
+  const t = useT();
 
   useEffect(() => {
     if (inseminations.length === 0) return;
@@ -91,15 +93,19 @@ export default function CowDetailScreen() {
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScreenHeader
         title={cow.identification}
-        subtitle={`${COW_CATEGORY_LABELS[cow.category]} · ${cow.calfCount} ${cow.calfCount === 1 ? 'bezerro' : 'bezerros'} até hoje`}
+        subtitle={t('cowDetail.subtitle', {
+          category: COW_CATEGORY_LABELS[cow.category],
+          count: cow.calfCount,
+          calfWord: cow.calfCount === 1 ? t('cowDetail.calfSingular') : t('cowDetail.calfPlural'),
+        })}
       />
 
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.quickActions}>
-          <QuickAction label="Inseminar" onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/matriz/${cowId}/nova-inseminacao`)} styles={styles} />
-          <QuickAction label="DG" onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/matriz/${cowId}/diagnostico`)} styles={styles} disabled={!inseminations[0]} />
-          <QuickAction label="Parto" onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/matriz/${cowId}/novo-parto`)} styles={styles} />
-          <QuickAction label="Pesar" onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/matriz/${cowId}/nova-pesagem`)} styles={styles} />
+          <QuickAction label={t('cowDetail.actionInseminate')} onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/matriz/${cowId}/nova-inseminacao`)} styles={styles} />
+          <QuickAction label={t('cowDetail.actionDg')} onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/matriz/${cowId}/diagnostico`)} styles={styles} disabled={!inseminations[0]} />
+          <QuickAction label={t('cowDetail.actionCalving')} onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/matriz/${cowId}/novo-parto`)} styles={styles} />
+          <QuickAction label={t('cowDetail.actionWeigh')} onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/matriz/${cowId}/nova-pesagem`)} styles={styles} />
         </View>
 
         <View style={[styles.statusBadge, { backgroundColor: statusColor + '22', borderColor: statusColor }]}>
@@ -107,42 +113,42 @@ export default function CowDetailScreen() {
             {REPRODUCTIVE_STATUS_LABELS[cow.reproductiveStatus]}
           </Text>
           {cow.isPregnant && cow.expectedCalvingDate ? (
-            <Text style={styles.statusSubtext}>Previsão de parto: {formatDate(cow.expectedCalvingDate)}</Text>
+            <Text style={styles.statusSubtext}>{t('cowDetail.expectedCalving', { date: formatDate(cow.expectedCalvingDate) })}</Text>
           ) : cow.daysEmpty !== null ? (
-            <Text style={styles.statusSubtext}>{cow.daysEmpty} dias sem prenhez nova</Text>
+            <Text style={styles.statusSubtext}>{t('cowDetail.daysEmpty', { days: cow.daysEmpty })}</Text>
           ) : null}
         </View>
 
         <View style={styles.statsGrid}>
-          <StatCell label="Peso atual" value={cow.latestWeightKg !== null ? `${cow.latestWeightKg.toFixed(0)} kg` : '—'} styles={styles} />
-          <StatCell label="ECC" value={cow.latestBodyConditionScore !== null ? String(cow.latestBodyConditionScore) : '—'} styles={styles} />
+          <StatCell label={t('cowDetail.statCurrentWeight')} value={cow.latestWeightKg !== null ? `${cow.latestWeightKg.toFixed(0)} kg` : '—'} styles={styles} />
+          <StatCell label={t('cowDetail.statBcs')} value={cow.latestBodyConditionScore !== null ? String(cow.latestBodyConditionScore) : '—'} styles={styles} />
           <StatCell
-            label="Intervalo entre partos"
+            label={t('cowDetail.statCalvingInterval')}
             value={cow.avgCalvingIntervalDays !== null ? `${Math.round(cow.avgCalvingIntervalDays)} dias` : '—'}
             styles={styles}
           />
-          <StatCell label="Categoria" value={COW_CATEGORY_LABELS[cow.category]} styles={styles} />
+          <StatCell label={t('cowDetail.statCategory')} value={COW_CATEGORY_LABELS[cow.category]} styles={styles} />
         </View>
 
         <Card style={styles.financialCard}>
-          <Text style={styles.financialTitle}>Custo</Text>
+          <Text style={styles.financialTitle}>{t('cowDetail.costTitle')}</Text>
           <View style={styles.financialRow}>
             <View style={styles.financialCell}>
-              <Text style={styles.financialLabel}>Custo total</Text>
+              <Text style={styles.financialLabel}>{t('cowDetail.costTotal')}</Text>
               <Text style={[styles.financialValue, { color: colors.danger }]}>
                 {cow.totalCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
               </Text>
             </View>
             <View style={styles.financialDivider} />
             <View style={styles.financialCell}>
-              <Text style={styles.financialLabel}>Custo por bezerro</Text>
+              <Text style={styles.financialLabel}>{t('cowDetail.costPerCalf')}</Text>
               <Text style={styles.financialValue}>
                 {costPerCalf !== null ? costPerCalf.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '—'}
               </Text>
             </View>
           </View>
           <Button
-            label="+ Lançar custo"
+            label={t('cowDetail.logCost')}
             variant="secondary"
             onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/matriz/${cowId}/custos`)}
           />
@@ -152,18 +158,18 @@ export default function CowDetailScreen() {
           <BreakEvenCard
             totalCost={cow.totalCost}
             quantity={cow.calfCount}
-            unitLabel="bezerro"
+            unitLabel={t('cowDetail.calfSingular')}
             targetMarginPct={targetMarginPct}
             onChangeTargetMarginPct={setTargetMarginPct}
           />
         ) : null}
 
         {dam || daughters.length > 0 ? (
-          <Section title="🧬 Genealogia" styles={styles}>
+          <Section title={t('cowDetail.genealogyTitle')} styles={styles}>
             {dam ? (
               <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/matriz/${dam.id}`)}>
                 <Card style={styles.rowCard}>
-                  <Text style={styles.rowNotes}>Mãe</Text>
+                  <Text style={styles.rowNotes}>{t('cowDetail.dam')}</Text>
                   <Text style={styles.rowValue}>{dam.identification}</Text>
                 </Card>
               </Pressable>
@@ -171,7 +177,7 @@ export default function CowDetailScreen() {
             {daughters.length > 0 ? (
               <View style={styles.rowCard}>
                 <Text style={styles.rowNotes}>
-                  {daughters.length === 1 ? 'Filha registrada como matriz' : 'Filhas registradas como matriz'}
+                  {daughters.length === 1 ? t('cowDetail.daughterSingular') : t('cowDetail.daughterPlural')}
                 </Text>
                 {daughters.map((d) => (
                   <Pressable key={d.id} onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/matriz/${d.id}`)}>
@@ -183,26 +189,29 @@ export default function CowDetailScreen() {
           </Section>
         ) : null}
 
-        <Section title="Inseminações" styles={styles}>
+        <Section title={t('cowDetail.inseminationsTitle')} styles={styles}>
           {inseminations.length === 0 ? (
-            <EmptyState text="Nenhuma inseminação registrada ainda." />
+            <EmptyState text={t('cowDetail.emptyInseminations')} />
           ) : (
             inseminations.map((i) => {
               const diagnosis = diagnosesByInsemination[i.id];
               return (
                 <Card key={i.id} style={styles.rowCard}>
                   <View style={styles.rowBetween}>
-                    <Text style={styles.rowValue}>{i.method ?? 'Inseminação'}</Text>
+                    <Text style={styles.rowValue}>{i.method ?? t('cowDetail.inseminationDefault')}</Text>
                     <Text style={styles.rowDate}>{formatDate(i.insemination_date)}</Text>
                   </View>
-                  {i.sire_or_semen ? <Text style={styles.rowNotes}>Touro/sêmen: {i.sire_or_semen}</Text> : null}
-                  {i.veterinarian ? <Text style={styles.rowNotes}>Veterinário: {i.veterinarian}</Text> : null}
+                  {i.sire_or_semen ? <Text style={styles.rowNotes}>{t('cowDetail.sireOrSemen', { value: i.sire_or_semen })}</Text> : null}
+                  {i.veterinarian ? <Text style={styles.rowNotes}>{t('cowDetail.veterinarian', { value: i.veterinarian })}</Text> : null}
                   {i.expected_calving_date ? (
-                    <Text style={styles.rowNotes}>Previsão de parto: {formatDate(i.expected_calving_date)}</Text>
+                    <Text style={styles.rowNotes}>{t('cowDetail.expectedCalving', { date: formatDate(i.expected_calving_date) })}</Text>
                   ) : null}
                   {diagnosis ? (
                     <Text style={styles.rowNotes}>
-                      DG: {PREGNANCY_DIAGNOSIS_RESULT_LABELS[diagnosis.result]} em {formatDate(diagnosis.diagnosis_date)}
+                      {t('cowDetail.dgResult', {
+                        result: PREGNANCY_DIAGNOSIS_RESULT_LABELS[diagnosis.result],
+                        date: formatDate(diagnosis.diagnosis_date),
+                      })}
                     </Text>
                   ) : null}
                 </Card>
@@ -211,9 +220,9 @@ export default function CowDetailScreen() {
           )}
         </Section>
 
-        <Section title="Partos" styles={styles}>
+        <Section title={t('cowDetail.calvingsTitle')} styles={styles}>
           {calvings.length === 0 ? (
-            <EmptyState text="Nenhum parto registrado ainda." />
+            <EmptyState text={t('cowDetail.emptyCalvings')} />
           ) : (
             calvings.map((c) => {
               const weaning = weaningByCalving[c.id];
@@ -221,22 +230,23 @@ export default function CowDetailScreen() {
                 <Card key={c.id} style={styles.rowCard}>
                   <View style={styles.rowBetween}>
                     <Text style={styles.rowValue}>
-                      {c.calf_count} {c.calf_count === 1 ? 'bezerro' : 'bezerros'}
+                      {c.calf_count} {c.calf_count === 1 ? t('cowDetail.calfSingular') : t('cowDetail.calfPlural')}
                     </Text>
                     <Text style={styles.rowDate}>{formatDate(c.calving_date)}</Text>
                   </View>
                   {c.calf_identification ? <Text style={styles.rowNotes}>{c.calf_identification}</Text> : null}
                   {weaning ? (
                     <Text style={styles.rowNotes}>
-                      Desmame: {weaning.weight_kg !== null ? `${Number(weaning.weight_kg).toFixed(0)} kg` : 'sem peso'} em{' '}
-                      {formatDate(weaning.weaning_date)}
+                      {weaning.weight_kg !== null
+                        ? t('cowDetail.weaningWithWeight', { weight: Number(weaning.weight_kg).toFixed(0), date: formatDate(weaning.weaning_date) })
+                        : t('cowDetail.weaningNoWeight', { date: formatDate(weaning.weaning_date) })}
                     </Text>
                   ) : (
                     <Pressable
                       onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/matriz/${cowId}/desmame?calvingId=${c.id}`)}
                       hitSlop={8}
                     >
-                      <Text style={styles.inlineLink}>+ Registrar desmame</Text>
+                      <Text style={styles.inlineLink}>{t('cowDetail.registerWeaning')}</Text>
                     </Pressable>
                   )}
                 </Card>
@@ -245,9 +255,9 @@ export default function CowDetailScreen() {
           )}
         </Section>
 
-        <Section title="Pesagens" subtitle="Peso e escore de condição corporal (ECC)" styles={styles}>
+        <Section title={t('cowDetail.weighingsTitle')} subtitle={t('cowDetail.weighingsSubtitle')} styles={styles}>
           {weighings.length === 0 ? (
-            <EmptyState text="Nenhuma pesagem registrada ainda." />
+            <EmptyState text={t('cowDetail.emptyWeighings')} />
           ) : (
             weighings.map((w) => (
               <Card key={w.id} style={styles.rowCard}>
@@ -255,12 +265,12 @@ export default function CowDetailScreen() {
                   <Text style={styles.rowValue}>{Number(w.weight_kg).toFixed(0)} kg</Text>
                   <Text style={styles.rowDate}>{formatDate(w.weighed_at)}</Text>
                 </View>
-                {w.body_condition_score !== null ? <Text style={styles.rowNotes}>ECC: {w.body_condition_score}</Text> : null}
+                {w.body_condition_score !== null ? <Text style={styles.rowNotes}>{t('cowDetail.bcsLabel', { score: w.body_condition_score })}</Text> : null}
               </Card>
             ))
           )}
           <Button
-            label="📊 Você, no passado"
+            label={t('cowDetail.pastComparison')}
             variant="ghost"
             onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/matriz/${cowId}/comparativo`)}
           />

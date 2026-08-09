@@ -22,6 +22,7 @@ import { CATTLE_LOT_READINESS_LABELS, useCattleLot, type CattleLotReadiness } fr
 import { useCattleLotWeighings } from '../../../../../../../src/hooks/useCattleLotWeighings';
 import { useCattleMortalityEvents } from '../../../../../../../src/hooks/useCattleMortality';
 import { useCattleSlaughters } from '../../../../../../../src/hooks/useCattleSlaughters';
+import { useT } from '../../../../../../../src/i18n';
 import { radius, spacing, typography, useColors, type Colors } from '../../../../../../../src/theme';
 
 const READINESS_COLOR_KEY: Record<CattleLotReadiness, 'success' | 'pecuaria' | 'textMuted'> = {
@@ -41,6 +42,7 @@ export default function LotDetailScreen() {
   const { collections, reload: reloadCollections } = useCattleFieldCollections(lotId);
   const [isEditingTarget, setIsEditingTarget] = useState(false);
   const [targetMarginPct, setTargetMarginPct] = useState('20');
+  const t = useT();
 
   // Pesagem, mortalidade, abate e coleta de campo são cadastrados em rotas
   // separadas — refaz tudo ao voltar pra esta tela, senão fica com dado
@@ -69,7 +71,7 @@ export default function LotDetailScreen() {
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScreenHeader
         title={lot.name}
-        subtitle={`${CATTLE_LOT_STATUS_LABELS[lot.status]} · entrada em ${formatDate(lot.entry_date)}`}
+        subtitle={t('lotDetail.subtitle', { status: CATTLE_LOT_STATUS_LABELS[lot.status], date: formatDate(lot.entry_date) })}
       />
 
       <ScrollView contentContainerStyle={styles.content}>
@@ -80,11 +82,18 @@ export default function LotDetailScreen() {
           {lot.kgToTarget !== null ? (
             <Text style={styles.readinessSubtext}>
               {lot.kgToTarget > 0
-                ? `Faltam ${lot.kgToTarget.toFixed(0)} kg pra meta de ${Number(lot.target_slaughter_weight_kg).toFixed(0)} kg${lot.estimatedExitDate ? ` · previsão: ${formatDate(lot.estimatedExitDate)}` : ''}`
-                : `${Math.abs(lot.kgToTarget).toFixed(0)} kg acima da meta de ${Number(lot.target_slaughter_weight_kg).toFixed(0)} kg`}
+                ? t('lotDetail.kgToTargetPositive', {
+                    kg: lot.kgToTarget.toFixed(0),
+                    target: Number(lot.target_slaughter_weight_kg).toFixed(0),
+                    eta: lot.estimatedExitDate ? t('lotDetail.etaSuffix', { date: formatDate(lot.estimatedExitDate) }) : '',
+                  })
+                : t('lotDetail.kgToTargetNegative', {
+                    kg: Math.abs(lot.kgToTarget).toFixed(0),
+                    target: Number(lot.target_slaughter_weight_kg).toFixed(0),
+                  })}
             </Text>
           ) : (
-            <Text style={styles.readinessSubtext}>Sem meta de peso definida</Text>
+            <Text style={styles.readinessSubtext}>{t('lotDetail.noTarget')}</Text>
           )}
         </View>
 
@@ -103,21 +112,23 @@ export default function LotDetailScreen() {
             }}
           />
         ) : (
-          <Button label="Editar meta e rendimento" variant="ghost" onPress={() => setIsEditingTarget(true)} />
+          <Button label={t('lotDetail.editTarget')} variant="ghost" onPress={() => setIsEditingTarget(true)} />
         )}
 
         <View style={styles.summaryGrid}>
-          <SummaryStat label="Cabeças atuais" value={String(lot.currentHeadCount)} styles={styles} />
-          <SummaryStat label="Peso médio atual" value={`${lot.latestWeightKg.toFixed(0)} kg`} styles={styles} />
-          <SummaryStat label="GMD" value={lot.gmdKgPerDay !== null ? `${lot.gmdKgPerDay.toFixed(2)} kg/dia` : '—'} styles={styles} />
-          <SummaryStat label="Mortalidade" value={`${lot.mortalityRatePct.toFixed(1)}%`} styles={styles} />
+          <SummaryStat label={t('lotDetail.statCurrentHead')} value={String(lot.currentHeadCount)} styles={styles} />
+          <SummaryStat label={t('lotDetail.statCurrentWeight')} value={`${lot.latestWeightKg.toFixed(0)} kg`} styles={styles} />
+          <SummaryStat label={t('lotDetail.statGmd')} value={lot.gmdKgPerDay !== null ? `${lot.gmdKgPerDay.toFixed(2)} kg/dia` : '—'} styles={styles} />
+          <SummaryStat label={t('lotDetail.statMortality')} value={`${lot.mortalityRatePct.toFixed(1)}%`} styles={styles} />
         </View>
 
-        <Section title="Resultado financeiro" subtitle="Custo lançado x receita projetada na cotação atual do boi gordo" styles={styles}>
+        <Section title={t('lotDetail.financialTitle')} subtitle={t('lotDetail.financialSubtitle')} styles={styles}>
           <FinancialSummary cost={lot.totalCost} revenue={lot.projectedRevenue} margin={lot.projectedMargin} />
           <Text style={styles.financialNote}>
-            Receita estimada: {lot.estimatedArrobas.toFixed(1)} @ (peso atual × {Number(lot.estimated_carcass_yield_pct).toFixed(0)}%
-            de rendimento ÷ 15 kg) — vira valor real só depois do abate.
+            {t('lotDetail.financialNote', {
+              arrobas: lot.estimatedArrobas.toFixed(1),
+              yield: Number(lot.estimated_carcass_yield_pct).toFixed(0),
+            })}
           </Text>
           <BreakEvenCard
             totalCost={lot.totalCost}
@@ -127,12 +138,12 @@ export default function LotDetailScreen() {
             onChangeTargetMarginPct={setTargetMarginPct}
           />
           <Button
-            label="+ Lançar custo"
+            label={t('lotDetail.logCost')}
             variant="secondary"
             onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${lotId}/custos`)}
           />
           <Button
-            label="🎚️ Simular cenários"
+            label={t('lotDetail.simulate')}
             variant="ghost"
             onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${lotId}/simulador`)}
           />
@@ -143,15 +154,15 @@ export default function LotDetailScreen() {
           onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${lotId}/animais`)}
         >
           <View style={{ flex: 1 }}>
-            <Text style={styles.animalsRowTitle}>Animais individuais</Text>
-            <Text style={styles.animalsRowSubtitle}>Ficha com brinco, pesagens, saúde e movimentação por animal</Text>
+            <Text style={styles.animalsRowTitle}>{t('lotDetail.animalsTitle')}</Text>
+            <Text style={styles.animalsRowSubtitle}>{t('lotDetail.animalsSubtitle')}</Text>
           </View>
           <Text style={styles.animalsRowChevron}>→</Text>
         </Pressable>
 
-        <Section title="Coletas de campo" subtitle="Checagens de pasto/curral com foto e localização" styles={styles}>
+        <Section title={t('lotDetail.collectionsTitle')} subtitle={t('lotDetail.collectionsSubtitle')} styles={styles}>
           {collections.length === 0 ? (
-            <EmptyState text="Nenhuma coleta registrada ainda." />
+            <EmptyState text={t('lotDetail.emptyCollections')} />
           ) : (
             collections.slice(0, 5).map((c) => {
               const statusColor = colors[CATTLE_FIELD_COLLECTION_STATUS_COLOR_KEY[c.status]];
@@ -180,20 +191,20 @@ export default function LotDetailScreen() {
             })
           )}
           <Button
-            label="+ Nova coleta"
+            label={t('lotDetail.newCollection')}
             variant="secondary"
             onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${lotId}/nova-coleta`)}
           />
           <Button
-            label="📸 Foto diária"
+            label={t('lotDetail.dailyPhoto')}
             variant="ghost"
             onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${lotId}/foto-diaria`)}
           />
         </Section>
 
-        <Section title="Pesagens do lote" subtitle="Histórico de peso e escore de condição corporal médios" styles={styles}>
+        <Section title={t('lotDetail.weighingsTitle')} subtitle={t('lotDetail.weighingsSubtitle')} styles={styles}>
           {weighings.length === 0 ? (
-            <EmptyState text="Nenhuma pesagem registrada ainda." />
+            <EmptyState text={t('lotDetail.emptyWeighings')} />
           ) : (
             weighings.map((w) => (
               <Card key={w.id} style={styles.rowCard}>
@@ -202,31 +213,31 @@ export default function LotDetailScreen() {
                   <Text style={styles.rowDate}>{formatDate(w.weighed_at)}</Text>
                 </View>
                 {w.body_condition_score ? (
-                  <Text style={styles.rowNotes}>Escore de condição corporal: {w.body_condition_score}</Text>
+                  <Text style={styles.rowNotes}>{t('lotDetail.bodyCondition', { score: w.body_condition_score })}</Text>
                 ) : null}
               </Card>
             ))
           )}
           <Button
-            label="+ Nova pesagem"
+            label={t('lotDetail.newWeighing')}
             variant="secondary"
             onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${lotId}/nova-pesagem`)}
           />
           <Button
-            label="📊 Você, no passado"
+            label={t('lotDetail.pastComparison')}
             variant="ghost"
             onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${lotId}/comparativo`)}
           />
         </Section>
 
-        <Section title="Mortalidade" subtitle={`${totalDeaths} baixas registradas`} styles={styles}>
+        <Section title={t('lotDetail.mortalityTitle')} subtitle={t('lotDetail.mortalitySubtitle', { count: totalDeaths })} styles={styles}>
           {mortalityEvents.length === 0 ? (
-            <EmptyState text="Nenhuma baixa registrada." />
+            <EmptyState text={t('lotDetail.emptyMortality')} />
           ) : (
             mortalityEvents.map((m) => (
               <Card key={m.id} style={styles.rowCard}>
                 <View style={styles.rowBetween}>
-                  <Text style={styles.rowValue}>{m.head_count} cabeça(s)</Text>
+                  <Text style={styles.rowValue}>{m.head_count} {t('lotDetail.headCountSuffix')}</Text>
                   <Text style={styles.rowDate}>{formatDate(m.event_date)}</Text>
                 </View>
                 {m.cause ? <Text style={styles.rowNotes}>{m.cause}</Text> : null}
@@ -234,15 +245,15 @@ export default function LotDetailScreen() {
             ))
           )}
           <Button
-            label="+ Registrar mortalidade"
+            label={t('lotDetail.registerMortality')}
             variant="secondary"
             onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${lotId}/mortalidade`)}
           />
         </Section>
 
-        <Section title="Abate" subtitle="Registro por frigorífico" styles={styles}>
+        <Section title={t('lotDetail.slaughterTitle')} subtitle={t('lotDetail.slaughterSubtitle')} styles={styles}>
           {slaughters.length === 0 ? (
-            <EmptyState text="Nenhum abate registrado ainda." />
+            <EmptyState text={t('lotDetail.emptySlaughter')} />
           ) : (
             slaughters.map((s) => (
               <Card key={s.id} style={styles.rowCard}>
@@ -250,15 +261,20 @@ export default function LotDetailScreen() {
                   {s.photo_url ? <Image source={{ uri: s.photo_url }} style={styles.rowThumbnail} /> : null}
                   <View style={{ flex: 1, gap: 2 }}>
                     <View style={styles.rowBetween}>
-                      <Text style={styles.rowValue}>{s.slaughterhouseName ?? 'Frigorífico não informado'}</Text>
+                      <Text style={styles.rowValue}>{s.slaughterhouseName ?? t('lotDetail.unknownSlaughterhouse')}</Text>
                       <Text style={styles.rowDate}>{formatDate(s.slaughter_date)}</Text>
                     </View>
                     <Text style={styles.rowNotes}>
-                      {s.head_count} cabeças · {Number(s.exit_avg_weight_kg).toFixed(0)} kg méd. ·{' '}
-                      {Number(s.price_per_arroba).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}/@
+                      {t('lotDetail.slaughterSummary', {
+                        heads: s.head_count,
+                        weight: Number(s.exit_avg_weight_kg).toFixed(0),
+                        price: Number(s.price_per_arroba).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+                      })}
                     </Text>
                     {s.next_slaughter_date ? (
-                      <Text style={styles.rowNotes}>Próximo abate agendado: {formatDate(s.next_slaughter_date)}</Text>
+                      <Text style={styles.rowNotes}>
+                        {t('lotDetail.nextSlaughterScheduled', { date: formatDate(s.next_slaughter_date) })}
+                      </Text>
                     ) : null}
                   </View>
                 </View>
@@ -266,7 +282,7 @@ export default function LotDetailScreen() {
             ))
           )}
           <Button
-            label="+ Registrar abate"
+            label={t('lotDetail.registerSlaughter')}
             onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${lotId}/abate`)}
           />
         </Section>
@@ -288,6 +304,7 @@ function TargetWeightForm({
 }) {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const t = useT();
   const [target, setTarget] = useState(initialTarget !== null ? String(initialTarget) : '');
   const [yieldPct, setYieldPct] = useState(String(initialYield));
   const [error, setError] = useState<string | null>(null);
@@ -304,12 +321,12 @@ function TargetWeightForm({
 
   return (
     <View style={styles.editForm}>
-      <TextField label="Meta de peso pra abate (kg)" value={target} onChangeText={setTarget} keyboardType="decimal-pad" placeholder="Ex.: 540" />
-      <TextField label="Rendimento de carcaça estimado (%)" value={yieldPct} onChangeText={setYieldPct} keyboardType="decimal-pad" placeholder="Ex.: 50" />
+      <TextField label={t('lotDetail.targetWeightLabel')} value={target} onChangeText={setTarget} keyboardType="decimal-pad" placeholder="Ex.: 540" />
+      <TextField label={t('lotDetail.yieldLabel')} value={yieldPct} onChangeText={setYieldPct} keyboardType="decimal-pad" placeholder="Ex.: 50" />
       {error ? <Text style={styles.error}>{error}</Text> : null}
       <View style={styles.editFormActions}>
-        <Button label="Cancelar" variant="ghost" onPress={onCancel} style={{ flex: 1 }} />
-        <Button label="Salvar" onPress={handleSubmit} loading={isSubmitting} style={{ flex: 1 }} />
+        <Button label={t('lotDetail.cancel')} variant="ghost" onPress={onCancel} style={{ flex: 1 }} />
+        <Button label={t('lotDetail.save')} onPress={handleSubmit} loading={isSubmitting} style={{ flex: 1 }} />
       </View>
     </View>
   );
