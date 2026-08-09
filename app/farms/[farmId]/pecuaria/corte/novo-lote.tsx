@@ -4,21 +4,25 @@ import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-na
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../../../src/components/Button';
+import { ChipSelect } from '../../../../../src/components/ChipSelect';
 import { ScreenHeader } from '../../../../../src/components/ScreenHeader';
 import { TextField } from '../../../../../src/components/TextField';
 import { useCattleLots } from '../../../../../src/hooks/useCattleLots';
+import { usePlots } from '../../../../../src/hooks/usePlots';
 import { useT } from '../../../../../src/i18n';
 import { colors, spacing } from '../../../../../src/theme';
 
 export default function NewLotScreen() {
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const { createLot } = useCattleLots(farmId);
+  const { plots: pastures } = usePlots(farmId, 'pecuaria');
   const t = useT();
 
   const [name, setName] = useState('');
   const [headCount, setHeadCount] = useState('');
   const [avgWeight, setAvgWeight] = useState('');
   const [targetWeight, setTargetWeight] = useState('');
+  const [plotId, setPlotId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -37,6 +41,7 @@ export default function NewLotScreen() {
       entry_head_count: headCountValue,
       entry_avg_weight_kg: avgWeightValue,
       target_slaughter_weight_kg: targetWeightValue,
+      plot_id: plotId ?? undefined,
     });
     setIsSubmitting(false);
 
@@ -74,6 +79,15 @@ export default function NewLotScreen() {
             placeholder={t('newLot.targetWeightPlaceholder')}
             keyboardType="decimal-pad"
           />
+          {pastures.length > 0 ? (
+            <ChipSelect
+              label={t('newLot.pastureLabel')}
+              options={[{ value: '', label: t('newLot.pastureNone') }, ...pastures.map((p) => ({ value: p.id, label: p.name }))]}
+              value={plotId ?? ''}
+              onChange={(value) => setPlotId(value || null)}
+              accentColor={colors.pecuaria}
+            />
+          ) : null}
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <Button
             label={t('newLot.save')}

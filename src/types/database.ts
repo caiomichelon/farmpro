@@ -113,6 +113,9 @@ export type Plot = {
   name: string;
   area_hectares: number;
   type: PlotType;
+  /** Limite de lotação (UA/ha) definido pelo usuário — só usado em pastos
+   * (type='pecuaria'). Null até o usuário configurar. */
+  max_stocking_rate_ua_ha: number | null;
   created_at: string;
 };
 

@@ -93,7 +93,7 @@ export function usePlots(farmId: string | undefined, type: PlotType) {
   }, [reload]);
 
   const createPlot = useCallback(
-    async (input: { name: string; area_hectares: number }) => {
+    async (input: { name: string; area_hectares: number; max_stocking_rate_ua_ha?: number }) => {
       if (!farmId) return { error: 'Fazenda não encontrada.' };
 
       const { error: insertError } = await supabase.from('plots').insert({
@@ -101,6 +101,7 @@ export function usePlots(farmId: string | undefined, type: PlotType) {
         name: input.name,
         area_hectares: input.area_hectares,
         type,
+        max_stocking_rate_ua_ha: input.max_stocking_rate_ua_ha ?? null,
       });
 
       if (insertError) return { error: insertError.message };
@@ -111,7 +112,20 @@ export function usePlots(farmId: string | undefined, type: PlotType) {
     [farmId, type, reload]
   );
 
-  return { plots, isLoading, error, reload, createPlot };
+  const updateMaxStockingRate = useCallback(
+    async (plotId: string, maxStockingRateUaHa: number | null) => {
+      const { error: updateError } = await supabase
+        .from('plots')
+        .update({ max_stocking_rate_ua_ha: maxStockingRateUaHa })
+        .eq('id', plotId);
+      if (updateError) return { error: updateError.message };
+      await reload();
+      return { error: null };
+    },
+    [reload]
+  );
+
+  return { plots, isLoading, error, reload, createPlot, updateMaxStockingRate };
 }
 
 export function usePlot(plotId: string | undefined) {
