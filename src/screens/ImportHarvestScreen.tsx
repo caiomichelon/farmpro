@@ -11,6 +11,12 @@ import { colors } from '../theme';
 const FIELDS: ImportField[] = [
   { key: 'truck_plate', label: 'Placa do caminhão', kind: 'text', aliases: ['placa'] },
   { key: 'driver_name', label: 'Motorista', kind: 'text', aliases: ['motorista', 'chofer'] },
+  {
+    key: 'quantity_sacas',
+    label: 'Sacas colhidas (60kg)',
+    kind: 'number',
+    aliases: ['sacas', 'sacas 60kg', 'sc 60kg', 'qtd sacas', 'quantidade de sacas'],
+  },
   { key: 'gross_weight_kg', label: 'Peso bruto (kg)', kind: 'number', aliases: ['peso bruto', 'bruto'] },
   { key: 'net_weight_kg', label: 'Peso líquido (kg)', kind: 'number', aliases: ['peso liquido', 'liquido', 'so grao'] },
   { key: 'kg_per_saca', label: 'Kg por saca', kind: 'number', aliases: ['kg/saca', 'kg por sc'] },

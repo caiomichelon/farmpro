@@ -129,7 +129,11 @@ export function ImportWizard({ table, fields, accentColor, fixedValues, computed
   const requiredMissing = fields.filter((f) => f.required && mapping[f.key] === null);
   const { valid: previewRows, rowErrors: previewErrors } = sheet ? buildRows() : { valid: [], rowErrors: [] };
 
-  const previewColumns: DataTableColumn<Record<string, unknown>>[] = [...fields, ...(computedFields ?? [])].map((f) => ({
+  // Um campo calculado pode ter a mesma key de um campo direto de propósito
+  // (ex.: "sacas colhidas" mapeada direto da planilha, com o cálculo a
+  // partir do peso só como reserva) — evita coluna duplicada na prévia.
+  const computedOnly = (computedFields ?? []).filter((cf) => !fields.some((f) => f.key === cf.key));
+  const previewColumns: DataTableColumn<Record<string, unknown>>[] = [...fields, ...computedOnly].map((f) => ({
     key: f.key,
     label: f.label,
     width: 130,
