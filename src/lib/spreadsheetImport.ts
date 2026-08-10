@@ -154,6 +154,19 @@ export function suggestColumnMatch(field: ImportField, headers: string[]): numbe
 const DATE_DMY = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
 const DATE_ISO = /^(\d{4})-(\d{2})-(\d{2})$/;
 
+const FOOTER_LABEL_KEYWORDS = ['total', 'subtotal', 'media', 'medias', 'resumo', 'soma'];
+
+/** Reconhece linhas de rodapé/resumo de planilha (ex.: "TOTAL", "MÉDIA
+ * UMIDADE") que aparecem depois dos dados de verdade — comum em relatórios
+ * exportados de outros sistemas (ex.: balanças de caminhão). Não são
+ * registros de verdade, então não fazem sentido como "linha com problema"
+ * pedindo pra alguém corrigir a planilha — são só ignoradas. */
+export function looksLikeFooterLabel(raw: string): boolean {
+  const normalized = normalize(raw);
+  if (!normalized) return false;
+  return FOOTER_LABEL_KEYWORDS.some((kw) => normalized.startsWith(kw));
+}
+
 /** Converte um valor bruto de célula (sempre texto) pro tipo esperado do
  * campo. Retorna `error` quando o valor não pôde ser interpretado. */
 export function convertCellValue(raw: string, field: ImportField): { value: unknown; error?: string } {

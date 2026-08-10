@@ -4,6 +4,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import {
   bulkInsert,
   convertCellValue,
+  looksLikeFooterLabel,
   pickAndParseSpreadsheet,
   suggestColumnMatch,
   type ImportField,
@@ -76,12 +77,31 @@ export function ImportWizard({ table, fields, accentColor, fixedValues, computed
     }
   }
 
-  function buildRows(): { valid: Record<string, unknown>[]; rowErrors: { row: number; message: string }[] } {
-    if (!sheet) return { valid: [], rowErrors: [] };
+  function buildRows(): {
+    valid: Record<string, unknown>[];
+    rowErrors: { row: number; message: string }[];
+    footerCount: number;
+  } {
+    if (!sheet) return { valid: [], rowErrors: [], footerCount: 0 };
     const valid: Record<string, unknown>[] = [];
     const rowErrors: { row: number; message: string }[] = [];
+    let footerCount = 0;
+
+    // Colunas de data mapeadas — quando uma delas traz um rótulo tipo
+    // "TOTAL" ou "MÉDIA UMIDADE" em vez de uma data de verdade, a linha é
+    // um rodapé de resumo da planilha, não um registro — ignora sem contar
+    // como "problema" (não é algo pra corrigir na planilha).
+    const dateColIndexes = fields.filter((f) => f.kind === 'date').map((f) => mapping[f.key]);
 
     sheet.rows.forEach((rawRow, rowIndex) => {
+      const isFooterRow = dateColIndexes.some(
+        (colIndex) => colIndex !== null && colIndex !== undefined && looksLikeFooterLabel(rawRow[colIndex] ?? '')
+      );
+      if (isFooterRow) {
+        footerCount++;
+        return;
+      }
+
       const mappedRow: Record<string, unknown> = { ...fixedValues };
       const problems: string[] = [];
 
@@ -111,7 +131,7 @@ export function ImportWizard({ table, fields, accentColor, fixedValues, computed
       }
     });
 
-    return { valid, rowErrors };
+    return { valid, rowErrors, footerCount };
   }
 
   async function handleConfirmImport() {
@@ -127,7 +147,11 @@ export function ImportWizard({ table, fields, accentColor, fixedValues, computed
   }
 
   const requiredMissing = fields.filter((f) => f.required && mapping[f.key] === null);
-  const { valid: previewRows, rowErrors: previewErrors } = sheet ? buildRows() : { valid: [], rowErrors: [] };
+  const {
+    valid: previewRows,
+    rowErrors: previewErrors,
+    footerCount: previewFooterCount,
+  } = sheet ? buildRows() : { valid: [], rowErrors: [], footerCount: 0 };
 
   // Um campo calculado pode ter a mesma key de um campo direto de propósito
   // (ex.: "sacas colhidas" mapeada direto da planilha, com o cálculo a
@@ -200,7 +224,11 @@ export function ImportWizard({ table, fields, accentColor, fixedValues, computed
       <ScrollView contentContainerStyle={styles.stepContainer}>
         <Text style={styles.instructionsText}>
           {previewRows.length} de {sheet.rows.length} linha(s) prontas pra importar
-          {previewErrors.length > 0 ? `, ${previewErrors.length} com problema (não serão importadas)` : ''}.
+          {previewErrors.length > 0 ? `, ${previewErrors.length} com problema (não serão importadas)` : ''}
+          {previewFooterCount > 0
+            ? `, ${previewFooterCount} linha(s) de rodapé (ex.: total/média) ignorada(s) automaticamente`
+            : ''}
+          .
         </Text>
         {previewRows.length > 0 ? (
           <DataTable
