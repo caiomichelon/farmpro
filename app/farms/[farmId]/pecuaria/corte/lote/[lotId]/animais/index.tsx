@@ -1,5 +1,5 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -8,9 +8,11 @@ import { Card } from '../../../../../../../../src/components/Card';
 import { EmptyState } from '../../../../../../../../src/components/EmptyState';
 import { ScreenHeader } from '../../../../../../../../src/components/ScreenHeader';
 import { useCattleAnimals, type CattleAnimalSummary } from '../../../../../../../../src/hooks/useCattleAnimals';
-import { colors, spacing, typography } from '../../../../../../../../src/theme';
+import { spacing, typography, useColors, type Colors } from '../../../../../../../../src/theme';
 
 export default function LotAnimalsScreen() {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId, lotId } = useLocalSearchParams<{ farmId: string; lotId: string }>();
   const { animals, isLoading, error, reload } = useCattleAnimals(lotId);
 
@@ -49,6 +51,7 @@ export default function LotAnimalsScreen() {
           renderItem={({ item }) => (
             <AnimalCard
               animal={item}
+              styles={styles}
               onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/animal/${item.id}`)}
             />
           )}
@@ -67,7 +70,15 @@ export default function LotAnimalsScreen() {
   );
 }
 
-function AnimalCard({ animal, onPress }: { animal: CattleAnimalSummary; onPress: () => void }) {
+function AnimalCard({
+  animal,
+  onPress,
+  styles,
+}: {
+  animal: CattleAnimalSummary;
+  onPress: () => void;
+  styles: ReturnType<typeof createStyles>;
+}) {
   return (
     <Card onPress={onPress} style={styles.card}>
       <View style={styles.cardTopRow}>
@@ -80,61 +91,69 @@ function AnimalCard({ animal, onPress }: { animal: CattleAnimalSummary; onPress:
         {animal.sex ? (animal.sex === 'macho' ? 'Macho' : 'Fêmea') : 'Sexo não informado'}
         {animal.breed ? ` · ${animal.breed}` : ''}
       </Text>
+      {animal.official_id_number ? <Text style={styles.cardOfficialId}>Nº oficial: {animal.official_id_number}</Text> : null}
     </Card>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  headerLinks: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  headerLink: {
-    ...typography.captionMedium,
-    color: colors.pecuaria,
-  },
-  loading: {
-    marginTop: spacing.xxl,
-  },
-  listContent: {
-    paddingHorizontal: spacing.xl,
-    gap: spacing.md,
-    flexGrow: 1,
-  },
-  card: {
-    marginBottom: spacing.md,
-  },
-  cardTopRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  cardTitle: {
-    ...typography.subheading,
-    color: colors.textPrimary,
-  },
-  cardWeight: {
-    ...typography.captionMedium,
-    color: colors.pecuaria,
-  },
-  cardMeta: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  errorText: {
-    ...typography.caption,
-    color: colors.danger,
-    paddingHorizontal: spacing.xl,
-  },
-  footer: {
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.lg,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-});
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    headerLinks: {
+      flexDirection: 'row',
+      gap: spacing.md,
+    },
+    headerLink: {
+      ...typography.captionMedium,
+      color: colors.pecuaria,
+    },
+    loading: {
+      marginTop: spacing.xxl,
+    },
+    listContent: {
+      paddingHorizontal: spacing.xl,
+      gap: spacing.md,
+      flexGrow: 1,
+    },
+    card: {
+      marginBottom: spacing.md,
+    },
+    cardTopRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    cardTitle: {
+      ...typography.subheading,
+      color: colors.textPrimary,
+    },
+    cardWeight: {
+      ...typography.captionMedium,
+      color: colors.pecuaria,
+    },
+    cardMeta: {
+      ...typography.caption,
+      color: colors.textSecondary,
+      marginTop: 2,
+    },
+    cardOfficialId: {
+      ...typography.caption,
+      color: colors.textMuted,
+      marginTop: 2,
+    },
+    errorText: {
+      ...typography.caption,
+      color: colors.danger,
+      paddingHorizontal: spacing.xl,
+    },
+    footer: {
+      paddingHorizontal: spacing.xl,
+      paddingVertical: spacing.lg,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+    },
+  });
+}

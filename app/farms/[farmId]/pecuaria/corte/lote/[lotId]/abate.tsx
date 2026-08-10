@@ -1,19 +1,23 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../../../../../src/components/Button';
+import { Card } from '../../../../../../../src/components/Card';
 import { ChipSelect } from '../../../../../../../src/components/ChipSelect';
+import { FadeSlideIn } from '../../../../../../../src/components/FadeSlideIn';
 import { PhotoPicker } from '../../../../../../../src/components/PhotoPicker';
 import { ScreenHeader } from '../../../../../../../src/components/ScreenHeader';
 import { TextField } from '../../../../../../../src/components/TextField';
 import { FAT_FINISH_SCORE_OPTIONS } from '../../../../../../../src/data/cattleOptions';
 import { useCattleSlaughters } from '../../../../../../../src/hooks/useCattleSlaughters';
 import { useSlaughterhouses } from '../../../../../../../src/hooks/useSlaughterhouses';
-import { colors, spacing } from '../../../../../../../src/theme';
+import { radius, spacing, typography, useColors, type Colors } from '../../../../../../../src/theme';
 
 export default function SlaughterScreen() {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId, lotId } = useLocalSearchParams<{ farmId: string; lotId: string }>();
   const { slaughterhouses, createSlaughterhouse } = useSlaughterhouses(farmId);
   const { createSlaughter } = useCattleSlaughters(lotId);
@@ -77,48 +81,58 @@ export default function SlaughterScreen() {
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScreenHeader title="Registrar abate" subtitle="Indicadores de saída do lote" />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
-          <ChipSelect
-            label="Frigorífico"
-            options={slaughterhouses.map((s) => ({ value: s.id, label: s.name }))}
-            value={slaughterhouseId}
-            onChange={setSlaughterhouseId}
-            accentColor={colors.pecuaria}
-          />
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+          <FadeSlideIn delay={40}>
+            <Card style={styles.houseCard}>
+              <Text style={styles.houseCardTitle}>Frigorífico</Text>
+              <ChipSelect
+                label="Frigorífico"
+                options={slaughterhouses.map((s) => ({ value: s.id, label: s.name }))}
+                value={slaughterhouseId}
+                onChange={setSlaughterhouseId}
+                accentColor={colors.pecuaria}
+              />
 
-          {isAddingHouse ? (
-            <View style={styles.inlineRow}>
-              <View style={{ flex: 1 }}>
-                <TextField label="Novo frigorífico" value={newHouseName} onChangeText={setNewHouseName} placeholder="Nome do frigorífico" />
-              </View>
-              <Button label="Adicionar" onPress={handleAddHouse} disabled={!newHouseName.trim()} />
-            </View>
-          ) : (
-            <Button label="+ Novo frigorífico" variant="ghost" onPress={() => setIsAddingHouse(true)} />
-          )}
+              {isAddingHouse ? (
+                <View style={styles.inlineRow}>
+                  <View style={{ flex: 1 }}>
+                    <TextField label="Novo frigorífico" value={newHouseName} onChangeText={setNewHouseName} placeholder="Nome do frigorífico" />
+                  </View>
+                  <Button label="Adicionar" onPress={handleAddHouse} disabled={!newHouseName.trim()} />
+                </View>
+              ) : (
+                <Button label="+ Novo frigorífico" variant="ghost" onPress={() => setIsAddingHouse(true)} />
+              )}
+            </Card>
+          </FadeSlideIn>
 
-          <TextField label="Cabeças abatidas" value={headCount} onChangeText={setHeadCount} keyboardType="number-pad" placeholder="Ex.: 118" />
-          <TextField label="Peso médio de saída (kg)" value={exitWeight} onChangeText={setExitWeight} keyboardType="decimal-pad" placeholder="Ex.: 540" />
-          <TextField label="Preço pago por arroba" value={pricePerArroba} onChangeText={setPricePerArroba} keyboardType="decimal-pad" placeholder="R$" />
-          <TextField label="Rendimento de carcaça (%)" value={carcassYield} onChangeText={setCarcassYield} keyboardType="decimal-pad" placeholder="Opcional — ex.: 54" />
+          <FadeSlideIn delay={90}>
+            <Card style={styles.dataCard}>
+              <Text style={styles.dataCardTitle}>Dados do abate</Text>
+              <TextField label="Cabeças abatidas" value={headCount} onChangeText={setHeadCount} keyboardType="number-pad" placeholder="Ex.: 118" />
+              <TextField label="Peso médio de saída (kg)" value={exitWeight} onChangeText={setExitWeight} keyboardType="decimal-pad" placeholder="Ex.: 540" />
+              <TextField label="Preço pago por arroba" value={pricePerArroba} onChangeText={setPricePerArroba} keyboardType="decimal-pad" placeholder="R$" />
+              <TextField label="Rendimento de carcaça (%)" value={carcassYield} onChangeText={setCarcassYield} keyboardType="decimal-pad" placeholder="Opcional — ex.: 54" />
 
-          <ChipSelect
-            label="Acabamento de gordura"
-            options={FAT_FINISH_SCORE_OPTIONS}
-            value={fatFinish}
-            onChange={setFatFinish}
-            accentColor={colors.pecuaria}
-          />
+              <ChipSelect
+                label="Acabamento de gordura"
+                options={FAT_FINISH_SCORE_OPTIONS}
+                value={fatFinish}
+                onChange={setFatFinish}
+                accentColor={colors.pecuaria}
+              />
 
-          <TextField label="Conversão alimentar" value={feedConversion} onChangeText={setFeedConversion} keyboardType="decimal-pad" placeholder="Opcional — kg ração/kg ganho" />
-          <TextField label="Próximo abate programado" value={nextSlaughterDate} onChangeText={setNextSlaughterDate} placeholder="DD/MM/AAAA (opcional)" keyboardType="numbers-and-punctuation" />
-          <PhotoPicker
-            label="Foto da nota (opcional)"
-            photoUrl={photoUrl}
-            onChange={setPhotoUrl}
-            folder="cattle-slaughters"
-            accentColor={colors.pecuaria}
-          />
+              <TextField label="Conversão alimentar" value={feedConversion} onChangeText={setFeedConversion} keyboardType="decimal-pad" placeholder="Opcional — kg ração/kg ganho" />
+              <TextField label="Próximo abate programado" value={nextSlaughterDate} onChangeText={setNextSlaughterDate} placeholder="DD/MM/AAAA (opcional)" keyboardType="numbers-and-punctuation" />
+              <PhotoPicker
+                label="Foto da nota (opcional)"
+                photoUrl={photoUrl}
+                onChange={setPhotoUrl}
+                folder="cattle-slaughters"
+                accentColor={colors.pecuaria}
+              />
+            </Card>
+          </FadeSlideIn>
 
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <Button
@@ -140,25 +154,35 @@ function parseDate(input: string): string | null {
   return `${year}-${month}-${day}`;
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  flex: {
-    flex: 1,
-  },
-  form: {
-    paddingHorizontal: spacing.xl,
-    paddingBottom: spacing.xxxl,
-    gap: spacing.lg,
-  },
-  inlineRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: spacing.md,
-  },
-  error: {
-    color: colors.danger,
-  },
-});
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
+    flex: { flex: 1 },
+    content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxxl, gap: spacing.lg },
+    houseCard: {
+      gap: spacing.md,
+      backgroundColor: colors.pecuariaLight,
+      borderRadius: radius.md,
+    },
+    houseCardTitle: {
+      ...typography.subheading,
+      color: colors.pecuaria,
+    },
+    dataCard: {
+      gap: spacing.md,
+      backgroundColor: colors.surface,
+    },
+    dataCardTitle: {
+      ...typography.subheading,
+      color: colors.textPrimary,
+    },
+    inlineRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      gap: spacing.md,
+    },
+    error: {
+      color: colors.danger,
+    },
+  });
+}

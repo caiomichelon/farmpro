@@ -1,18 +1,22 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../../../../../src/components/Button';
+import { Card } from '../../../../../../../src/components/Card';
 import { ChipSelect } from '../../../../../../../src/components/ChipSelect';
+import { FadeSlideIn } from '../../../../../../../src/components/FadeSlideIn';
 import { ScreenHeader } from '../../../../../../../src/components/ScreenHeader';
 import { TextField } from '../../../../../../../src/components/TextField';
 import { useCattleAnimal } from '../../../../../../../src/hooks/useCattleAnimals';
 import { useCattleAnimalMovements } from '../../../../../../../src/hooks/useCattleAnimalMovements';
 import { useCattleLots } from '../../../../../../../src/hooks/useCattleLots';
-import { colors, spacing } from '../../../../../../../src/theme';
+import { radius, spacing, typography, useColors, type Colors } from '../../../../../../../src/theme';
 
 export default function MoveAnimalScreen() {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId, animalId } = useLocalSearchParams<{ farmId: string; animalId: string }>();
   const { animal } = useCattleAnimal(animalId);
   const { lots } = useCattleLots(farmId);
@@ -48,15 +52,20 @@ export default function MoveAnimalScreen() {
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScreenHeader title="Mover de lote" subtitle={animal ? `Atualmente em: ${animal.lotName ?? '—'}` : undefined} />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
-          <ChipSelect
-            label="Novo lote"
-            options={availableLots.map((l) => ({ value: l.id, label: l.name }))}
-            value={toLotId}
-            onChange={setToLotId}
-            accentColor={colors.pecuaria}
-          />
-          <TextField label="Observação" value={notes} onChangeText={setNotes} placeholder="Opcional" />
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+          <FadeSlideIn delay={40}>
+            <Card style={styles.card}>
+              <Text style={styles.cardTitle}>Destino</Text>
+              <ChipSelect
+                label="Novo lote"
+                options={availableLots.map((l) => ({ value: l.id, label: l.name }))}
+                value={toLotId}
+                onChange={setToLotId}
+                accentColor={colors.pecuaria}
+              />
+              <TextField label="Observação" value={notes} onChangeText={setNotes} placeholder="Opcional" />
+            </Card>
+          </FadeSlideIn>
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <Button label="Confirmar movimentação" onPress={handleSubmit} loading={isSubmitting} disabled={!toLotId} />
         </ScrollView>
@@ -65,20 +74,20 @@ export default function MoveAnimalScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  flex: {
-    flex: 1,
-  },
-  form: {
-    paddingHorizontal: spacing.xl,
-    paddingBottom: spacing.xxxl,
-    gap: spacing.lg,
-  },
-  error: {
-    color: colors.danger,
-  },
-});
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
+    flex: { flex: 1 },
+    content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxxl, gap: spacing.lg },
+    card: {
+      gap: spacing.md,
+      backgroundColor: colors.pecuariaLight,
+      borderRadius: radius.md,
+    },
+    cardTitle: {
+      ...typography.subheading,
+      color: colors.pecuaria,
+    },
+    error: { color: colors.danger },
+  });
+}

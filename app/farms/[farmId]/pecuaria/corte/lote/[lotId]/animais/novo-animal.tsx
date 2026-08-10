@@ -1,15 +1,17 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../../../../../../src/components/Button';
+import { Card } from '../../../../../../../../src/components/Card';
 import { ChipSelect } from '../../../../../../../../src/components/ChipSelect';
+import { FadeSlideIn } from '../../../../../../../../src/components/FadeSlideIn';
 import { ScreenHeader } from '../../../../../../../../src/components/ScreenHeader';
 import { TextField } from '../../../../../../../../src/components/TextField';
 import { useCattleAnimals } from '../../../../../../../../src/hooks/useCattleAnimals';
+import { radius, spacing, typography, useColors, type Colors } from '../../../../../../../../src/theme';
 import type { CattleAnimalSex } from '../../../../../../../../src/types/database';
-import { colors, spacing } from '../../../../../../../../src/theme';
 
 const SEX_OPTIONS: { value: CattleAnimalSex; label: string }[] = [
   { value: 'macho', label: 'Macho' },
@@ -17,6 +19,8 @@ const SEX_OPTIONS: { value: CattleAnimalSex; label: string }[] = [
 ];
 
 export default function NewAnimalScreen() {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId, lotId } = useLocalSearchParams<{ farmId: string; lotId: string }>();
   const { createAnimal } = useCattleAnimals(lotId);
 
@@ -56,44 +60,70 @@ export default function NewAnimalScreen() {
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScreenHeader title="Novo animal" subtitle="Cadastro individual" />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={styles.form}>
-          <TextField label="Brinco / identificação" value={tagNumber} onChangeText={setTagNumber} placeholder="Ex.: 4521" />
-          <TextField
-            label="Número oficial de rastreamento (opcional)"
-            value={officialIdNumber}
-            onChangeText={setOfficialIdNumber}
-            placeholder="SISBOV, SIAP/SENACSA — se tiver"
-          />
-          <ChipSelect label="Sexo" options={SEX_OPTIONS} value={sex} onChange={setSex} accentColor={colors.pecuaria} />
-          <TextField label="Raça" value={breed} onChangeText={setBreed} placeholder="Opcional — ex.: Nelore" />
-          <TextField
-            label="Peso de entrada (kg)"
-            value={entryWeight}
-            onChangeText={setEntryWeight}
-            placeholder="Opcional"
-            keyboardType="decimal-pad"
-          />
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+          <FadeSlideIn delay={40}>
+            <Card style={styles.idCard}>
+              <Text style={styles.cardTitle}>Identificação</Text>
+              <TextField label="Brinco / identificação" value={tagNumber} onChangeText={setTagNumber} placeholder="Ex.: 4521" />
+              <TextField
+                label="Número oficial de rastreamento (opcional)"
+                value={officialIdNumber}
+                onChangeText={setOfficialIdNumber}
+                placeholder="SISBOV, SIAP/SENACSA — se tiver"
+              />
+              <Text style={styles.cardHelp}>Rastreabilidade oficial do animal — diferente do brinco de manejo do dia a dia.</Text>
+            </Card>
+          </FadeSlideIn>
+
+          <FadeSlideIn delay={90}>
+            <Card style={styles.detailsCard}>
+              <Text style={styles.detailsCardTitle}>Características</Text>
+              <ChipSelect label="Sexo" options={SEX_OPTIONS} value={sex} onChange={setSex} accentColor={colors.pecuaria} />
+              <TextField label="Raça" value={breed} onChangeText={setBreed} placeholder="Opcional — ex.: Nelore" />
+              <TextField
+                label="Peso de entrada (kg)"
+                value={entryWeight}
+                onChangeText={setEntryWeight}
+                placeholder="Opcional"
+                keyboardType="decimal-pad"
+              />
+            </Card>
+          </FadeSlideIn>
+
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <Button label="Salvar animal" onPress={handleSubmit} loading={isSubmitting} disabled={!tagNumber} />
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  flex: {
-    flex: 1,
-  },
-  form: {
-    paddingHorizontal: spacing.xl,
-    gap: spacing.lg,
-  },
-  error: {
-    color: colors.danger,
-  },
-});
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
+    flex: { flex: 1 },
+    content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxxl, gap: spacing.lg },
+    idCard: {
+      gap: spacing.md,
+      backgroundColor: colors.pecuariaLight,
+      borderRadius: radius.md,
+    },
+    cardTitle: {
+      ...typography.subheading,
+      color: colors.pecuaria,
+    },
+    cardHelp: {
+      ...typography.caption,
+      color: colors.textSecondary,
+    },
+    detailsCard: {
+      gap: spacing.md,
+      backgroundColor: colors.surface,
+    },
+    detailsCardTitle: {
+      ...typography.subheading,
+      color: colors.textPrimary,
+    },
+    error: { color: colors.danger },
+  });
+}

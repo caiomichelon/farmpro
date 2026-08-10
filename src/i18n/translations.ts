@@ -300,6 +300,9 @@ export const pt = {
   // Novo lote (Corte)
   'newLot.title': 'Novo lote',
   'newLot.subtitle': 'Dados de entrada do lote',
+  'newLot.entrySectionTitle': 'Entrada do lote',
+  'newLot.entrySectionSubtitle': 'Quantos animais entraram e com que peso médio',
+  'newLot.goalSectionTitle': 'Meta e pasto (opcional)',
   'newLot.name': 'Nome do lote',
   'newLot.namePlaceholder': 'Ex.: Lote 3 — Confinamento',
   'newLot.headCount': 'Cabeças na entrada',
@@ -461,6 +464,7 @@ export const pt = {
 
   // Registrar mortalidade (Corte)
   'mortality.title': 'Registrar mortalidade',
+  'mortality.sectionTitle': 'Perda no lote',
   'mortality.headCount': 'Cabeças perdidas',
   'mortality.cause': 'Causa',
   'mortality.optional': 'Opcional',
@@ -469,6 +473,7 @@ export const pt = {
 
   // Nova pesagem (Corte)
   'newWeighing.title': 'Nova pesagem',
+  'newWeighing.sectionTitle': 'Pesagem do lote',
   'newWeighing.avgWeight': 'Peso médio (kg)',
   'newWeighing.bodyScore': 'Escore de condição corporal',
   'newWeighing.notes': 'Observação',
@@ -507,6 +512,7 @@ export const pt = {
   'pastures.clearLimit': 'Remover limite',
   'newPasture.title': 'Novo pasto',
   'newPasture.subtitle': 'Dados do pasto/piquete',
+  'newPasture.sectionTitle': 'Dados do pasto',
   'newPasture.name': 'Nome do pasto',
   'newPasture.namePlaceholder': 'Ex.: Piquete 4',
   'newPasture.area': 'Área (ha)',
@@ -941,6 +947,9 @@ export const en: Partial<Record<TranslationKey, string>> = {
 
   'newLot.title': 'New lot',
   'newLot.subtitle': 'Lot entry data',
+  'newLot.entrySectionTitle': 'Lot entry',
+  'newLot.entrySectionSubtitle': 'How many animals came in and their average weight',
+  'newLot.goalSectionTitle': 'Goal and pasture (optional)',
   'newLot.name': 'Lot name',
   'newLot.namePlaceholder': 'E.g.: Lot 3 — Feedlot',
   'newLot.headCount': 'Head at entry',
@@ -1095,6 +1104,7 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'breakEven.hint': 'Needs logged cost and a quantity greater than zero to calculate.',
 
   'mortality.title': 'Record mortality',
+  'mortality.sectionTitle': 'Loss in the lot',
   'mortality.headCount': 'Head lost',
   'mortality.cause': 'Cause',
   'mortality.optional': 'Optional',
@@ -1102,6 +1112,7 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'mortality.validationError': 'Enter how many head were lost.',
 
   'newWeighing.title': 'New weighing',
+  'newWeighing.sectionTitle': 'Lot weighing',
   'newWeighing.avgWeight': 'Average weight (kg)',
   'newWeighing.bodyScore': 'Body condition score',
   'newWeighing.notes': 'Notes',
@@ -1139,6 +1150,7 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'pastures.clearLimit': 'Remove limit',
   'newPasture.title': 'New pasture',
   'newPasture.subtitle': 'Pasture/paddock data',
+  'newPasture.sectionTitle': 'Pasture data',
   'newPasture.name': 'Pasture name',
   'newPasture.namePlaceholder': 'E.g.: Paddock 4',
   'newPasture.area': 'Area (ha)',
@@ -1571,6 +1583,9 @@ export const es: Partial<Record<TranslationKey, string>> = {
 
   'newLot.title': 'Nuevo lote',
   'newLot.subtitle': 'Datos de entrada del lote',
+  'newLot.entrySectionTitle': 'Entrada del lote',
+  'newLot.entrySectionSubtitle': 'Cuántos animales entraron y con qué peso promedio',
+  'newLot.goalSectionTitle': 'Meta y pasto (opcional)',
   'newLot.name': 'Nombre del lote',
   'newLot.namePlaceholder': 'Ej.: Lote 3 — Engorde a corral',
   'newLot.headCount': 'Cabezas al ingreso',
@@ -1725,6 +1740,7 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'breakEven.hint': 'Necesita costo registrado y una cantidad mayor que cero para calcular.',
 
   'mortality.title': 'Registrar mortalidad',
+  'mortality.sectionTitle': 'Pérdida en el lote',
   'mortality.headCount': 'Cabezas perdidas',
   'mortality.cause': 'Causa',
   'mortality.optional': 'Opcional',
@@ -1732,6 +1748,7 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'mortality.validationError': 'Indica cuántas cabezas se perdieron.',
 
   'newWeighing.title': 'Nuevo pesaje',
+  'newWeighing.sectionTitle': 'Pesaje del lote',
   'newWeighing.avgWeight': 'Peso promedio (kg)',
   'newWeighing.bodyScore': 'Condición corporal',
   'newWeighing.notes': 'Observación',
@@ -1769,6 +1786,7 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'pastures.clearLimit': 'Quitar límite',
   'newPasture.title': 'Nuevo pasto',
   'newPasture.subtitle': 'Datos del pasto/potrero',
+  'newPasture.sectionTitle': 'Datos del pasto',
   'newPasture.name': 'Nombre del pasto',
   'newPasture.namePlaceholder': 'Ej.: Potrero 4',
   'newPasture.area': 'Área (ha)',
