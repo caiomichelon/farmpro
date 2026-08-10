@@ -21,7 +21,9 @@ export function useConsolidatedResult(farmId: string | undefined) {
   const criaCost = cows.reduce((sum, c) => sum + c.totalCost, 0);
   const corteRevenue = activeLots.reduce((sum, l) => sum + l.projectedRevenue, 0);
 
-  const result = grainRevenue + corteRevenue - (lavouraCost + corteCost + criaCost);
+  const totalCost = lavouraCost + corteCost + criaCost;
+  const totalRevenue = grainRevenue + corteRevenue;
+  const result = totalRevenue - totalCost;
 
-  return { result, isLoading };
+  return { result, totalCost, totalRevenue, isLoading };
 }

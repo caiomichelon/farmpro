@@ -664,6 +664,21 @@ export const pt = {
 
   'harvestImport.title': 'Importar notas de colheita',
   'harvestImport.subtitle': 'De uma planilha Excel ou CSV — uma linha por nota de caminhão',
+
+  // Saúde da fazenda (nota consolidada)
+  'farmHealth.title': 'Saúde da fazenda',
+  'farmHealth.subtitle': 'Uma nota só, juntando alertas e resultado financeiro',
+  'farmHealth.gaugeCaption': '{{dangers}} alerta(s) grave(s) · {{warnings}} de atenção',
+  'farmHealth.componentsTitle': 'Como a nota é composta',
+  'farmHealth.alertsComponent': 'Alertas abertos',
+  'farmHealth.alertsComponentHelp': '{{dangers}} grave(s), {{warnings}} de atenção — quanto menos, maior a nota.',
+  'farmHealth.financialComponent': 'Resultado financeiro',
+  'farmHealth.financialComponentHelp': 'Margem de {{margin}} sobre {{cost}} de custo lançado.',
+  'farmHealth.financialComponentEmpty': 'Ainda sem nenhuma venda lançada pra avaliar — esse componente só entra na nota quando existir.',
+  'farmHealth.issuesTitle': 'O que está puxando a nota pra baixo',
+  'farmHealth.noIssues': 'Nenhum alerta aberto agora — parabéns!',
+  'farmHealth.methodology': 'A nota combina os alertas automáticos da fazenda (documentos, vacinas, partos, mortalidade, clima, safra no prejuízo) com o mesmo resultado financeiro consolidado usado no relatório pra banco e no cofrinho da meta. Sem nenhuma venda lançada ainda, a nota usa só os alertas.',
+  'farmHealth.homeCardTitle': 'Saúde da fazenda',
 } as const;
 
 export type TranslationKey = keyof typeof pt;
@@ -1302,6 +1317,21 @@ export const en: Partial<Record<TranslationKey, string>> = {
 
   'harvestImport.title': 'Import harvest tickets',
   'harvestImport.subtitle': 'From an Excel or CSV spreadsheet — one row per truck ticket',
+
+  // Farm health (consolidated score)
+  'farmHealth.title': 'Farm health',
+  'farmHealth.subtitle': 'One single score, combining alerts and financial result',
+  'farmHealth.gaugeCaption': '{{dangers}} serious alert(s) · {{warnings}} attention',
+  'farmHealth.componentsTitle': 'How the score is made up',
+  'farmHealth.alertsComponent': 'Open alerts',
+  'farmHealth.alertsComponentHelp': '{{dangers}} serious, {{warnings}} attention — fewer alerts, higher score.',
+  'farmHealth.financialComponent': 'Financial result',
+  'farmHealth.financialComponentHelp': 'Margin of {{margin}} over {{cost}} of logged cost.',
+  'farmHealth.financialComponentEmpty': "No sale logged yet to evaluate — this component only counts once there is one.",
+  'farmHealth.issuesTitle': "What's pulling the score down",
+  'farmHealth.noIssues': 'No open alerts right now — nice!',
+  'farmHealth.methodology': "The score combines the farm's automatic alerts (documents, vaccines, calvings, mortality, weather, season at a loss) with the same consolidated financial result used in the bank report and the goal tracker. With no sale logged yet, the score uses only the alerts.",
+  'farmHealth.homeCardTitle': 'Farm health',
 };
 
 export const es: Partial<Record<TranslationKey, string>> = {
@@ -1938,4 +1968,19 @@ export const es: Partial<Record<TranslationKey, string>> = {
 
   'harvestImport.title': 'Importar comprobantes de cosecha',
   'harvestImport.subtitle': 'De una planilla Excel o CSV — una fila por comprobante de camión',
+
+  // Salud de la granja (nota consolidada)
+  'farmHealth.title': 'Salud de la granja',
+  'farmHealth.subtitle': 'Una sola nota, combinando alertas y resultado financiero',
+  'farmHealth.gaugeCaption': '{{dangers}} alerta(s) grave(s) · {{warnings}} de atención',
+  'farmHealth.componentsTitle': 'Cómo se compone la nota',
+  'farmHealth.alertsComponent': 'Alertas abiertas',
+  'farmHealth.alertsComponentHelp': '{{dangers}} grave(s), {{warnings}} de atención — cuantas menos, más alta la nota.',
+  'farmHealth.financialComponent': 'Resultado financiero',
+  'farmHealth.financialComponentHelp': 'Margen de {{margin}} sobre {{cost}} de costo registrado.',
+  'farmHealth.financialComponentEmpty': 'Todavía sin ninguna venta registrada para evaluar — este componente solo entra en la nota cuando exista.',
+  'farmHealth.issuesTitle': 'Qué está bajando la nota',
+  'farmHealth.noIssues': '¡Ninguna alerta abierta ahora — felicidades!',
+  'farmHealth.methodology': 'La nota combina las alertas automáticas de la granja (documentos, vacunas, partos, mortalidad, clima, cosecha en pérdida) con el mismo resultado financiero consolidado usado en el informe para el banco y en la meta de ahorro. Sin ninguna venta registrada todavía, la nota usa solo las alertas.',
+  'farmHealth.homeCardTitle': 'Salud de la granja',
 };

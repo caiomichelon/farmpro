@@ -3,13 +3,15 @@ import { useMemo } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Card } from '../../../src/components/Card';
 import { CommodityTicker } from '../../../src/components/CommodityTicker';
 import { FadeSlideIn } from '../../../src/components/FadeSlideIn';
+import { HealthGauge } from '../../../src/components/HealthGauge';
 import { OfflineSyncBanner } from '../../../src/components/OfflineSyncBanner';
 import { SectorButton } from '../../../src/components/SectorButton';
 import { SummaryStat } from '../../../src/components/SummaryStat';
 import { useFarm } from '../../../src/hooks/useFarms';
-import { useFarmAlerts } from '../../../src/hooks/useFarmAlerts';
+import { useFarmHealthScore } from '../../../src/hooks/useFarmHealthScore';
 import { useSyncCattleNotifications } from '../../../src/hooks/useSyncCattleNotifications';
 import { useSyncDailyBriefingNotification } from '../../../src/hooks/useSyncDailyBriefingNotification';
 import { useSyncDailyPhotoReminder } from '../../../src/hooks/useSyncDailyPhotoReminder';
@@ -24,7 +26,8 @@ export default function FarmHomeScreen() {
   const t = useT();
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const { farm, isLoading } = useFarm(farmId);
-  const { alerts } = useFarmAlerts(farmId);
+  const health = useFarmHealthScore(farmId);
+  const alerts = health.alerts;
   useSyncCattleNotifications(farmId);
   useSyncWeatherNotifications(farmId);
   useSyncDailyBriefingNotification(farmId);
@@ -62,6 +65,23 @@ export default function FarmHomeScreen() {
 
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <OfflineSyncBanner />
+
+          {!health.isLoading ? (
+            <FadeSlideIn>
+              <Pressable
+                style={({ pressed }) => [styles.healthCardWrap, pressed && styles.employeesRowPressed]}
+                onPress={() => router.push(`/farms/${farmId}/saude-da-fazenda`)}
+              >
+                <Card style={styles.healthCard}>
+                  <View style={styles.healthCardTopRow}>
+                    <Text style={styles.healthCardTitle}>{t('farmHealth.homeCardTitle')}</Text>
+                    <Text style={styles.employeesChevron}>→</Text>
+                  </View>
+                  <HealthGauge score={health.score} level={health.level} compact />
+                </Card>
+              </Pressable>
+            </FadeSlideIn>
+          ) : null}
 
           {alerts.length > 0 ? (
             <View style={styles.alertsSection}>
@@ -378,6 +398,22 @@ function createStyles(colors: Colors) {
     },
     scrollContent: {
       paddingBottom: spacing.xl,
+    },
+    healthCardWrap: {
+      paddingHorizontal: spacing.xl,
+      paddingTop: spacing.lg,
+    },
+    healthCard: {
+      gap: spacing.xs,
+    },
+    healthCardTopRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    healthCardTitle: {
+      ...typography.subheading,
+      color: colors.textPrimary,
     },
     alertsSection: {
       paddingHorizontal: spacing.xl,
