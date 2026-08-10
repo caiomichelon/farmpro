@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -7,9 +7,11 @@ import { BreakEvenCard } from '../../../../../../src/components/BreakEvenCard';
 import { ScreenHeader } from '../../../../../../src/components/ScreenHeader';
 import { SEASON_STATUS_LABELS } from '../../../../../../src/data/seasonStatus';
 import { usePlotSeason } from '../../../../../../src/hooks/usePlotSeasons';
-import { colors, radius, spacing, typography } from '../../../../../../src/theme';
+import { radius, spacing, typography, useColors, type Colors } from '../../../../../../src/theme';
 
 export default function SeasonDetailScreen() {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId, seasonId } = useLocalSearchParams<{ farmId: string; seasonId: string }>();
   const { season, isLoading } = usePlotSeason(seasonId);
   const [targetMarginPct, setTargetMarginPct] = useState('20');
@@ -40,12 +42,13 @@ export default function SeasonDetailScreen() {
         </View>
 
         <View style={styles.summaryGrid}>
-          <SummaryStat label="Custo total" value={formatCurrency(season.totalCost)} />
-          <SummaryStat label="Custo / hectare" value={formatCurrency(costPerHectare)} />
-          <SummaryStat label="Colhido" value={`${season.totalHarvestedSacas.toLocaleString('pt-BR')} sc`} />
+          <SummaryStat label="Custo total" value={formatCurrency(season.totalCost)} styles={styles} />
+          <SummaryStat label="Custo / hectare" value={formatCurrency(costPerHectare)} styles={styles} />
+          <SummaryStat label="Colhido" value={`${season.totalHarvestedSacas.toLocaleString('pt-BR')} sc`} styles={styles} />
           <SummaryStat
             label="Produtividade"
             value={season.yieldPerHectare !== null ? `${season.yieldPerHectare.toFixed(1)} sc/ha` : '—'}
+            styles={styles}
           />
         </View>
 
@@ -63,23 +66,26 @@ export default function SeasonDetailScreen() {
           title="Custo de produção"
           subtitle="Insumos, defensivo, adubo e mão de obra"
           onPress={() => router.push(`/farms/${farmId}/lavoura/safra/${seasonId}/custos`)}
+          styles={styles}
         />
         <NavRow
           title="Colheita e venda"
           subtitle="Lançamentos por dia e vendas para tradings/cerealistas"
           onPress={() => router.push(`/farms/${farmId}/lavoura/safra/${seasonId}/colheita`)}
+          styles={styles}
         />
         <NavRow
           title="Aplicação de defensivo"
           subtitle="Receituário — produto, dose e carência"
           onPress={() => router.push(`/farms/${farmId}/lavoura/safra/${seasonId}/defensivos`)}
+          styles={styles}
         />
       </View>
     </SafeAreaView>
   );
 }
 
-function SummaryStat({ label, value }: { label: string; value: string }) {
+function SummaryStat({ label, value, styles }: { label: string; value: string; styles: ReturnType<typeof createStyles> }) {
   return (
     <View style={styles.summaryCell}>
       <Text style={styles.summaryValue}>{value}</Text>
@@ -88,7 +94,17 @@ function SummaryStat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function NavRow({ title, subtitle, onPress }: { title: string; subtitle: string; onPress: () => void }) {
+function NavRow({
+  title,
+  subtitle,
+  onPress,
+  styles,
+}: {
+  title: string;
+  subtitle: string;
+  onPress: () => void;
+  styles: ReturnType<typeof createStyles>;
+}) {
   return (
     <Pressable style={({ pressed }) => [styles.navRow, pressed && styles.navRowPressed]} onPress={onPress}>
       <View style={{ flex: 1 }}>
@@ -104,7 +120,8 @@ function formatCurrency(value: number) {
   return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -183,4 +200,5 @@ const styles = StyleSheet.create({
     ...typography.heading,
     color: colors.lavoura,
   },
-});
+  });
+}

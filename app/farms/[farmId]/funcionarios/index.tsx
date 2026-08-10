@@ -1,5 +1,5 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -13,9 +13,11 @@ import { EMPLOYEE_SECTOR_LABELS, EMPLOYEE_SECTOR_OPTIONS } from '../../../../src
 import { useEmployees, type EmployeeSummary } from '../../../../src/hooks/useEmployees';
 import { useT, type TFunction } from '../../../../src/i18n';
 import type { EmployeeSector } from '../../../../src/types/database';
-import { colors, radius, spacing, typography } from '../../../../src/theme';
+import { radius, spacing, typography, useColors, type Colors } from '../../../../src/theme';
 
 export default function EmployeesHomeScreen() {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const [sectorFilter, setSectorFilter] = useState<EmployeeSector | null>(null);
   const { employees, isLoading, error, reload } = useEmployees(farmId, sectorFilter ?? undefined);
@@ -81,6 +83,7 @@ export default function EmployeesHomeScreen() {
                 employee={item}
                 onPress={() => router.push(`/farms/${farmId}/funcionarios/funcionario/${item.id}`)}
                 t={t}
+                styles={styles}
               />
             </FadeSlideIn>
           )}
@@ -99,7 +102,17 @@ export default function EmployeesHomeScreen() {
   );
 }
 
-function EmployeeCard({ employee, onPress, t }: { employee: EmployeeSummary; onPress: () => void; t: TFunction }) {
+function EmployeeCard({
+  employee,
+  onPress,
+  t,
+  styles,
+}: {
+  employee: EmployeeSummary;
+  onPress: () => void;
+  t: TFunction;
+  styles: ReturnType<typeof createStyles>;
+}) {
   const hasAlert = employee.expiredDocumentCount > 0 || employee.expiringSoonDocumentCount > 0;
   const hasUnread = employee.unreadMessageCount > 0;
 
@@ -141,7 +154,8 @@ function EmployeeCard({ employee, onPress, t }: { employee: EmployeeSummary; onP
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
   headerLinks: {
     flexDirection: 'row',
     gap: spacing.md,
@@ -240,4 +254,5 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.border,
   },
-});
+  });
+}

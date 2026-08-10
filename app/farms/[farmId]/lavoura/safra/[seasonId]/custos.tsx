@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -11,7 +11,7 @@ import { ScreenHeader } from '../../../../../../src/components/ScreenHeader';
 import { TextField } from '../../../../../../src/components/TextField';
 import { PRODUCTION_COST_CATEGORY_LABELS, useProductionCosts } from '../../../../../../src/hooks/useProductionCosts';
 import type { ProductionCost, ProductionCostCategory } from '../../../../../../src/types/database';
-import { colors, radius, spacing, typography } from '../../../../../../src/theme';
+import { radius, spacing, typography, useColors, type Colors } from '../../../../../../src/theme';
 
 const CATEGORY_OPTIONS = Object.entries(PRODUCTION_COST_CATEGORY_LABELS).map(([value, label]) => ({
   value: value as ProductionCostCategory,
@@ -19,6 +19,8 @@ const CATEGORY_OPTIONS = Object.entries(PRODUCTION_COST_CATEGORY_LABELS).map(([v
 }));
 
 export default function ProductionCostsScreen() {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { seasonId } = useLocalSearchParams<{ seasonId: string }>();
   const { costs, totalCost, isLoading, error, createCost } = useProductionCosts(seasonId);
   const [isAdding, setIsAdding] = useState(false);
@@ -38,7 +40,7 @@ export default function ProductionCostsScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={<EmptyState text="Nenhum custo lançado ainda." />}
-          renderItem={({ item }) => <CostRow cost={item} />}
+          renderItem={({ item }) => <CostRow cost={item} styles={styles} />}
         />
       )}
 
@@ -47,6 +49,7 @@ export default function ProductionCostsScreen() {
       <View style={styles.footer}>
         {isAdding ? (
           <NewCostForm
+            styles={styles}
             onCancel={() => setIsAdding(false)}
             onCreate={async (values) => {
               const { error: createError } = await createCost(values);
@@ -62,7 +65,7 @@ export default function ProductionCostsScreen() {
   );
 }
 
-function CostRow({ cost }: { cost: ProductionCost }) {
+function CostRow({ cost, styles }: { cost: ProductionCost; styles: ReturnType<typeof createStyles> }) {
   return (
     <Card style={styles.card}>
       <View style={styles.cardTopRow}>
@@ -89,6 +92,7 @@ function CostRow({ cost }: { cost: ProductionCost }) {
 function NewCostForm({
   onCancel,
   onCreate,
+  styles,
 }: {
   onCancel: () => void;
   onCreate: (values: {
@@ -99,7 +103,9 @@ function NewCostForm({
     unit_cost?: number;
     total_cost: number;
   }) => Promise<string | null>;
+  styles: ReturnType<typeof createStyles>;
 }) {
+  const colors = useColors();
   const [category, setCategory] = useState<ProductionCostCategory>('semente');
   const [description, setDescription] = useState('');
   const [quantity, setQuantity] = useState('');
@@ -173,7 +179,8 @@ function formatDate(isoDate: string) {
   return `${day}/${month}/${year}`;
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -250,4 +257,5 @@ const styles = StyleSheet.create({
   error: {
     color: colors.danger,
   },
-});
+  });
+}

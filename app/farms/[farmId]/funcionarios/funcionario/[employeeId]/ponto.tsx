@@ -12,7 +12,7 @@ import { ScreenHeader } from '../../../../../../src/components/ScreenHeader';
 import { TIME_ENTRY_TYPE_LABELS } from '../../../../../../src/data/employeeOptions';
 import { useTimeEntries } from '../../../../../../src/hooks/useTimeEntries';
 import type { TimeEntry } from '../../../../../../src/types/database';
-import { colors, radius, spacing, typography } from '../../../../../../src/theme';
+import { radius, spacing, typography, useColors, type Colors } from '../../../../../../src/theme';
 
 function buildColumns(): DataTableColumn<TimeEntry>[] {
   return [
@@ -31,6 +31,8 @@ function buildColumns(): DataTableColumn<TimeEntry>[] {
 }
 
 export default function TimeClockScreen() {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { employeeId } = useLocalSearchParams<{ employeeId: string }>();
   const { entries, todaysEntries, nextEntryType, isLoading, error, createEntry } = useTimeEntries(employeeId);
   const columns = useMemo(() => buildColumns(), []);
@@ -142,7 +144,8 @@ function formatDateTime(isoTimestamp: string) {
   return date.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -217,4 +220,5 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.warning,
   },
-});
+  });
+}

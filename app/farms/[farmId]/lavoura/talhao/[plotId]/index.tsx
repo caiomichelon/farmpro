@@ -1,5 +1,5 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -10,9 +10,11 @@ import { ScreenHeader } from '../../../../../../src/components/ScreenHeader';
 import { usePlot } from '../../../../../../src/hooks/usePlots';
 import { usePlotSeasons, type SeasonSummary } from '../../../../../../src/hooks/usePlotSeasons';
 import { SEASON_STATUS_LABELS } from '../../../../../../src/data/seasonStatus';
-import { colors, radius, spacing, typography } from '../../../../../../src/theme';
+import { radius, spacing, typography, useColors, type Colors } from '../../../../../../src/theme';
 
 export default function PlotDetailScreen() {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId, plotId } = useLocalSearchParams<{ farmId: string; plotId: string }>();
   const { plot, isLoading: isLoadingPlot, reload: reloadPlot } = usePlot(plotId);
   const { seasons, isLoading: isLoadingSeasons, error, reload: reloadSeasons } = usePlotSeasons(plotId);
@@ -49,10 +51,11 @@ export default function PlotDetailScreen() {
           contentContainerStyle={styles.listContent}
           ListHeaderComponent={
             <View style={styles.summaryRow}>
-              <SummaryChip label="Safras" value={String(seasons.length)} />
+              <SummaryChip label="Safras" value={String(seasons.length)} styles={styles} />
               <SummaryChip
                 label="Produtividade média"
                 value={averageYield !== null ? `${averageYield.toFixed(1)} sc/ha` : '—'}
+                styles={styles}
               />
             </View>
           }
@@ -60,7 +63,7 @@ export default function PlotDetailScreen() {
             <EmptyState text="Nenhuma safra lançada neste talhão ainda. Isso também é o histórico de rotação de cultura — cada safra que você lançar fica registrada aqui." />
           }
           renderItem={({ item }) => (
-            <SeasonCard season={item} onPress={() => router.push(`/farms/${farmId}/lavoura/safra/${item.id}`)} />
+            <SeasonCard season={item} styles={styles} onPress={() => router.push(`/farms/${farmId}/lavoura/safra/${item.id}`)} />
           )}
         />
       )}
@@ -82,7 +85,7 @@ export default function PlotDetailScreen() {
   );
 }
 
-function SummaryChip({ label, value }: { label: string; value: string }) {
+function SummaryChip({ label, value, styles }: { label: string; value: string; styles: ReturnType<typeof createStyles> }) {
   return (
     <View style={styles.summaryChip}>
       <Text style={styles.summaryValue}>{value}</Text>
@@ -91,7 +94,15 @@ function SummaryChip({ label, value }: { label: string; value: string }) {
   );
 }
 
-function SeasonCard({ season, onPress }: { season: SeasonSummary; onPress: () => void }) {
+function SeasonCard({
+  season,
+  onPress,
+  styles,
+}: {
+  season: SeasonSummary;
+  onPress: () => void;
+  styles: ReturnType<typeof createStyles>;
+}) {
   return (
     <Card onPress={onPress} style={styles.card}>
       <View style={styles.cardTopRow}>
@@ -117,7 +128,8 @@ function SeasonCard({ season, onPress }: { season: SeasonSummary; onPress: () =>
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -200,4 +212,5 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.border,
   },
-});
+  });
+}

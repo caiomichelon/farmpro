@@ -12,7 +12,7 @@ import { TextField } from '../../../../../../src/components/TextField';
 import { COMMON_PRODUCTIVITY_UNITS } from '../../../../../../src/data/employeeOptions';
 import { useProductivityRecords } from '../../../../../../src/hooks/useProductivityRecords';
 import type { ProductivityRecord } from '../../../../../../src/types/database';
-import { colors, spacing, typography } from '../../../../../../src/theme';
+import { spacing, typography, useColors, type Colors } from '../../../../../../src/theme';
 
 function buildColumns(): DataTableColumn<ProductivityRecord>[] {
   return [
@@ -24,6 +24,8 @@ function buildColumns(): DataTableColumn<ProductivityRecord>[] {
 }
 
 export default function ProductivityScreen() {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { employeeId } = useLocalSearchParams<{ employeeId: string }>();
   const { records, isLoading, error, createRecord } = useProductivityRecords(employeeId);
   const columns = useMemo(() => buildColumns(), []);
@@ -48,6 +50,7 @@ export default function ProductivityScreen() {
       <View style={styles.footer}>
         {isAdding ? (
           <NewRecordForm
+            styles={styles}
             onCancel={() => setIsAdding(false)}
             onCreate={async (values) => {
               const { error: createError } = await createRecord(values);
@@ -66,10 +69,13 @@ export default function ProductivityScreen() {
 function NewRecordForm({
   onCancel,
   onCreate,
+  styles,
 }: {
   onCancel: () => void;
   onCreate: (values: { activity: string; quantity: number; unit: string }) => Promise<string | null>;
+  styles: ReturnType<typeof createStyles>;
 }) {
+  const colors = useColors();
   const [activity, setActivity] = useState('');
   const [quantity, setQuantity] = useState('');
   const [unit, setUnit] = useState('');
@@ -120,7 +126,8 @@ function formatDate(isoDate: string) {
   return `${day}/${month}/${year}`;
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -157,4 +164,5 @@ const styles = StyleSheet.create({
   error: {
     color: colors.danger,
   },
-});
+  });
+}

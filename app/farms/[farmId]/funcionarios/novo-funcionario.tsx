@@ -1,10 +1,12 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../../src/components/Button';
+import { Card } from '../../../../src/components/Card';
 import { ChipSelect } from '../../../../src/components/ChipSelect';
+import { FadeSlideIn } from '../../../../src/components/FadeSlideIn';
 import { ScreenHeader } from '../../../../src/components/ScreenHeader';
 import { TextField } from '../../../../src/components/TextField';
 import {
@@ -15,7 +17,7 @@ import {
 import { useEmployees } from '../../../../src/hooks/useEmployees';
 import { useT } from '../../../../src/i18n';
 import type { EmployeeCostType, EmployeeSector } from '../../../../src/types/database';
-import { colors, spacing, typography } from '../../../../src/theme';
+import { radius, spacing, typography, useColors, type Colors } from '../../../../src/theme';
 
 const COST_TYPE_OPTIONS = Object.entries(EMPLOYEE_COST_TYPE_LABELS).map(([value, label]) => ({
   value: value as EmployeeCostType,
@@ -23,6 +25,8 @@ const COST_TYPE_OPTIONS = Object.entries(EMPLOYEE_COST_TYPE_LABELS).map(([value,
 }));
 
 export default function NewEmployeeScreen() {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const { createEmployee } = useEmployees(farmId);
   const t = useT();
@@ -76,49 +80,55 @@ export default function NewEmployeeScreen() {
       <ScreenHeader title={t('newEmployee.title')} subtitle={t('newEmployee.subtitle')} />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
-          <Section title={t('newEmployee.sectionIdentification')}>
-            <TextField label={t('newEmployee.fullName')} value={fullName} onChangeText={setFullName} placeholder={t('newEmployee.fullNamePlaceholder')} />
-            <TextField label={t('newEmployee.cpf')} value={cpf} onChangeText={setCpf} placeholder={t('newEmployee.optional')} keyboardType="numbers-and-punctuation" />
-            <TextField label={t('newEmployee.phone')} value={phone} onChangeText={setPhone} placeholder={t('newEmployee.optional')} keyboardType="phone-pad" />
-            <TextField label={t('newEmployee.birthDate')} value={birthDate} onChangeText={setBirthDate} placeholder={t('newEmployee.birthDatePlaceholder')} keyboardType="numbers-and-punctuation" />
-            <TextField label={t('newEmployee.address')} value={address} onChangeText={setAddress} placeholder={t('newEmployee.optional')} />
-          </Section>
+          <FadeSlideIn delay={40}>
+            <Section title={t('newEmployee.sectionIdentification')} styles={styles} accent>
+              <TextField label={t('newEmployee.fullName')} value={fullName} onChangeText={setFullName} placeholder={t('newEmployee.fullNamePlaceholder')} />
+              <TextField label={t('newEmployee.cpf')} value={cpf} onChangeText={setCpf} placeholder={t('newEmployee.optional')} keyboardType="numbers-and-punctuation" />
+              <TextField label={t('newEmployee.phone')} value={phone} onChangeText={setPhone} placeholder={t('newEmployee.optional')} keyboardType="phone-pad" />
+              <TextField label={t('newEmployee.birthDate')} value={birthDate} onChangeText={setBirthDate} placeholder={t('newEmployee.birthDatePlaceholder')} keyboardType="numbers-and-punctuation" />
+              <TextField label={t('newEmployee.address')} value={address} onChangeText={setAddress} placeholder={t('newEmployee.optional')} />
+            </Section>
+          </FadeSlideIn>
 
-          <Section title={t('newEmployee.sectionWork')}>
-            <ChipSelect
-              label={t('newEmployee.sector')}
-              options={EMPLOYEE_SECTOR_OPTIONS.map((s) => ({ value: s, label: EMPLOYEE_SECTOR_LABELS[s] }))}
-              value={sector}
-              onChange={setSector}
-              accentColor={colors.funcionarios}
-            />
-            <TextField label={t('newEmployee.role')} value={role} onChangeText={setRole} placeholder={t('newEmployee.rolePlaceholder')} />
-            <ChipSelect
-              label={t('newEmployee.costType')}
-              options={COST_TYPE_OPTIONS}
-              value={costType}
-              onChange={setCostType}
-              accentColor={colors.funcionarios}
-            />
-            <TextField
-              label={
-                costType === 'diarista'
-                  ? t('newEmployee.costValueDaily')
-                  : costType === 'tarefa'
-                  ? t('newEmployee.costValueTask')
-                  : t('newEmployee.costValueMonthly')
-              }
-              value={costValue}
-              onChangeText={setCostValue}
-              placeholder="R$"
-              keyboardType="decimal-pad"
-            />
-          </Section>
+          <FadeSlideIn delay={90}>
+            <Section title={t('newEmployee.sectionWork')} styles={styles}>
+              <ChipSelect
+                label={t('newEmployee.sector')}
+                options={EMPLOYEE_SECTOR_OPTIONS.map((s) => ({ value: s, label: EMPLOYEE_SECTOR_LABELS[s] }))}
+                value={sector}
+                onChange={setSector}
+                accentColor={colors.funcionarios}
+              />
+              <TextField label={t('newEmployee.role')} value={role} onChangeText={setRole} placeholder={t('newEmployee.rolePlaceholder')} />
+              <ChipSelect
+                label={t('newEmployee.costType')}
+                options={COST_TYPE_OPTIONS}
+                value={costType}
+                onChange={setCostType}
+                accentColor={colors.funcionarios}
+              />
+              <TextField
+                label={
+                  costType === 'diarista'
+                    ? t('newEmployee.costValueDaily')
+                    : costType === 'tarefa'
+                    ? t('newEmployee.costValueTask')
+                    : t('newEmployee.costValueMonthly')
+                }
+                value={costValue}
+                onChangeText={setCostValue}
+                placeholder="R$"
+                keyboardType="decimal-pad"
+              />
+            </Section>
+          </FadeSlideIn>
 
-          <Section title={t('newEmployee.sectionEmergency')}>
-            <TextField label={t('newEmployee.emergencyName')} value={emergencyName} onChangeText={setEmergencyName} placeholder={t('newEmployee.optional')} />
-            <TextField label={t('newEmployee.emergencyPhone')} value={emergencyPhone} onChangeText={setEmergencyPhone} placeholder={t('newEmployee.optional')} keyboardType="phone-pad" />
-          </Section>
+          <FadeSlideIn delay={140}>
+            <Section title={t('newEmployee.sectionEmergency')} styles={styles}>
+              <TextField label={t('newEmployee.emergencyName')} value={emergencyName} onChangeText={setEmergencyName} placeholder={t('newEmployee.optional')} />
+              <TextField label={t('newEmployee.emergencyPhone')} value={emergencyPhone} onChangeText={setEmergencyPhone} placeholder={t('newEmployee.optional')} keyboardType="phone-pad" />
+            </Section>
+          </FadeSlideIn>
 
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <Button
@@ -133,12 +143,22 @@ export default function NewEmployeeScreen() {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  children,
+  styles,
+  accent,
+}: {
+  title: string;
+  children: React.ReactNode;
+  styles: ReturnType<typeof createStyles>;
+  accent?: boolean;
+}) {
   return (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{title}</Text>
+    <Card style={accent ? styles.sectionAccent : styles.section}>
+      <Text style={accent ? styles.sectionTitleAccent : styles.sectionTitle}>{title}</Text>
       <View style={styles.sectionBody}>{children}</View>
-    </View>
+    </Card>
   );
 }
 
@@ -149,30 +169,42 @@ function parseDate(input: string): string | null {
   return `${year}-${month}-${day}`;
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  flex: {
-    flex: 1,
-  },
-  form: {
-    paddingHorizontal: spacing.xl,
-    paddingBottom: spacing.xxxl,
-    gap: spacing.xxl,
-  },
-  section: {
-    gap: spacing.lg,
-  },
-  sectionTitle: {
-    ...typography.subheading,
-    color: colors.textPrimary,
-  },
-  sectionBody: {
-    gap: spacing.lg,
-  },
-  error: {
-    color: colors.danger,
-  },
-});
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    flex: {
+      flex: 1,
+    },
+    form: {
+      paddingHorizontal: spacing.xl,
+      paddingBottom: spacing.xxxl,
+      gap: spacing.lg,
+    },
+    section: {
+      gap: spacing.md,
+      backgroundColor: colors.surface,
+    },
+    sectionAccent: {
+      gap: spacing.md,
+      backgroundColor: colors.funcionariosLight,
+      borderRadius: radius.md,
+    },
+    sectionTitle: {
+      ...typography.subheading,
+      color: colors.textPrimary,
+    },
+    sectionTitleAccent: {
+      ...typography.subheading,
+      color: colors.funcionarios,
+    },
+    sectionBody: {
+      gap: spacing.md,
+    },
+    error: {
+      color: colors.danger,
+    },
+  });
+}

@@ -1,5 +1,5 @@
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -9,9 +9,11 @@ import { EmptyState } from '../../../../../src/components/EmptyState';
 import { ScreenHeader } from '../../../../../src/components/ScreenHeader';
 import { TextField } from '../../../../../src/components/TextField';
 import { useBuyerRanking, useGrainBuyers, type BuyerRanking } from '../../../../../src/hooks/useGrainBuyers';
-import { colors, radius, spacing, typography } from '../../../../../src/theme';
+import { radius, spacing, typography, useColors, type Colors } from '../../../../../src/theme';
 
 export default function BuyersScreen() {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const { buyers, isLoading, error, createBuyer, reload } = useGrainBuyers(farmId);
   const { ranking, isLoading: isLoadingRanking, reload: reloadRanking } = useBuyerRanking(farmId);
@@ -36,7 +38,7 @@ export default function BuyersScreen() {
             {isLoadingRanking ? (
               <ActivityIndicator color={colors.lavoura} />
             ) : (
-              ranking.map((entry, index) => <RankingRow key={entry.buyerId} entry={entry} rank={index + 1} />)
+              ranking.map((entry, index) => <RankingRow key={entry.buyerId} entry={entry} rank={index + 1} styles={styles} />)
             )}
           </View>
         )}
@@ -60,6 +62,7 @@ export default function BuyersScreen() {
 
           {isAdding ? (
             <NewBuyerForm
+              styles={styles}
               onCancel={() => setIsAdding(false)}
               onCreate={async (values) => {
                 const { error: createError } = await createBuyer(values);
@@ -76,7 +79,7 @@ export default function BuyersScreen() {
   );
 }
 
-function RankingRow({ entry, rank }: { entry: BuyerRanking; rank: number }) {
+function RankingRow({ entry, rank, styles }: { entry: BuyerRanking; rank: number; styles: ReturnType<typeof createStyles> }) {
   return (
     <Card style={styles.rankingCard}>
       <View style={styles.rankingTopRow}>
@@ -100,9 +103,11 @@ function RankingRow({ entry, rank }: { entry: BuyerRanking; rank: number }) {
 function NewBuyerForm({
   onCancel,
   onCreate,
+  styles,
 }: {
   onCancel: () => void;
   onCreate: (values: { name: string; notes?: string }) => Promise<string | null>;
+  styles: ReturnType<typeof createStyles>;
 }) {
   const [name, setName] = useState('');
   const [notes, setNotes] = useState('');
@@ -129,75 +134,77 @@ function NewBuyerForm({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  content: {
-    paddingHorizontal: spacing.xl,
-    paddingBottom: spacing.xxxl,
-    gap: spacing.xxl,
-  },
-  section: {
-    gap: spacing.md,
-  },
-  sectionTitle: {
-    ...typography.subheading,
-    color: colors.textPrimary,
-  },
-  rankingCard: {
-    gap: spacing.xs,
-    marginBottom: spacing.sm,
-  },
-  rankingTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  rankingBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: radius.full,
-    backgroundColor: colors.lavouraLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  rankingBadgeText: {
-    ...typography.captionMedium,
-    color: colors.lavoura,
-  },
-  rankingPrice: {
-    ...typography.bodyMedium,
-    color: colors.lavoura,
-    marginLeft: 'auto',
-  },
-  rankingMeta: {
-    ...typography.caption,
-    color: colors.textSecondary,
-  },
-  buyerCard: {
-    marginBottom: spacing.sm,
-  },
-  buyerName: {
-    ...typography.bodyMedium,
-    color: colors.textPrimary,
-    flex: 1,
-  },
-  buyerNotes: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  form: {
-    gap: spacing.md,
-    marginTop: spacing.sm,
-  },
-  formActions: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  error: {
-    color: colors.danger,
-  },
-});
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    content: {
+      paddingHorizontal: spacing.xl,
+      paddingBottom: spacing.xxxl,
+      gap: spacing.xxl,
+    },
+    section: {
+      gap: spacing.md,
+    },
+    sectionTitle: {
+      ...typography.subheading,
+      color: colors.textPrimary,
+    },
+    rankingCard: {
+      gap: spacing.xs,
+      marginBottom: spacing.sm,
+    },
+    rankingTopRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    rankingBadge: {
+      width: 28,
+      height: 28,
+      borderRadius: radius.full,
+      backgroundColor: colors.lavouraLight,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    rankingBadgeText: {
+      ...typography.captionMedium,
+      color: colors.lavoura,
+    },
+    rankingPrice: {
+      ...typography.bodyMedium,
+      color: colors.lavoura,
+      marginLeft: 'auto',
+    },
+    rankingMeta: {
+      ...typography.caption,
+      color: colors.textSecondary,
+    },
+    buyerCard: {
+      marginBottom: spacing.sm,
+    },
+    buyerName: {
+      ...typography.bodyMedium,
+      color: colors.textPrimary,
+      flex: 1,
+    },
+    buyerNotes: {
+      ...typography.caption,
+      color: colors.textSecondary,
+      marginTop: 2,
+    },
+    form: {
+      gap: spacing.md,
+      marginTop: spacing.sm,
+    },
+    formActions: {
+      flexDirection: 'row',
+      gap: spacing.md,
+    },
+    error: {
+      color: colors.danger,
+    },
+  });
+}

@@ -1,16 +1,18 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../../../../src/components/Button';
+import { Card } from '../../../../../../src/components/Card';
 import { ChipSelect } from '../../../../../../src/components/ChipSelect';
+import { FadeSlideIn } from '../../../../../../src/components/FadeSlideIn';
 import { ScreenHeader } from '../../../../../../src/components/ScreenHeader';
 import { TextField } from '../../../../../../src/components/TextField';
 import { COMMON_CROPS } from '../../../../../../src/data/seasonStatus';
 import { usePlot } from '../../../../../../src/hooks/usePlots';
 import { usePlotSeasons } from '../../../../../../src/hooks/usePlotSeasons';
-import { colors, spacing } from '../../../../../../src/theme';
+import { radius, spacing, typography, useColors, type Colors } from '../../../../../../src/theme';
 
 function defaultSeasonLabel() {
   const year = new Date().getFullYear();
@@ -18,6 +20,8 @@ function defaultSeasonLabel() {
 }
 
 export default function NewSeasonScreen() {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId, plotId } = useLocalSearchParams<{ farmId: string; plotId: string }>();
   const { plot } = usePlot(plotId);
   const { createSeason } = usePlotSeasons(plotId);
@@ -67,35 +71,47 @@ export default function NewSeasonScreen() {
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScreenHeader title="Nova safra" subtitle={plot?.name} />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
-          <ChipSelect
-            label="Cultura"
-            options={COMMON_CROPS.map((c) => ({ value: c, label: c }))}
-            value={COMMON_CROPS.includes(crop) ? crop : null}
-            onChange={setCrop}
-            accentColor={colors.lavoura}
-          />
-          <TextField label="Cultura (ou digite outra)" value={crop} onChangeText={setCrop} placeholder="Ex.: Soja" />
-          <TextField
-            label="Variedade da semente"
-            value={variety}
-            onChangeText={setVariety}
-            placeholder="Opcional — ex.: TMG 7062"
-          />
-          <TextField label="Safra" value={seasonLabel} onChangeText={setSeasonLabel} placeholder="Ex.: 2025/2026" />
-          <TextField
-            label="Área plantada (hectares)"
-            value={plantedArea}
-            onChangeText={setPlantedArea}
-            keyboardType="decimal-pad"
-          />
-          <TextField
-            label="Data de plantio"
-            value={plantingDate}
-            onChangeText={setPlantingDate}
-            placeholder="DD/MM/AAAA (opcional)"
-            keyboardType="numbers-and-punctuation"
-          />
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+          <FadeSlideIn delay={40}>
+            <Card style={styles.card}>
+              <Text style={styles.cardTitle}>Cultura e safra</Text>
+              <ChipSelect
+                label="Cultura"
+                options={COMMON_CROPS.map((c) => ({ value: c, label: c }))}
+                value={COMMON_CROPS.includes(crop) ? crop : null}
+                onChange={setCrop}
+                accentColor={colors.lavoura}
+              />
+              <TextField label="Cultura (ou digite outra)" value={crop} onChangeText={setCrop} placeholder="Ex.: Soja" />
+              <TextField
+                label="Variedade da semente"
+                value={variety}
+                onChangeText={setVariety}
+                placeholder="Opcional — ex.: TMG 7062"
+              />
+              <TextField label="Safra" value={seasonLabel} onChangeText={setSeasonLabel} placeholder="Ex.: 2025/2026" />
+            </Card>
+          </FadeSlideIn>
+
+          <FadeSlideIn delay={90}>
+            <Card style={styles.plantingCard}>
+              <Text style={styles.plantingCardTitle}>Plantio</Text>
+              <TextField
+                label="Área plantada (hectares)"
+                value={plantedArea}
+                onChangeText={setPlantedArea}
+                keyboardType="decimal-pad"
+              />
+              <TextField
+                label="Data de plantio"
+                value={plantingDate}
+                onChangeText={setPlantingDate}
+                placeholder="DD/MM/AAAA (opcional)"
+                keyboardType="numbers-and-punctuation"
+              />
+            </Card>
+          </FadeSlideIn>
+
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <Button
             label="Salvar safra"
@@ -117,20 +133,28 @@ function parseDate(input: string): string | null {
   return `${year}-${month}-${day}`;
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  flex: {
-    flex: 1,
-  },
-  form: {
-    paddingHorizontal: spacing.xl,
-    paddingBottom: spacing.xxxl,
-    gap: spacing.lg,
-  },
-  error: {
-    color: colors.danger,
-  },
-});
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
+    flex: { flex: 1 },
+    content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxxl, gap: spacing.lg },
+    card: {
+      gap: spacing.md,
+      backgroundColor: colors.lavouraLight,
+      borderRadius: radius.md,
+    },
+    cardTitle: {
+      ...typography.subheading,
+      color: colors.lavoura,
+    },
+    plantingCard: {
+      gap: spacing.md,
+      backgroundColor: colors.surface,
+    },
+    plantingCardTitle: {
+      ...typography.subheading,
+      color: colors.textPrimary,
+    },
+    error: { color: colors.danger },
+  });
+}

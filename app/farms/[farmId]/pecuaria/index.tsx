@@ -1,13 +1,16 @@
 import { router, useLocalSearchParams } from 'expo-router';
+import { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FadeSlideIn } from '../../../../src/components/FadeSlideIn';
 import { ScreenHeader } from '../../../../src/components/ScreenHeader';
 import { useT } from '../../../../src/i18n';
-import { colors, radius, spacing, typography } from '../../../../src/theme';
+import { radius, spacing, typography, useColors, type Colors } from '../../../../src/theme';
 
 export default function PecuariaHomeScreen() {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const t = useT();
 
@@ -21,6 +24,7 @@ export default function PecuariaHomeScreen() {
             title={t('pecuariaHome.corteTitle')}
             description={t('pecuariaHome.corteDescription')}
             onPress={() => router.push(`/farms/${farmId}/pecuaria/corte`)}
+            styles={styles}
           />
         </FadeSlideIn>
         <FadeSlideIn delay={70}>
@@ -28,6 +32,7 @@ export default function PecuariaHomeScreen() {
             title={t('pecuariaHome.criaTitle')}
             description={t('pecuariaHome.criaDescription')}
             onPress={() => router.push(`/farms/${farmId}/pecuaria/cria`)}
+            styles={styles}
           />
         </FadeSlideIn>
         <FadeSlideIn delay={140}>
@@ -35,6 +40,7 @@ export default function PecuariaHomeScreen() {
             title={t('pecuariaHome.estoqueTitle')}
             description={t('pecuariaHome.estoqueDescription')}
             onPress={() => router.push(`/farms/${farmId}/pecuaria/estoque`)}
+            styles={styles}
           />
         </FadeSlideIn>
       </View>
@@ -42,7 +48,17 @@ export default function PecuariaHomeScreen() {
   );
 }
 
-function AreaCard({ title, description, onPress }: { title: string; description: string; onPress: () => void }) {
+function AreaCard({
+  title,
+  description,
+  onPress,
+  styles,
+}: {
+  title: string;
+  description: string;
+  onPress: () => void;
+  styles: ReturnType<typeof createStyles>;
+}) {
   return (
     <Pressable style={({ pressed }) => [styles.card, pressed && styles.cardPressed]} onPress={onPress}>
       <View style={styles.marker} />
@@ -52,7 +68,8 @@ function AreaCard({ title, description, onPress }: { title: string; description:
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -85,4 +102,5 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.textSecondary,
   },
-});
+  });
+}

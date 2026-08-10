@@ -1,4 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
+import { useMemo } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -6,7 +7,7 @@ import { DataTable, type DataTableColumn } from '../../../../src/components/Data
 import { EmptyState } from '../../../../src/components/EmptyState';
 import { ScreenHeader } from '../../../../src/components/ScreenHeader';
 import { usePlotsWithLatestSeason, type PlotWithLatestSeason } from '../../../../src/hooks/usePlots';
-import { colors, spacing, typography } from '../../../../src/theme';
+import { spacing, typography, useColors, type Colors } from '../../../../src/theme';
 
 const COLUMNS: DataTableColumn<PlotWithLatestSeason>[] = [
   { key: 'name', label: 'Talhão', width: 140, render: (p) => p.name },
@@ -16,6 +17,8 @@ const COLUMNS: DataTableColumn<PlotWithLatestSeason>[] = [
 ];
 
 export default function PlotsSpreadsheetScreen() {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const { plots, isLoading, error } = usePlotsWithLatestSeason(farmId);
 
@@ -47,7 +50,8 @@ export default function PlotsSpreadsheetScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -64,4 +68,5 @@ const styles = StyleSheet.create({
     color: colors.danger,
     paddingHorizontal: spacing.xl,
   },
-});
+  });
+}

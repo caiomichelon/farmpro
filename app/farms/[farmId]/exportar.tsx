@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -8,11 +8,13 @@ import { Card } from '../../../src/components/Card';
 import { ScreenHeader } from '../../../src/components/ScreenHeader';
 import { useFarm } from '../../../src/hooks/useFarms';
 import { exportFarmData, type ExportProgress } from '../../../src/lib/spreadsheetExport';
-import { colors, spacing, typography } from '../../../src/theme';
+import { spacing, typography, useColors, type Colors } from '../../../src/theme';
 
 type Status = 'idle' | 'exporting' | 'done' | 'error';
 
 export default function ExportFarmDataScreen() {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const { farm } = useFarm(farmId);
   const [status, setStatus] = useState<Status>('idle');
@@ -93,7 +95,8 @@ export default function ExportFarmDataScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -149,4 +152,5 @@ const styles = StyleSheet.create({
     ...typography.heading,
     color: colors.primary,
   },
-});
+  });
+}

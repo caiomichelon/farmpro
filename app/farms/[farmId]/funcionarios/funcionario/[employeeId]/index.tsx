@@ -8,9 +8,11 @@ import { EMPLOYEE_COST_TYPE_LABELS, EMPLOYEE_SECTOR_LABELS } from '../../../../.
 import { useEmployee } from '../../../../../../src/hooks/useEmployees';
 import { useTimeEntries } from '../../../../../../src/hooks/useTimeEntries';
 import { buildEmployeeGamification } from '../../../../../../src/lib/employeeGamification';
-import { colors, radius, spacing, typography } from '../../../../../../src/theme';
+import { radius, spacing, typography, useColors, type Colors } from '../../../../../../src/theme';
 
 export default function EmployeeDetailScreen() {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId, employeeId } = useLocalSearchParams<{ farmId: string; employeeId: string }>();
   const { employee, isLoading, reload } = useEmployee(employeeId);
   const { entries: timeEntries } = useTimeEntries(employeeId);
@@ -43,13 +45,14 @@ export default function EmployeeDetailScreen() {
 
       <View style={styles.content}>
         <View style={styles.infoGrid}>
-          <InfoCell label="Admissão" value={formatDate(employee.admission_date)} />
+          <InfoCell label="Admissão" value={formatDate(employee.admission_date)} styles={styles} />
           <InfoCell
             label={EMPLOYEE_COST_TYPE_LABELS[employee.cost_type]}
             value={Number(employee.cost_value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+            styles={styles}
           />
-          {employee.phone ? <InfoCell label="Telefone" value={employee.phone} /> : null}
-          {employee.cpf ? <InfoCell label="CPF" value={employee.cpf} /> : null}
+          {employee.phone ? <InfoCell label="Telefone" value={employee.phone} styles={styles} /> : null}
+          {employee.cpf ? <InfoCell label="CPF" value={employee.cpf} styles={styles} /> : null}
         </View>
 
         <NavRow
@@ -57,6 +60,8 @@ export default function EmployeeDetailScreen() {
           subtitle={totalAlerts > 0 ? `${totalAlerts} alerta(s) de vencimento` : 'Nenhum alerta no momento'}
           accent={totalAlerts > 0}
           onPress={() => router.push(`/farms/${farmId}/funcionarios/funcionario/${employeeId}/documentos`)}
+          styles={styles}
+          colors={colors}
         />
         {gamification.totalDaysWorked > 0 ? (
           <View style={styles.gamificationCard}>
@@ -97,24 +102,30 @@ export default function EmployeeDetailScreen() {
               : 'Bater ponto e ver histórico'
           }
           onPress={() => router.push(`/farms/${farmId}/funcionarios/funcionario/${employeeId}/ponto`)}
+          styles={styles}
+          colors={colors}
         />
         <NavRow
           title="Produtividade"
           subtitle="Histórico de atividades realizadas"
           onPress={() => router.push(`/farms/${farmId}/funcionarios/funcionario/${employeeId}/produtividade`)}
+          styles={styles}
+          colors={colors}
         />
         <NavRow
           title="Mensagens"
           subtitle={employee.unreadMessageCount > 0 ? `${employee.unreadMessageCount} mensagem(ns) não lida(s)` : 'Converse com o funcionário'}
           accent={employee.unreadMessageCount > 0}
           onPress={() => router.push(`/farms/${farmId}/funcionarios/funcionario/${employeeId}/mensagens`)}
+          styles={styles}
+          colors={colors}
         />
       </View>
     </SafeAreaView>
   );
 }
 
-function InfoCell({ label, value }: { label: string; value: string }) {
+function InfoCell({ label, value, styles }: { label: string; value: string; styles: ReturnType<typeof createStyles> }) {
   return (
     <View style={styles.infoCell}>
       <Text style={styles.infoValue}>{value}</Text>
@@ -128,11 +139,15 @@ function NavRow({
   subtitle,
   accent,
   onPress,
+  styles,
+  colors,
 }: {
   title: string;
   subtitle: string;
   accent?: boolean;
   onPress: () => void;
+  styles: ReturnType<typeof createStyles>;
+  colors: Colors;
 }) {
   return (
     <Pressable style={({ pressed }) => [styles.navRow, pressed && styles.navRowPressed]} onPress={onPress}>
@@ -150,7 +165,8 @@ function formatDate(isoDate: string) {
   return `${day}/${month}/${year}`;
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -252,4 +268,5 @@ const styles = StyleSheet.create({
     ...typography.captionMedium,
     color: colors.textPrimary,
   },
-});
+  });
+}

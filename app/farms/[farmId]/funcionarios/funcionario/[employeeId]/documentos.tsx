@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Image, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -14,16 +14,21 @@ import { COMMON_DOCUMENT_TYPES } from '../../../../../../src/data/employeeOption
 import { useEmployeeDocuments } from '../../../../../../src/hooks/useEmployeeDocuments';
 import { DOCUMENT_ALERT_LABELS, getDocumentAlertStatus } from '../../../../../../src/lib/documentAlerts';
 import type { EmployeeDocument } from '../../../../../../src/types/database';
-import { colors, radius, spacing, typography } from '../../../../../../src/theme';
+import { radius, spacing, typography, useColors, type Colors } from '../../../../../../src/theme';
 
-const ALERT_COLORS: Record<string, { bg: string; text: string }> = {
-  vencido: { bg: colors.dangerLight, text: colors.danger },
-  vence_em_breve: { bg: colors.warningLight, text: colors.warning },
-  ok: { bg: colors.successLight, text: colors.success },
-  sem_validade: { bg: colors.surfaceAlt, text: colors.textSecondary },
-};
+function alertColors(colors: Colors): Record<string, { bg: string; text: string }> {
+  return {
+    vencido: { bg: colors.dangerLight, text: colors.danger },
+    vence_em_breve: { bg: colors.warningLight, text: colors.warning },
+    ok: { bg: colors.successLight, text: colors.success },
+    sem_validade: { bg: colors.surfaceAlt, text: colors.textSecondary },
+  };
+}
 
 export default function EmployeeDocumentsScreen() {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const ALERT_COLORS = useMemo(() => alertColors(colors), [colors]);
   const { employeeId } = useLocalSearchParams<{ employeeId: string }>();
   const { documents, isLoading, error, createDocument } = useEmployeeDocuments(employeeId);
   const [isAdding, setIsAdding] = useState(false);
@@ -40,7 +45,7 @@ export default function EmployeeDocumentsScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={<EmptyState text="Nenhum documento cadastrado ainda." />}
-          renderItem={({ item }) => <DocumentRow document={item} />}
+          renderItem={({ item }) => <DocumentRow document={item} styles={styles} alertColors={ALERT_COLORS} />}
         />
       )}
 
@@ -49,6 +54,7 @@ export default function EmployeeDocumentsScreen() {
       <View style={styles.footer}>
         {isAdding ? (
           <NewDocumentForm
+            styles={styles}
             onCancel={() => setIsAdding(false)}
             onCreate={async (values) => {
               const { error: createError } = await createDocument(values);
@@ -64,9 +70,17 @@ export default function EmployeeDocumentsScreen() {
   );
 }
 
-function DocumentRow({ document }: { document: EmployeeDocument }) {
+function DocumentRow({
+  document,
+  styles,
+  alertColors,
+}: {
+  document: EmployeeDocument;
+  styles: ReturnType<typeof createStyles>;
+  alertColors: Record<string, { bg: string; text: string }>;
+}) {
   const status = getDocumentAlertStatus(document.expiry_date);
-  const colorSet = ALERT_COLORS[status];
+  const colorSet = alertColors[status];
 
   return (
     <Card style={styles.card}>
@@ -92,6 +106,7 @@ function DocumentRow({ document }: { document: EmployeeDocument }) {
 function NewDocumentForm({
   onCancel,
   onCreate,
+  styles,
 }: {
   onCancel: () => void;
   onCreate: (values: {
@@ -100,7 +115,9 @@ function NewDocumentForm({
     expiry_date?: string;
     photo_url?: string;
   }) => Promise<string | null>;
+  styles: ReturnType<typeof createStyles>;
 }) {
+  const colors = useColors();
   const [documentType, setDocumentType] = useState('');
   const [documentNumber, setDocumentNumber] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
@@ -164,7 +181,8 @@ function formatDate(isoDate: string) {
   return `${day}/${month}/${year}`;
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -236,4 +254,5 @@ const styles = StyleSheet.create({
   error: {
     color: colors.danger,
   },
-});
+  });
+}

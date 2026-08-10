@@ -1,4 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
+import { useMemo } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -7,7 +8,7 @@ import { EmptyState } from '../../../../src/components/EmptyState';
 import { ScreenHeader } from '../../../../src/components/ScreenHeader';
 import { SEASON_STATUS_LABELS } from '../../../../src/data/seasonStatus';
 import { useSeasonsByFarm, type SeasonSummaryWithPlot } from '../../../../src/hooks/usePlotSeasons';
-import { colors, spacing, typography } from '../../../../src/theme';
+import { spacing, typography, useColors, type Colors } from '../../../../src/theme';
 
 const COLUMNS: DataTableColumn<SeasonSummaryWithPlot>[] = [
   { key: 'plot', label: 'Talhão', width: 130, render: (s) => s.plotName },
@@ -31,6 +32,8 @@ const COLUMNS: DataTableColumn<SeasonSummaryWithPlot>[] = [
 ];
 
 export default function SeasonsSpreadsheetScreen() {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const { seasons, isLoading, error } = useSeasonsByFarm(farmId);
 
@@ -62,7 +65,8 @@ export default function SeasonsSpreadsheetScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -79,4 +83,5 @@ const styles = StyleSheet.create({
     color: colors.danger,
     paddingHorizontal: spacing.xl,
   },
-});
+  });
+}

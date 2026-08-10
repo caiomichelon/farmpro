@@ -5,7 +5,7 @@ import { ImportWizard } from '../../../../src/components/ImportWizard';
 import { ScreenHeader } from '../../../../src/components/ScreenHeader';
 import { EMPLOYEE_COST_TYPE_LABELS, EMPLOYEE_SECTOR_LABELS } from '../../../../src/data/employeeOptions';
 import type { ImportField } from '../../../../src/lib/spreadsheetImport';
-import { colors } from '../../../../src/theme';
+import { useColors } from '../../../../src/theme';
 
 const FIELDS: ImportField[] = [
   { key: 'full_name', label: 'Nome completo', required: true, kind: 'text', aliases: ['nome', 'funcionario'] },
@@ -39,6 +39,7 @@ const FIELDS: ImportField[] = [
 
 export default function ImportEmployeesScreen() {
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
+  const colors = useColors();
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top', 'bottom']}>

@@ -1,5 +1,5 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -13,9 +13,11 @@ import { StatGrid } from '../../../../src/components/StatGrid';
 import { useLavouraSummary } from '../../../../src/hooks/useLavouraSummary';
 import { usePlotsWithLatestSeason, type PlotWithLatestSeason } from '../../../../src/hooks/usePlots';
 import { useT } from '../../../../src/i18n';
-import { colors, radius, spacing, typography } from '../../../../src/theme';
+import { radius, spacing, typography, useColors, type Colors } from '../../../../src/theme';
 
 export default function LavouraHomeScreen() {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const { plots, activeSeason, isLoading, error, reload } = usePlotsWithLatestSeason(farmId);
   const { summary, reload: reloadSummary } = useLavouraSummary(farmId);
@@ -132,6 +134,7 @@ export default function LavouraHomeScreen() {
             <FadeSlideIn delay={Math.min(index, 6) * 50}>
               <PlotCard
                 plot={item}
+                styles={styles}
                 onPress={() => router.push(`/farms/${farmId}/lavoura/talhao/${item.id}`)}
                 noSeasonLabel={t('lavouraHome.noSeason')}
               />
@@ -149,7 +152,17 @@ export default function LavouraHomeScreen() {
   );
 }
 
-function PlotCard({ plot, onPress, noSeasonLabel }: { plot: PlotWithLatestSeason; onPress: () => void; noSeasonLabel: string }) {
+function PlotCard({
+  plot,
+  onPress,
+  noSeasonLabel,
+  styles,
+}: {
+  plot: PlotWithLatestSeason;
+  onPress: () => void;
+  noSeasonLabel: string;
+  styles: ReturnType<typeof createStyles>;
+}) {
   return (
     <Card onPress={onPress} style={styles.card}>
       <View style={styles.cardTopRow}>
@@ -170,7 +183,8 @@ function PlotCard({ plot, onPress, noSeasonLabel }: { plot: PlotWithLatestSeason
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -272,4 +286,5 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.border,
   },
-});
+  });
+}

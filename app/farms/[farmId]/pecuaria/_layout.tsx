@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
 
-import { colors } from '../../../../src/theme';
+import { useColors } from '../../../../src/theme';
 
 // NOTA: já usamos `presentation: 'modal'` aqui, mas revertemos — no Expo Go em
 // iOS as telas com apresentação modal nativa renderizavam em branco (bug
@@ -10,6 +10,7 @@ import { colors } from '../../../../src/theme';
 const modalOptions = { animation: 'slide_from_bottom' as const };
 
 export default function PecuariaLayout() {
+  const colors = useColors();
   return (
     <Stack
       screenOptions={{

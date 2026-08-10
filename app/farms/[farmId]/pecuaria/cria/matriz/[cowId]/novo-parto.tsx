@@ -1,16 +1,20 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../../../../../src/components/Button';
+import { Card } from '../../../../../../../src/components/Card';
+import { FadeSlideIn } from '../../../../../../../src/components/FadeSlideIn';
 import { ScreenHeader } from '../../../../../../../src/components/ScreenHeader';
 import { TextField } from '../../../../../../../src/components/TextField';
 import { useCalvings } from '../../../../../../../src/hooks/useCalvings';
 import { useInseminations } from '../../../../../../../src/hooks/useInseminations';
-import { colors, spacing } from '../../../../../../../src/theme';
+import { radius, spacing, typography, useColors, type Colors } from '../../../../../../../src/theme';
 
 export default function NewCalvingScreen() {
+  const colors = useColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { cowId } = useLocalSearchParams<{ cowId: string }>();
   const { inseminations } = useInseminations(cowId);
   const { calvings, createCalving } = useCalvings(cowId);
@@ -45,24 +49,29 @@ export default function NewCalvingScreen() {
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScreenHeader title="Registrar parto" />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={styles.form}>
-          <TextField
-            label="Data do parto"
-            value={calvingDate}
-            onChangeText={setCalvingDate}
-            placeholder="DD/MM/AAAA (hoje, se vazio)"
-            keyboardType="numbers-and-punctuation"
-          />
-          <TextField label="Quantidade de bezerros" value={calfCount} onChangeText={setCalfCount} keyboardType="number-pad" />
-          <TextField
-            label="Identificação do(s) bezerro(s)"
-            value={calfIdentification}
-            onChangeText={setCalfIdentification}
-            placeholder="Opcional"
-          />
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+          <FadeSlideIn delay={40}>
+            <Card style={styles.card}>
+              <Text style={styles.cardTitle}>Parto</Text>
+              <TextField
+                label="Data do parto"
+                value={calvingDate}
+                onChangeText={setCalvingDate}
+                placeholder="DD/MM/AAAA (hoje, se vazio)"
+                keyboardType="numbers-and-punctuation"
+              />
+              <TextField label="Quantidade de bezerros" value={calfCount} onChangeText={setCalfCount} keyboardType="number-pad" />
+              <TextField
+                label="Identificação do(s) bezerro(s)"
+                value={calfIdentification}
+                onChangeText={setCalfIdentification}
+                placeholder="Opcional"
+              />
+            </Card>
+          </FadeSlideIn>
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <Button label="Salvar parto" onPress={handleSubmit} loading={isSubmitting} />
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -75,19 +84,22 @@ function parseDate(input: string): string | null {
   return `${year}-${month}-${day}`;
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  flex: {
-    flex: 1,
-  },
-  form: {
-    paddingHorizontal: spacing.xl,
-    gap: spacing.lg,
-  },
-  error: {
-    color: colors.danger,
-  },
-});
+function createStyles(colors: Colors) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
+    flex: { flex: 1 },
+    content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxxl, gap: spacing.lg },
+    card: {
+      gap: spacing.md,
+      backgroundColor: colors.pecuariaLight,
+      borderRadius: radius.md,
+    },
+    cardTitle: {
+      ...typography.subheading,
+      color: colors.pecuaria,
+    },
+    error: {
+      color: colors.danger,
+    },
+  });
+}
