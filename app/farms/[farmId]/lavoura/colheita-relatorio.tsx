@@ -13,6 +13,7 @@ import {
   type BuyerReportRow,
   type DriverReportRow,
   type PlateReportRow,
+  type TripReportRow,
 } from '../../../../src/hooks/useHarvestLogisticsReport';
 import { spacing, typography, useColors, type Colors } from '../../../../src/theme';
 
@@ -24,6 +25,11 @@ function kg(value: number): string {
   return `${Math.round(value).toString()} kg`;
 }
 
+function formatDate(isoDate: string): string {
+  const [year, month, day] = isoDate.split('-');
+  return `${day}/${month}/${year}`;
+}
+
 /** Relatório de logística da colheita — a mesma nota de caminhão que já é
  * lançada em Colheita, só que agrupada por placa, por motorista e por
  * comprador. Sempre olha a fazenda inteira (todas as safras + lançamentos
@@ -33,7 +39,7 @@ export default function HarvestLogisticsReportScreen() {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
-  const { byPlate, byDriver, byBuyer, isLoading, error, reload } = useHarvestLogisticsReport(farmId);
+  const { byPlate, byDriver, byBuyer, trips, isLoading, error, reload } = useHarvestLogisticsReport(farmId);
 
   useFocusEffect(
     useCallback(() => {
@@ -48,6 +54,15 @@ export default function HarvestLogisticsReportScreen() {
     { key: 'net', label: 'Peso líquido', width: 130, render: (r) => kg(r.totalNetKg) },
     { key: 'gross', label: 'Peso bruto', width: 130, render: (r) => kg(r.totalGrossKg) },
     { key: 'drivers', label: 'Motorista(s)', width: 200, render: (r) => (r.drivers.length > 0 ? r.drivers.join(', ') : '—') },
+  ];
+
+  const tripColumns: DataTableColumn<TripReportRow>[] = [
+    { key: 'plate', label: 'Placa', width: 110, render: (r) => r.plate },
+    { key: 'date', label: 'Data', width: 100, render: (r) => formatDate(r.harvestedAt) },
+    { key: 'driver', label: 'Motorista', width: 180, render: (r) => r.driver },
+    { key: 'sacas', label: 'Sacas', width: 100, render: (r) => r.sacas.toFixed(1) },
+    { key: 'net', label: 'Peso líquido', width: 130, render: (r) => (r.netKg > 0 ? kg(r.netKg) : '—') },
+    { key: 'gross', label: 'Peso bruto', width: 130, render: (r) => (r.grossKg > 0 ? kg(r.grossKg) : '—') },
   ];
 
   const driverColumns: DataTableColumn<DriverReportRow>[] = [
@@ -65,7 +80,7 @@ export default function HarvestLogisticsReportScreen() {
     { key: 'avgPrice', label: 'Preço médio/saca', width: 150, render: (r) => currency(r.avgPricePerSaca) },
   ];
 
-  const isEmpty = byPlate.length === 0 && byDriver.length === 0 && byBuyer.length === 0;
+  const isEmpty = byPlate.length === 0 && byDriver.length === 0 && byBuyer.length === 0 && trips.length === 0;
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -84,7 +99,18 @@ export default function HarvestLogisticsReportScreen() {
             <FadeSlideIn delay={40}>
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Por caminhão (placa)</Text>
+                <Text style={styles.sectionHelp}>Total de cada placa — some as viagens da tabela abaixo</Text>
                 <DataTable columns={plateColumns} data={byPlate} keyExtractor={(r) => r.plate} title="Por caminhão" />
+              </View>
+            </FadeSlideIn>
+          ) : null}
+
+          {trips.length > 0 ? (
+            <FadeSlideIn delay={65}>
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Notas individuais (cada viagem)</Text>
+                <Text style={styles.sectionHelp}>Quanto cada caminhão pesou, viagem por viagem — agrupado por placa</Text>
+                <DataTable columns={tripColumns} data={trips} keyExtractor={(r) => r.id} title="Notas individuais" />
               </View>
             </FadeSlideIn>
           ) : null}
@@ -132,6 +158,11 @@ function createStyles(colors: Colors) {
     sectionTitle: {
       ...typography.subheading,
       color: colors.textPrimary,
+    },
+    sectionHelp: {
+      ...typography.caption,
+      color: colors.textMuted,
+      marginTop: -spacing.xs,
     },
     footnoteCard: {
       gap: spacing.xs,

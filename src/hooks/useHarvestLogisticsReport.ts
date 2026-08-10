@@ -26,12 +26,26 @@ export interface BuyerReportRow {
   avgPricePerSaca: number;
 }
 
+/** Uma viagem/nota de caminhão individual — não agrupada, pra quem quer ver
+ * exatamente quanto cada caminhão pesou em cada viagem, não só o total. */
+export interface TripReportRow {
+  id: string;
+  plate: string;
+  driver: string;
+  harvestedAt: string;
+  sacas: number;
+  netKg: number;
+  grossKg: number;
+}
+
 interface RawEntryRow {
+  id: string;
   truck_plate: string | null;
   driver_name: string | null;
   gross_weight_kg: number | null;
   net_weight_kg: number | null;
   quantity_sacas: number;
+  harvested_at: string;
 }
 
 interface RawSaleRow {
@@ -49,6 +63,7 @@ export function useHarvestLogisticsReport(farmId: string | undefined) {
   const [byPlate, setByPlate] = useState<PlateReportRow[]>([]);
   const [byDriver, setByDriver] = useState<DriverReportRow[]>([]);
   const [byBuyer, setByBuyer] = useState<BuyerReportRow[]>([]);
+  const [trips, setTrips] = useState<TripReportRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,11 +75,13 @@ export function useHarvestLogisticsReport(farmId: string | undefined) {
       const [entriesBySeason, entriesDirect, salesBySeason, salesDirect] = await Promise.all([
         supabase
           .from('harvest_entries')
-          .select('truck_plate, driver_name, gross_weight_kg, net_weight_kg, quantity_sacas, plot_seasons!inner(plots!inner(farm_id))')
+          .select(
+            'id, truck_plate, driver_name, gross_weight_kg, net_weight_kg, quantity_sacas, harvested_at, plot_seasons!inner(plots!inner(farm_id))'
+          )
           .eq('plot_seasons.plots.farm_id', farmId),
         supabase
           .from('harvest_entries')
-          .select('truck_plate, driver_name, gross_weight_kg, net_weight_kg, quantity_sacas')
+          .select('id, truck_plate, driver_name, gross_weight_kg, net_weight_kg, quantity_sacas, harvested_at')
           .eq('farm_id', farmId),
         supabase
           .from('grain_sales')
@@ -152,6 +169,24 @@ export function useHarvestLogisticsReport(farmId: string | undefined) {
           }))
           .sort((a, b) => b.totalValue - a.totalValue)
       );
+
+      // Uma linha por viagem — sem agrupar — pra quem quer conferir cada
+      // caminhão individualmente, não só o total da placa. Agrupa por placa
+      // e, dentro da mesma placa, ordena por data — assim as viagens de um
+      // mesmo caminhão ficam juntas na planilha.
+      setTrips(
+        entries
+          .map((e) => ({
+            id: e.id,
+            plate: (e.truck_plate ?? '').trim().toUpperCase() || '—',
+            driver: (e.driver_name ?? '').trim() || '—',
+            harvestedAt: e.harvested_at,
+            sacas: Number(e.quantity_sacas ?? 0),
+            netKg: Number(e.net_weight_kg ?? 0),
+            grossKg: Number(e.gross_weight_kg ?? 0),
+          }))
+          .sort((a, b) => (a.plate === b.plate ? a.harvestedAt.localeCompare(b.harvestedAt) : a.plate.localeCompare(b.plate)))
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível carregar o relatório.');
     } finally {
@@ -163,5 +198,5 @@ export function useHarvestLogisticsReport(farmId: string | undefined) {
     reload();
   }, [reload]);
 
-  return { byPlate, byDriver, byBuyer, isLoading, error, reload };
+  return { byPlate, byDriver, byBuyer, trips, isLoading, error, reload };
 }
