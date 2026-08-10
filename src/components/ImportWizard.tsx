@@ -39,6 +39,11 @@ interface ImportWizardProps {
   fixedValues?: Record<string, unknown>;
   /** Campos derivados de outros campos da mesma linha (opcional). */
   computedFields?: ImportComputedField[];
+  /** Ajusta a linha já mapeada (campos diretos + calculados) antes de
+   * salvar — ex.: corrigir uma coluna que veio em unidade errada da
+   * planilha, usando outro campo já confiável como referência. Roda por
+   * último, só em linhas sem nenhum problema até ali. */
+  normalizeRow?: (row: Record<string, unknown>) => Record<string, unknown>;
   onDone: () => void;
 }
 
@@ -46,7 +51,15 @@ type Step = 'pick' | 'map' | 'preview' | 'done';
 
 const NONE = '__none__';
 
-export function ImportWizard({ table, fields, accentColor, fixedValues, computedFields, onDone }: ImportWizardProps) {
+export function ImportWizard({
+  table,
+  fields,
+  accentColor,
+  fixedValues,
+  computedFields,
+  normalizeRow,
+  onDone,
+}: ImportWizardProps) {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [step, setStep] = useState<Step>('pick');
@@ -127,7 +140,7 @@ export function ImportWizard({ table, fields, accentColor, fixedValues, computed
       if (problems.length > 0) {
         rowErrors.push({ row: rowIndex + 2, message: problems.join('; ') }); // +2: linha 1 é cabeçalho
       } else {
-        valid.push(mappedRow);
+        valid.push(normalizeRow ? normalizeRow(mappedRow) : mappedRow);
       }
     });
 

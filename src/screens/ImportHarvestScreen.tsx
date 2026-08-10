@@ -39,6 +39,29 @@ const COMPUTED_FIELDS: ImportComputedField[] = [
   },
 ];
 
+/** Algumas planilhas de balança de caminhão rotulam a coluna de peso como
+ * "(kg)" mas na verdade trazem o valor em toneladas (visto numa planilha
+ * real: "28.486" pra uma carga de 474 sacas). Usa as sacas já confirmadas
+ * (diretas da planilha ou calculadas) como referência pra detectar isso: um
+ * caminhão de verdade dá uns 50-70kg por saca, então um peso líquido que
+ * implique menos de 5kg/saca é sinal de que veio em toneladas — corrige
+ * multiplicando por 1000 (peso bruto junto, mesma origem/erro). */
+function normalizeHarvestWeights(row: Record<string, unknown>): Record<string, unknown> {
+  const sacas = Number(row.quantity_sacas);
+  const net = Number(row.net_weight_kg);
+  if (!sacas || sacas <= 0 || !net || net <= 0) return row;
+
+  const impliedKgPerSaca = net / sacas;
+  if (impliedKgPerSaca >= 5) return row;
+
+  const gross = Number(row.gross_weight_kg);
+  return {
+    ...row,
+    net_weight_kg: net * 1000,
+    ...(gross > 0 ? { gross_weight_kg: gross * 1000 } : {}),
+  };
+}
+
 /** Importar várias notas de colheita de uma planilha — amarradas a uma
  * safra (seasonId) ou soltas direto na fazenda (sem seasonId). */
 export function ImportHarvestScreen({ farmId, seasonId }: { farmId: string; seasonId?: string }) {
@@ -52,6 +75,7 @@ export function ImportHarvestScreen({ farmId, seasonId }: { farmId: string; seas
         table="harvest_entries"
         fields={FIELDS}
         computedFields={COMPUTED_FIELDS}
+        normalizeRow={normalizeHarvestWeights}
         accentColor={colors.lavoura}
         fixedValues={seasonId ? { plot_season_id: seasonId } : { farm_id: farmId }}
         onDone={() => router.replace(`${basePath}/colheita`)}

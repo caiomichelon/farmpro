@@ -36,6 +36,9 @@ export function HarvestScreen({ farmId, seasonId }: { farmId: string; seasonId?:
   const [isAdding, setIsAdding] = useState(false);
 
   const basePath = seasonId ? `/farms/${farmId}/lavoura/safra/${seasonId}` : `/farms/${farmId}/lavoura`;
+  // O relatório é sempre da fazenda inteira (todas as safras + soltos), não
+  // só dessa safra — um caminhão passa por vários talhões na colheita.
+  const reportPath = `/farms/${farmId}/lavoura/colheita-relatorio`;
 
   // "Lançar colheita" e a tela de Vendas ficam em rotas separadas — refaz a
   // busca ao voltar pra cá, senão o lançamento recém-criado não aparece até
@@ -78,6 +81,19 @@ export function HarvestScreen({ farmId, seasonId }: { farmId: string; seasonId?:
               </Text>
             </View>
             <Text style={styles.salesRowChevron}>→</Text>
+          </Pressable>
+        </FadeSlideIn>
+
+        <FadeSlideIn delay={60}>
+          <Pressable
+            style={({ pressed }) => [styles.reportRow, pressed && styles.salesRowPressed]}
+            onPress={() => router.push(reportPath)}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={styles.reportRowTitle}>📊 Relatório por caminhão e comprador</Text>
+              <Text style={styles.salesRowSubtitle}>Viagens, peso e sacas por placa, motorista e comprador</Text>
+            </View>
+            <Text style={styles.reportRowChevron}>→</Text>
           </Pressable>
         </FadeSlideIn>
 
@@ -426,6 +442,22 @@ function createStyles(colors: Colors) {
     salesRowChevron: {
       ...typography.heading,
       color: colors.lavoura,
+    },
+    reportRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+      backgroundColor: colors.surfaceAlt,
+      borderRadius: radius.lg,
+      padding: spacing.lg,
+    },
+    reportRowTitle: {
+      ...typography.subheading,
+      color: colors.textPrimary,
+    },
+    reportRowChevron: {
+      ...typography.heading,
+      color: colors.textMuted,
     },
     section: {
       gap: spacing.md,
