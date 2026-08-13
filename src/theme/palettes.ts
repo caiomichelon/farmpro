@@ -33,6 +33,8 @@ export interface Colors {
   pecuariaLight: string;
   funcionarios: string;
   funcionariosLight: string;
+  estoque: string;
+  estoqueLight: string;
 
   // Estado / feedback
   success: string;
@@ -68,6 +70,8 @@ export const lightColors: Colors = {
   pecuariaLight: '#F5E7DE',
   funcionarios: '#3E5C6B',
   funcionariosLight: '#E4EBEE',
+  estoque: '#8C7A3D',
+  estoqueLight: '#F1EDDA',
 
   success: '#3F7A4E',
   successLight: '#E4F0E6',
@@ -101,6 +105,8 @@ export const darkColors: Colors = {
   pecuariaLight: '#34261A',
   funcionarios: '#7DA0B2',
   funcionariosLight: '#1F2B31',
+  estoque: '#C9B36B',
+  estoqueLight: '#322C1A',
 
   success: '#63A873',
   successLight: '#1D2C1F',

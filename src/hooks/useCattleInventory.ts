@@ -101,6 +101,10 @@ export function useCattleInventoryItems(farmId: string | undefined) {
       min_quantity?: number;
       unit_cost?: number;
       notes?: string;
+      supplier_id?: string;
+      expiration_date?: string;
+      photo_url?: string;
+      location?: string;
     }) => {
       if (!farmId) return { error: 'Fazenda não encontrada.' };
 
@@ -113,6 +117,10 @@ export function useCattleInventoryItems(farmId: string | undefined) {
         min_quantity: input.min_quantity ?? null,
         unit_cost: input.unit_cost ?? null,
         notes: input.notes || null,
+        supplier_id: input.supplier_id || null,
+        expiration_date: input.expiration_date || null,
+        photo_url: input.photo_url || null,
+        location: input.location || null,
       });
 
       if (insertError) return { error: insertError.message };

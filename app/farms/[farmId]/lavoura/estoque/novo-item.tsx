@@ -4,19 +4,32 @@ import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } fr
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../../../src/components/Button';
+import { Card } from '../../../../../src/components/Card';
 import { ChipSelect } from '../../../../../src/components/ChipSelect';
+import { FadeSlideIn } from '../../../../../src/components/FadeSlideIn';
+import { PhotoPicker } from '../../../../../src/components/PhotoPicker';
 import { ScreenHeader } from '../../../../../src/components/ScreenHeader';
 import { TextField } from '../../../../../src/components/TextField';
 import { LAVOURA_INVENTORY_CATEGORY_OPTIONS, LAVOURA_INVENTORY_UNIT_OPTIONS } from '../../../../../src/data/lavouraInventoryOptions';
 import { useLavouraInventoryItems } from '../../../../../src/hooks/useLavouraInventory';
+import { useSuppliers } from '../../../../../src/hooks/useSuppliers';
+import { radius, spacing, typography, useColors, type Colors } from '../../../../../src/theme';
 import type { LavouraInventoryCategory, LavouraInventoryUnit } from '../../../../../src/types/database';
-import { spacing, useColors, type Colors } from '../../../../../src/theme';
+
+/** Converte "DD/MM/AAAA" em "AAAA-MM-DD" (formato de data do Postgres). */
+function parseDate(input: string): string | null {
+  const match = input.trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!match) return null;
+  const [, day, month, year] = match;
+  return `${year}-${month}-${day}`;
+}
 
 export default function NewLavouraInventoryItemScreen() {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const { createItem } = useLavouraInventoryItems(farmId);
+  const { suppliers } = useSuppliers(farmId);
 
   const [name, setName] = useState('');
   const [category, setCategory] = useState<LavouraInventoryCategory>('sementes');
@@ -24,6 +37,10 @@ export default function NewLavouraInventoryItemScreen() {
   const [initialQuantity, setInitialQuantity] = useState('');
   const [minQuantity, setMinQuantity] = useState('');
   const [unitCost, setUnitCost] = useState('');
+  const [supplierId, setSupplierId] = useState<string | null>(null);
+  const [expirationDate, setExpirationDate] = useState('');
+  const [location, setLocation] = useState('');
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -40,6 +57,10 @@ export default function NewLavouraInventoryItemScreen() {
       initial_quantity: initialQuantity ? Number(initialQuantity.replace(',', '.')) : undefined,
       min_quantity: minQuantity ? Number(minQuantity.replace(',', '.')) : undefined,
       unit_cost: unitCost ? Number(unitCost.replace(',', '.')) : undefined,
+      supplier_id: supplierId ?? undefined,
+      expiration_date: parseDate(expirationDate) ?? undefined,
+      location: location.trim() || undefined,
+      photo_url: photoUrl ?? undefined,
     });
     setIsSubmitting(false);
     if (createError) {
@@ -51,21 +72,46 @@ export default function NewLavouraInventoryItemScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <ScreenHeader title="Novo item de estoque" />
+      <ScreenHeader title="Novo item de estoque" subtitle="Semente, fertilizante, defensivo, combustível" />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
-          <TextField label="Nome" value={name} onChangeText={setName} placeholder="Ex.: Semente de soja RR" />
-          <ChipSelect label="Categoria" options={LAVOURA_INVENTORY_CATEGORY_OPTIONS} value={category} onChange={setCategory} accentColor={colors.lavoura} />
-          <ChipSelect label="Unidade" options={LAVOURA_INVENTORY_UNIT_OPTIONS} value={unit} onChange={setUnit} accentColor={colors.lavoura} />
-          <View style={styles.row}>
-            <View style={{ flex: 1 }}>
-              <TextField label="Estoque inicial" value={initialQuantity} onChangeText={setInitialQuantity} placeholder="Ex.: 500" keyboardType="decimal-pad" />
-            </View>
-            <View style={{ flex: 1 }}>
-              <TextField label="Estoque mínimo" value={minQuantity} onChangeText={setMinQuantity} placeholder="Opcional" keyboardType="decimal-pad" />
-            </View>
-          </View>
-          <TextField label="Custo por unidade (R$)" value={unitCost} onChangeText={setUnitCost} placeholder="Opcional" keyboardType="decimal-pad" />
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+          <FadeSlideIn delay={40}>
+            <Card style={styles.card}>
+              <Text style={styles.cardTitle}>Dados do item</Text>
+              <TextField label="Nome" value={name} onChangeText={setName} placeholder="Ex.: Semente de soja RR" />
+              <ChipSelect label="Categoria" options={LAVOURA_INVENTORY_CATEGORY_OPTIONS} value={category} onChange={setCategory} accentColor={colors.lavoura} />
+              <ChipSelect label="Unidade" options={LAVOURA_INVENTORY_UNIT_OPTIONS} value={unit} onChange={setUnit} accentColor={colors.lavoura} />
+              <View style={styles.row}>
+                <View style={{ flex: 1 }}>
+                  <TextField label="Estoque inicial" value={initialQuantity} onChangeText={setInitialQuantity} placeholder="Ex.: 500" keyboardType="decimal-pad" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <TextField label="Estoque mínimo" value={minQuantity} onChangeText={setMinQuantity} placeholder="Opcional" keyboardType="decimal-pad" />
+                </View>
+              </View>
+              <TextField label="Custo por unidade (R$)" value={unitCost} onChangeText={setUnitCost} placeholder="Opcional" keyboardType="decimal-pad" />
+            </Card>
+          </FadeSlideIn>
+
+          <FadeSlideIn delay={80}>
+            <Card style={styles.card}>
+              <Text style={styles.cardTitle}>Detalhes</Text>
+              <Text style={styles.help}>Tudo opcional — ajuda a controlar validade, onde tá guardado e de onde comprar de novo.</Text>
+              {suppliers.length > 0 ? (
+                <ChipSelect
+                  label="Fornecedor"
+                  options={suppliers.map((s) => ({ value: s.id, label: s.name }))}
+                  value={supplierId}
+                  onChange={setSupplierId}
+                  accentColor={colors.lavoura}
+                />
+              ) : null}
+              <TextField label="Validade" value={expirationDate} onChangeText={setExpirationDate} placeholder="DD/MM/AAAA (opcional)" keyboardType="numbers-and-punctuation" />
+              <TextField label="Onde fica guardado" value={location} onChangeText={setLocation} placeholder="Ex.: Barracão 1" />
+              <PhotoPicker label="Foto do item" photoUrl={photoUrl} onChange={setPhotoUrl} folder="lavoura-inventory" accentColor={colors.lavoura} />
+            </Card>
+          </FadeSlideIn>
+
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <Button label="Salvar item" onPress={handleSubmit} loading={isSubmitting} disabled={!name} />
         </ScrollView>
@@ -76,17 +122,22 @@ export default function NewLavouraInventoryItemScreen() {
 
 function createStyles(colors: Colors) {
   return StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background,
+    container: { flex: 1, backgroundColor: colors.background },
+    flex: { flex: 1 },
+    content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxxl, gap: spacing.lg },
+    card: {
+      gap: spacing.md,
+      backgroundColor: colors.lavouraLight,
+      borderRadius: radius.md,
     },
-    flex: {
-      flex: 1,
+    cardTitle: {
+      ...typography.subheading,
+      color: colors.lavoura,
     },
-    form: {
-      paddingHorizontal: spacing.xl,
-      paddingBottom: spacing.xxxl,
-      gap: spacing.lg,
+    help: {
+      ...typography.caption,
+      color: colors.textMuted,
+      marginTop: -spacing.sm,
     },
     row: {
       flexDirection: 'row',

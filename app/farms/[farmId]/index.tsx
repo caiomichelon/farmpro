@@ -12,6 +12,7 @@ import { SectorButton } from '../../../src/components/SectorButton';
 import { SummaryStat } from '../../../src/components/SummaryStat';
 import { useFarm } from '../../../src/hooks/useFarms';
 import { useFarmHealthScore } from '../../../src/hooks/useFarmHealthScore';
+import { useFarmInventory } from '../../../src/hooks/useFarmInventory';
 import { useSyncCattleNotifications } from '../../../src/hooks/useSyncCattleNotifications';
 import { useSyncDailyBriefingNotification } from '../../../src/hooks/useSyncDailyBriefingNotification';
 import { useSyncDailyPhotoReminder } from '../../../src/hooks/useSyncDailyPhotoReminder';
@@ -28,6 +29,7 @@ export default function FarmHomeScreen() {
   const { farm, isLoading } = useFarm(farmId);
   const health = useFarmHealthScore(farmId);
   const alerts = health.alerts;
+  const inventory = useFarmInventory(farmId);
   useSyncCattleNotifications(farmId);
   useSyncWeatherNotifications(farmId);
   useSyncDailyBriefingNotification(farmId);
@@ -128,6 +130,24 @@ export default function FarmHomeScreen() {
                 color={colors.pecuaria}
                 backgroundColor={colors.pecuariaLight}
                 onPress={() => router.push(`/farms/${farmId}/pecuaria`)}
+              />
+            </View>
+          </FadeSlideIn>
+
+          <FadeSlideIn delay={20}>
+            <View style={styles.sectorsRow}>
+              <SectorButton
+                title="📦 Estoque"
+                subtitle={
+                  inventory.lowStockCount > 0
+                    ? `${inventory.lowStockCount} com estoque baixo`
+                    : inventory.expiringCount + inventory.expiredCount > 0
+                      ? `${inventory.expiringCount + inventory.expiredCount} vencendo/vencido`
+                      : 'Ração, sementes e mais'
+                }
+                color={colors.estoque}
+                backgroundColor={colors.estoqueLight}
+                onPress={() => router.push(`/farms/${farmId}/estoque`)}
               />
             </View>
           </FadeSlideIn>

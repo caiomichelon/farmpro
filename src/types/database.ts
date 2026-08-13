@@ -710,6 +710,12 @@ export type CattleInventoryItem = {
   min_quantity: number | null;
   unit_cost: number | null;
   notes: string | null;
+  supplier_id: string | null;
+  /** Vencimento do lote atual — usado pro alerta de "vencendo/vencido". */
+  expiration_date: string | null;
+  photo_url: string | null;
+  /** Onde fica guardado (galpão, depósito) — texto livre. */
+  location: string | null;
   created_at: string;
 };
 
@@ -744,6 +750,10 @@ export type LavouraInventoryItem = {
   min_quantity: number | null;
   unit_cost: number | null;
   notes: string | null;
+  supplier_id: string | null;
+  expiration_date: string | null;
+  photo_url: string | null;
+  location: string | null;
   created_at: string;
 };
 

@@ -1,6 +1,6 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Card } from '../../../../../../../src/components/Card';
@@ -13,6 +13,8 @@ import {
   useLavouraInventoryMovements,
   type LavouraInventoryStockStatus,
 } from '../../../../../../../src/hooks/useLavouraInventory';
+import { useSuppliers } from '../../../../../../../src/hooks/useSuppliers';
+import { computeExpirationStatus, EXPIRATION_STATUS_LABELS } from '../../../../../../../src/lib/inventoryExpiration';
 import { radius, spacing, typography, useColors, type Colors } from '../../../../../../../src/theme';
 
 const STATUS_COLOR_KEY: Record<LavouraInventoryStockStatus, 'success' | 'warning' | 'danger' | 'textMuted'> = {
@@ -28,6 +30,7 @@ export default function LavouraInventoryItemDetailScreen() {
   const { farmId, itemId } = useLocalSearchParams<{ farmId: string; itemId: string }>();
   const { item, isLoading, reload: reloadItem } = useLavouraInventoryItem(itemId);
   const { movements, reload: reloadMovements } = useLavouraInventoryMovements(itemId);
+  const { suppliers } = useSuppliers(farmId);
 
   useFocusEffect(
     useCallback(() => {
@@ -45,12 +48,32 @@ export default function LavouraInventoryItemDetailScreen() {
   }
 
   const statusColor = colors[STATUS_COLOR_KEY[item.stockStatus]];
+  const expirationStatus = computeExpirationStatus(item.expiration_date);
+  const supplierName = suppliers.find((s) => s.id === item.supplier_id)?.name ?? null;
+  const metaParts = [item.location, supplierName ? `Fornecedor: ${supplierName}` : null].filter(Boolean) as string[];
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScreenHeader title={item.name} subtitle={LAVOURA_INVENTORY_CATEGORY_LABELS[item.category]} />
 
       <ScrollView contentContainerStyle={styles.content}>
+        {item.photo_url ? <Image source={{ uri: item.photo_url }} style={styles.photo} /> : null}
+
+        {expirationStatus === 'vencido' || expirationStatus === 'vencendo' ? (
+          <View
+            style={[
+              styles.expirationBanner,
+              { backgroundColor: (expirationStatus === 'vencido' ? colors.danger : colors.warning) + '22' },
+            ]}
+          >
+            <Text style={{ color: expirationStatus === 'vencido' ? colors.danger : colors.warning, ...typography.captionMedium }}>
+              {EXPIRATION_STATUS_LABELS[expirationStatus]} — validade em {formatDate(item.expiration_date as string)}
+            </Text>
+          </View>
+        ) : null}
+
+        {metaParts.length > 0 ? <Text style={styles.metaLine}>{metaParts.join(' · ')}</Text> : null}
+
         <View style={[styles.statusBadge, { backgroundColor: statusColor + '22', borderColor: statusColor }]}>
           <Text style={[styles.statusText, { color: statusColor }]}>
             {item.currentQuantity.toLocaleString('pt-BR')} {LAVOURA_INVENTORY_UNIT_LABELS[item.unit]}
@@ -157,6 +180,20 @@ function createStyles(colors: Colors) {
       paddingHorizontal: spacing.xl,
       paddingBottom: spacing.xxxl,
       gap: spacing.xxl,
+    },
+    photo: {
+      width: '100%',
+      height: 180,
+      borderRadius: radius.lg,
+      backgroundColor: colors.surfaceAlt,
+    },
+    expirationBanner: {
+      borderRadius: radius.md,
+      padding: spacing.md,
+    },
+    metaLine: {
+      ...typography.caption,
+      color: colors.textMuted,
     },
     statusBadge: {
       borderWidth: 1,
