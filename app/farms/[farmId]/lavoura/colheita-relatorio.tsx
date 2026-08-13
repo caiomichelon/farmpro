@@ -26,6 +26,10 @@ function kg(value: number): string {
   return `${Math.round(value).toString()} kg`;
 }
 
+function pct(value: number | null): string {
+  return value !== null ? `${value.toFixed(1)}%` : '—';
+}
+
 function formatDate(isoDate: string): string {
   const [year, month, day] = isoDate.split('-');
   return `${day}/${month}/${year}`;
@@ -54,6 +58,10 @@ export default function HarvestLogisticsReportScreen() {
     { key: 'sacas', label: 'Sacas', width: 100, render: (r) => r.totalSacas.toFixed(1) },
     { key: 'net', label: 'Peso líquido', width: 130, render: (r) => kg(r.totalNetKg) },
     { key: 'gross', label: 'Peso bruto', width: 130, render: (r) => kg(r.totalGrossKg) },
+    { key: 'rawKg', label: 'Peso antes do desconto', width: 170, render: (r) => (r.totalRawKg > 0 ? kg(r.totalRawKg) : '—') },
+    { key: 'qualityLoss', label: 'Perdido em impureza/umidade', width: 190, render: (r) => (r.totalRawKg > 0 ? kg(r.totalQualityLossKg) : '—') },
+    { key: 'lossPct', label: '% perdido', width: 100, render: (r) => pct(r.lossPercentage) },
+    { key: 'humidity', label: 'Umidade média', width: 130, render: (r) => pct(r.avgHumidityPct) },
     { key: 'drivers', label: 'Motorista(s)', width: 200, render: (r) => (r.drivers.length > 0 ? r.drivers.join(', ') : '—') },
   ];
 
@@ -73,6 +81,7 @@ export default function HarvestLogisticsReportScreen() {
       width: 180,
       render: (r) => (r.qualityLossKg !== null ? kg(r.qualityLossKg) : '—'),
     },
+    { key: 'lossPct', label: '% perdido', width: 100, render: (r) => pct(r.qualityLossPct) },
   ];
 
   const buyerNoteColumns: DataTableColumn<BuyerNoteReportRow>[] = [
@@ -80,6 +89,10 @@ export default function HarvestLogisticsReportScreen() {
     { key: 'trips', label: 'Viagens', width: 90, render: (r) => String(r.trips) },
     { key: 'sacas', label: 'Sacas', width: 100, render: (r) => r.totalSacas.toFixed(1) },
     { key: 'net', label: 'Peso líquido', width: 130, render: (r) => kg(r.totalNetKg) },
+    { key: 'rawKg', label: 'Peso antes do desconto', width: 170, render: (r) => (r.totalRawKg > 0 ? kg(r.totalRawKg) : '—') },
+    { key: 'qualityLoss', label: 'Impureza/umidade descontada', width: 190, render: (r) => (r.totalRawKg > 0 ? kg(r.totalQualityLossKg) : '—') },
+    { key: 'lossPct', label: '% descontado', width: 110, render: (r) => pct(r.lossPercentage) },
+    { key: 'humidity', label: 'Umidade média', width: 130, render: (r) => pct(r.avgHumidityPct) },
   ];
 
   const driverColumns: DataTableColumn<DriverReportRow>[] = [
@@ -167,8 +180,9 @@ export default function HarvestLogisticsReportScreen() {
               <Text style={styles.footnote}>
                 Junta tudo que já foi lançado em Colheita e Vendas — de qualquer safra ou solto direto na fazenda —
                 sem inventar nenhum valor novo. "Sacas" aqui é sempre a quantidade lançada na nota de cada caminhão.
-                "Perda por umidade/impureza" é a diferença entre o peso antes do desconto e o peso líquido usado pra
-                fixação — só aparece quando a planilha ou o lançamento trouxe os dois pesos.
+                O que foi "perdido em impureza/umidade" é a diferença entre o peso antes do desconto e o peso líquido
+                usado pra fixação, e o "% perdido"/"% descontado" é essa diferença dividida pelo peso antes do
+                desconto — tudo isso só aparece quando a nota trouxe os dois pesos (antes e depois do desconto).
               </Text>
             </Card>
           </FadeSlideIn>

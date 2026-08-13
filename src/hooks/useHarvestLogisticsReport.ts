@@ -2,7 +2,25 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { supabase } from '../lib/supabase';
 
-export interface PlateReportRow {
+/** Campos de desconto por umidade/impureza compartilhados entre as
+ * agregações (por placa e por comprador informado na nota) — quanto peso
+ * bruto virou peso líquido depois do desconto que o comprador aplicou. */
+export interface QualityDiscountTotals {
+  /** Soma do peso ANTES do desconto — só conta viagens que trouxeram esse
+   * peso separado (senão não dá pra saber quanto foi descontado). */
+  totalRawKg: number;
+  /** Soma do que foi descontado (peso antes − peso líquido) nas viagens em
+   * que dá pra calcular. */
+  totalQualityLossKg: number;
+  /** totalQualityLossKg / totalRawKg × 100 — null quando não há peso bruto
+   * registrado em nenhuma viagem do grupo. */
+  lossPercentage: number | null;
+  /** Média da umidade (%) informada nas viagens do grupo — null quando
+   * nenhuma viagem trouxe umidade. */
+  avgHumidityPct: number | null;
+}
+
+export interface PlateReportRow extends QualityDiscountTotals {
   plate: string;
   trips: number;
   totalGrossKg: number;
@@ -29,7 +47,7 @@ export interface BuyerReportRow {
 /** Comprador informado direto na nota de caminhão (buyer_name), antes de
  * qualquer venda com preço ser registrada — é o que já vem pronto de uma
  * planilha com coluna "Comprador", sem precisar cadastrar venda nenhuma. */
-export interface BuyerNoteReportRow {
+export interface BuyerNoteReportRow extends QualityDiscountTotals {
   buyer: string;
   trips: number;
   totalSacas: number;
@@ -54,6 +72,8 @@ export interface TripReportRow {
   /** Quanto foi descontado (rawNetKg - netKg) — null quando não dá pra
    * calcular (falta o peso antes do desconto). */
   qualityLossKg: number | null;
+  /** qualityLossKg / rawNetKg × 100 — null quando qualityLossKg é null. */
+  qualityLossPct: number | null;
 }
 
 interface RawEntryRow {
@@ -127,9 +147,45 @@ export function useHarvestLogisticsReport(farmId: string | undefined) {
         ...((salesDirect.data ?? []) as unknown as RawSaleRow[]),
       ];
 
-      const plateMap = new Map<string, { trips: number; grossKg: number; netKg: number; sacas: number; drivers: Set<string> }>();
+      // Acumulador de desconto por umidade/impureza (peso bruto, quanto foi
+      // descontado e a umidade informada) — usado tanto na agregação por
+      // placa quanto por comprador informado na nota, então fica numa
+      // função só pra não duplicar a lógica.
+      interface QualityAcc {
+        rawKg: number;
+        qualityLossKg: number;
+        humiditySum: number;
+        humidityCount: number;
+      }
+      function newQualityAcc(): QualityAcc {
+        return { rawKg: 0, qualityLossKg: 0, humiditySum: 0, humidityCount: 0 };
+      }
+      function accumulateQuality(acc: QualityAcc, e: RawEntryRow, netKg: number) {
+        if (e.raw_net_weight_kg !== null) {
+          const rawKg = Number(e.raw_net_weight_kg);
+          acc.rawKg += rawKg;
+          if (rawKg >= netKg) acc.qualityLossKg += rawKg - netKg;
+        }
+        if (e.humidity_pct !== null) {
+          acc.humiditySum += Number(e.humidity_pct);
+          acc.humidityCount += 1;
+        }
+      }
+      function finishQuality(acc: QualityAcc): QualityDiscountTotals {
+        return {
+          totalRawKg: acc.rawKg,
+          totalQualityLossKg: acc.qualityLossKg,
+          lossPercentage: acc.rawKg > 0 ? (acc.qualityLossKg / acc.rawKg) * 100 : null,
+          avgHumidityPct: acc.humidityCount > 0 ? acc.humiditySum / acc.humidityCount : null,
+        };
+      }
+
+      const plateMap = new Map<
+        string,
+        { trips: number; grossKg: number; netKg: number; sacas: number; drivers: Set<string>; quality: QualityAcc }
+      >();
       const driverMap = new Map<string, { trips: number; sacas: number; netKg: number }>();
-      const buyerNoteMap = new Map<string, { trips: number; sacas: number; netKg: number }>();
+      const buyerNoteMap = new Map<string, { trips: number; sacas: number; netKg: number; quality: QualityAcc }>();
       for (const e of entries) {
         const sacas = Number(e.quantity_sacas ?? 0);
         const netKg = Number(e.net_weight_kg ?? 0);
@@ -138,12 +194,13 @@ export function useHarvestLogisticsReport(farmId: string | undefined) {
         const buyerNote = (e.buyer_name ?? '').trim();
 
         if (plate) {
-          const acc = plateMap.get(plate) ?? { trips: 0, grossKg: 0, netKg: 0, sacas: 0, drivers: new Set<string>() };
+          const acc = plateMap.get(plate) ?? { trips: 0, grossKg: 0, netKg: 0, sacas: 0, drivers: new Set<string>(), quality: newQualityAcc() };
           acc.trips += 1;
           acc.grossKg += Number(e.gross_weight_kg ?? 0);
           acc.netKg += netKg;
           acc.sacas += sacas;
           if (driver) acc.drivers.add(driver);
+          accumulateQuality(acc.quality, e, netKg);
           plateMap.set(plate, acc);
         }
 
@@ -156,10 +213,11 @@ export function useHarvestLogisticsReport(farmId: string | undefined) {
         }
 
         if (buyerNote) {
-          const acc = buyerNoteMap.get(buyerNote) ?? { trips: 0, sacas: 0, netKg: 0 };
+          const acc = buyerNoteMap.get(buyerNote) ?? { trips: 0, sacas: 0, netKg: 0, quality: newQualityAcc() };
           acc.trips += 1;
           acc.sacas += sacas;
           acc.netKg += netKg;
+          accumulateQuality(acc.quality, e, netKg);
           buyerNoteMap.set(buyerNote, acc);
         }
       }
@@ -184,6 +242,7 @@ export function useHarvestLogisticsReport(farmId: string | undefined) {
             totalNetKg: acc.netKg,
             totalSacas: acc.sacas,
             drivers: [...acc.drivers],
+            ...finishQuality(acc.quality),
           }))
           .sort((a, b) => b.totalSacas - a.totalSacas)
       );
@@ -194,7 +253,7 @@ export function useHarvestLogisticsReport(farmId: string | undefined) {
       );
       setByBuyerNote(
         [...buyerNoteMap.entries()]
-          .map(([buyer, acc]) => ({ buyer, trips: acc.trips, totalSacas: acc.sacas, totalNetKg: acc.netKg }))
+          .map(([buyer, acc]) => ({ buyer, trips: acc.trips, totalSacas: acc.sacas, totalNetKg: acc.netKg, ...finishQuality(acc.quality) }))
           .sort((a, b) => b.totalSacas - a.totalSacas)
       );
       setByBuyer(
@@ -219,6 +278,7 @@ export function useHarvestLogisticsReport(farmId: string | undefined) {
             const netKg = Number(e.net_weight_kg ?? 0);
             const rawNetKg = e.raw_net_weight_kg !== null ? Number(e.raw_net_weight_kg) : null;
             const qualityLossKg = rawNetKg !== null && rawNetKg >= netKg ? rawNetKg - netKg : null;
+            const qualityLossPct = qualityLossKg !== null && rawNetKg !== null && rawNetKg > 0 ? (qualityLossKg / rawNetKg) * 100 : null;
             return {
               id: e.id,
               plate: (e.truck_plate ?? '').trim().toUpperCase() || '—',
@@ -231,6 +291,7 @@ export function useHarvestLogisticsReport(farmId: string | undefined) {
               rawNetKg,
               humidityPct: e.humidity_pct !== null ? Number(e.humidity_pct) : null,
               qualityLossKg,
+              qualityLossPct,
             };
           })
           .sort((a, b) => (a.plate === b.plate ? a.harvestedAt.localeCompare(b.harvestedAt) : a.plate.localeCompare(b.plate)))
