@@ -36,6 +36,7 @@ export default function VoiceCommandScreen() {
   const [heard, setHeard] = useState('');
   const [reply, setReply] = useState('');
   const [isListening, setIsListening] = useState(false);
+  const [micError, setMicError] = useState<string | null>(null);
   const [boiGordoPrice, setBoiGordoPrice] = useState(0);
   const recognitionRef = useRef<any>(null);
 
@@ -77,18 +78,80 @@ export default function VoiceCommandScreen() {
     }
   }
 
-  function handleStartListening() {
+  // Mensagens específicas por código de erro do SpeechRecognition — sem
+  // isso, qualquer falha (permissão negada, sem internet, sem fala
+  // detectada) parecia "não aconteceu nada", que foi exatamente o problema
+  // relatado: a mãe falava e o app ficava mudo, sem dizer por quê.
+  function micErrorMessage(code: string): string {
+    switch (code) {
+      case 'not-allowed':
+      case 'service-not-allowed':
+        return 'O Safari não deixou usar o microfone. Toque no "aA" ou no ícone ao lado do endereço do site e libere o microfone pra essa página, depois tenta de novo.';
+      case 'no-speech':
+        return 'Não consegui ouvir nada. Chega mais perto do microfone e fala logo depois de apertar o botão.';
+      case 'audio-capture':
+        return 'Não encontrei um microfone disponível nesse aparelho.';
+      case 'network':
+        return 'Sem internet suficiente pra reconhecer a fala agora. Tenta de novo ou digite o comando.';
+      case 'language-not-supported':
+        return 'Esse aparelho não tem o reconhecimento de voz em português instalado. Digite o comando por enquanto.';
+      default:
+        return 'Não consegui entender. Tenta de novo, ou digite o comando aí embaixo.';
+    }
+  }
+
+  async function handleStartListening() {
     if (!SpeechRecognitionClass) return;
+    setMicError(null);
+    setHeard('');
+    setReply('');
+
+    // Pede a permissão de microfone explicitamente antes de iniciar — em
+    // vez de deixar só o SpeechRecognition tentar (que em alguns
+    // navegadores falha calado se a permissão nunca foi concedida). Assim
+    // também sabemos com certeza se o problema é permissão.
+    if (navigator.mediaDevices?.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach((track) => track.stop());
+      } catch {
+        setMicError(micErrorMessage('not-allowed'));
+        return;
+      }
+    }
+
     const recognition = new SpeechRecognitionClass();
     recognitionRef.current = recognition;
     recognition.lang = 'pt-BR';
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
+
+    // Trava de segurança: se nada acontecer (nem resultado, nem erro) em
+    // 12s, o navegador ficou "pendurado" — solta o usuário do estado de
+    // "ouvindo" em vez de deixar o microfone ligado pra sempre.
+    const timeout = setTimeout(() => {
+      recognition.stop?.();
+      setIsListening(false);
+      setMicError(micErrorMessage('no-speech'));
+    }, 12000);
+
     recognition.onstart = () => setIsListening(true);
-    recognition.onend = () => setIsListening(false);
-    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => {
+      clearTimeout(timeout);
+      setIsListening(false);
+    };
+    recognition.onerror = (event: any) => {
+      clearTimeout(timeout);
+      setIsListening(false);
+      setMicError(micErrorMessage(event?.error ?? ''));
+    };
     recognition.onresult = (event: any) => {
-      const transcript = event.results?.[0]?.[0]?.transcript ?? '';
+      clearTimeout(timeout);
+      const transcript = (event.results?.[0]?.[0]?.transcript ?? '').trim();
+      if (!transcript) {
+        setMicError(micErrorMessage('no-speech'));
+        return;
+      }
       handleCommand(transcript);
     };
     recognition.start();
@@ -114,6 +177,12 @@ export default function VoiceCommandScreen() {
             </Pressable>
             <Text style={styles.micHint}>{isListening ? 'Ouvindo... fala aí' : 'Toque e fale seu comando'}</Text>
           </View>
+        ) : null}
+
+        {micError ? (
+          <Card style={styles.errorCard}>
+            <Text style={styles.errorCardText}>{micError}</Text>
+          </Card>
         ) : null}
 
         <Card style={styles.card}>
@@ -197,6 +266,15 @@ function createStyles(colors: Colors) {
       gap: spacing.xs,
       borderColor: colors.successLight,
       backgroundColor: colors.successLight,
+    },
+    errorCard: {
+      gap: spacing.xs,
+      borderColor: colors.dangerLight,
+      backgroundColor: colors.dangerLight,
+    },
+    errorCardText: {
+      ...typography.body,
+      color: colors.danger,
     },
     cardTitle: {
       ...typography.subheading,
