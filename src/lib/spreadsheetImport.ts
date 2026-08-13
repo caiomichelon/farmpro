@@ -64,8 +64,15 @@ export async function pickAndParseSpreadsheet(): Promise<ParsedSheet | null> {
   // interpretados como Latin-1 ("Função" virava "FunÃ§Ã£o"). cellDates:true
   // faz células de data virarem Date de verdade — sem isso, datas de um
   // .xlsx de verdade (guardadas como número serial internamente) vazavam
-  // cru tipo "46026" em vez de uma data legível.
-  const workbook = XLSX.read(base64, { type: 'base64', codepage: 65001, cellDates: true });
+  // cru tipo "46026" em vez de uma data legível. raw:true é essencial pra
+  // CSV: sem ele, o parser de CSV tenta "adivinhar" o tipo de cada célula e
+  // interpreta uma data em texto tipo "05/08/2026" como formato americano
+  // (MM/DD), virando silenciosamente 8 de maio em vez de 5 de agosto — sem
+  // erro nenhum, o dia e o mês só trocavam de lugar. Com raw:true a célula
+  // continua como texto puro e quem decide o formato é o DATE_DMY aqui
+  // embaixo; datas nativas de um .xlsx de verdade (serial number, sem
+  // ambiguidade) continuam vindo como Date normalmente.
+  const workbook = XLSX.read(base64, { type: 'base64', codepage: 65001, cellDates: true, raw: true });
   const firstSheetName = workbook.SheetNames[0];
   if (!firstSheetName) return { fileName: asset.name, headers: [], rows: [] };
 
