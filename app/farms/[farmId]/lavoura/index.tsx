@@ -106,6 +106,10 @@ export default function LavouraHomeScreen() {
                     <Text style={styles.link}>{t('lavouraHome.linkSeasonSheet')}</Text>
                   </Pressable>
                   <Text style={styles.linkDivider}>·</Text>
+                  <Pressable onPress={() => router.push(`/farms/${farmId}/lavoura/benchmarking`)} hitSlop={8}>
+                    <Text style={styles.link}>{t('lavouraHome.linkBenchmarking')}</Text>
+                  </Pressable>
+                  <Text style={styles.linkDivider}>·</Text>
                   <Pressable onPress={() => router.push(`/farms/${farmId}/lavoura/estoque`)} hitSlop={8}>
                     <Text style={styles.link}>{t('lavouraHome.linkStock')}</Text>
                   </Pressable>

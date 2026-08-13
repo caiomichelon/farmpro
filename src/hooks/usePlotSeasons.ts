@@ -7,6 +7,12 @@ export interface SeasonSummary extends PlotSeason {
   totalHarvestedSacas: number;
   totalCost: number;
   yieldPerHectare: number | null;
+  /** Receita de vendas já lançadas amarradas a essa safra (0 se ainda não
+   * vendeu nada) — usada pro comparador de custo entre talhões. */
+  totalRevenue: number;
+  /** Custo por hectare plantado — null sem área plantada informada. */
+  costPerHectare: number | null;
+  margin: number;
 }
 
 async function withSummary(seasons: PlotSeason[]): Promise<SeasonSummary[]> {
@@ -14,13 +20,19 @@ async function withSummary(seasons: PlotSeason[]): Promise<SeasonSummary[]> {
 
   const seasonIds = seasons.map((s) => s.id);
 
-  const [{ data: harvests, error: harvestsError }, { data: costs, error: costsError }] = await Promise.all([
+  const [
+    { data: harvests, error: harvestsError },
+    { data: costs, error: costsError },
+    { data: sales, error: salesError },
+  ] = await Promise.all([
     supabase.from('harvest_entries').select('plot_season_id, quantity_sacas').in('plot_season_id', seasonIds),
     supabase.from('production_costs').select('plot_season_id, total_cost').in('plot_season_id', seasonIds),
+    supabase.from('grain_sales').select('plot_season_id, quantity_sacas, price_per_saca').in('plot_season_id', seasonIds),
   ]);
 
   if (harvestsError) throw harvestsError;
   if (costsError) throw costsError;
+  if (salesError) throw salesError;
 
   return seasons.map((season) => {
     const totalHarvestedSacas = (harvests ?? [])
@@ -31,11 +43,18 @@ async function withSummary(seasons: PlotSeason[]): Promise<SeasonSummary[]> {
       .filter((c) => c.plot_season_id === season.id)
       .reduce((sum, c) => sum + Number(c.total_cost), 0);
 
+    const totalRevenue = (sales ?? [])
+      .filter((s) => s.plot_season_id === season.id)
+      .reduce((sum, s) => sum + Number(s.quantity_sacas) * Number(s.price_per_saca), 0);
+
     return {
       ...season,
       totalHarvestedSacas,
       totalCost,
+      totalRevenue,
+      margin: totalRevenue - totalCost,
       yieldPerHectare: season.planted_area_hectares > 0 ? totalHarvestedSacas / season.planted_area_hectares : null,
+      costPerHectare: season.planted_area_hectares > 0 ? totalCost / season.planted_area_hectares : null,
     };
   });
 }
