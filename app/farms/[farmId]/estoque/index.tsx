@@ -85,6 +85,19 @@ export default function FarmInventoryDashboardScreen() {
     return list;
   }, [items, search, sectorFilter, sortMode]);
 
+  // Estoque de Lavoura e de Pecuária são coisas diferentes — cada setor tem
+  // suas próprias categorias, fornecedores e rotina. Quando o filtro está em
+  // "Todos", mostra os dois em seções separadas (cada um na sua área) em vez
+  // de misturar tudo numa lista só; com um setor específico selecionado, a
+  // lista já é só daquele setor.
+  const sections = useMemo(() => {
+    if (sectorFilter !== 'todos') return null;
+    return [
+      { sector: 'lavoura' as const, label: 'Lavoura', icon: '🌾', color: colors.lavoura, backgroundColor: colors.lavouraLight, data: filtered.filter((i) => i.sector === 'lavoura') },
+      { sector: 'pecuaria' as const, label: 'Pecuária', icon: '🐄', color: colors.pecuaria, backgroundColor: colors.pecuariaLight, data: filtered.filter((i) => i.sector === 'pecuaria') },
+    ];
+  }, [filtered, sectorFilter, colors]);
+
   function openItem(item: FarmInventoryItem) {
     router.push(`/farms/${farmId}/${item.sector}/estoque/item/${item.id}`);
   }
@@ -157,6 +170,26 @@ export default function FarmInventoryDashboardScreen() {
                     : 'Nenhum item encontrado com esse filtro.'
                 }
               />
+            ) : sections ? (
+              sections.map((s) =>
+                s.data.length > 0 ? (
+                  <View key={s.sector} style={[styles.sectorArea, { backgroundColor: s.backgroundColor }]}>
+                    <View style={styles.sectorAreaHeader}>
+                      <Text style={[styles.sectorAreaTitle, { color: s.color }]}>
+                        {s.icon} {s.label}
+                      </Text>
+                      <Text style={styles.sectorAreaCount}>
+                        {s.data.length} {s.data.length === 1 ? 'item' : 'itens'}
+                      </Text>
+                    </View>
+                    {s.data.map((item, index) => (
+                      <FadeSlideIn key={item.id} delay={Math.min(index, 8) * 40}>
+                        <ItemCard item={item} styles={styles} colors={colors} onPress={() => openItem(item)} />
+                      </FadeSlideIn>
+                    ))}
+                  </View>
+                ) : null
+              )
             ) : (
               filtered.map((item, index) => (
                 <FadeSlideIn key={item.id} delay={Math.min(index, 8) * 40}>
@@ -323,7 +356,24 @@ function createStyles(colors: Colors) {
       borderColor: colors.estoque,
     },
     section: {
+      gap: spacing.lg,
+    },
+    sectorArea: {
+      borderRadius: radius.lg,
+      padding: spacing.md,
       gap: spacing.sm,
+    },
+    sectorAreaHeader: {
+      flexDirection: 'row',
+      alignItems: 'baseline',
+      justifyContent: 'space-between',
+    },
+    sectorAreaTitle: {
+      ...typography.subheading,
+    },
+    sectorAreaCount: {
+      ...typography.caption,
+      color: colors.textMuted,
     },
     card: {
       gap: spacing.sm,
