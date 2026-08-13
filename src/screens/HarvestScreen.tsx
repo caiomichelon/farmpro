@@ -194,6 +194,8 @@ interface HarvestFormValues {
   buyer_name?: string;
   gross_weight_kg?: number;
   net_weight_kg?: number;
+  raw_net_weight_kg?: number;
+  humidity_pct?: number;
   kg_per_saca?: number;
   photo_url?: string;
 }
@@ -221,6 +223,8 @@ function NewHarvestForm({
   const [driverName, setDriverName] = useState('');
   const [grossWeight, setGrossWeight] = useState('');
   const [netWeight, setNetWeight] = useState('');
+  const [rawWeight, setRawWeight] = useState('');
+  const [humidity, setHumidity] = useState('');
   const [kgPerSaca, setKgPerSaca] = useState(String(DEFAULT_KG_PER_SACA));
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [quantity, setQuantity] = useState('');
@@ -252,6 +256,8 @@ function NewHarvestForm({
     setDriverName('');
     setGrossWeight('');
     setNetWeight('');
+    setRawWeight('');
+    setHumidity('');
     setKgPerSaca(String(DEFAULT_KG_PER_SACA));
     setPhotoUrl(null);
     setQuantity('');
@@ -286,6 +292,8 @@ function NewHarvestForm({
     setIsSubmitting(true);
     setError(null);
     const grossWeightNum = Number(grossWeight.replace(',', '.'));
+    const rawWeightNum = Number(rawWeight.replace(',', '.'));
+    const humidityNum = Number(humidity.replace(',', '.'));
     // O comprador escolhido aqui em cima serve pra venda (se um preço for
     // preenchido) E pra nota em si — assim o "Por comprador (informado na
     // nota)" do relatório de logística tem o que mostrar mesmo quando o
@@ -299,6 +307,8 @@ function NewHarvestForm({
       buyer_name: buyerName || undefined,
       gross_weight_kg: grossWeightNum > 0 ? grossWeightNum : undefined,
       net_weight_kg: netWeightNum > 0 ? netWeightNum : undefined,
+      raw_net_weight_kg: rawWeightNum > 0 ? rawWeightNum : undefined,
+      humidity_pct: humidityNum > 0 ? humidityNum : undefined,
       kg_per_saca: netWeightNum > 0 ? kgPerSacaNum : undefined,
       photo_url: photoUrl ?? undefined,
     });
@@ -345,6 +355,21 @@ function NewHarvestForm({
         <TextField label={t('harvest.driverLabel')} value={driverName} onChangeText={setDriverName} placeholder={t('harvest.driverPlaceholder')} />
         <TextField label={t('harvest.grossWeightLabel')} value={grossWeight} onChangeText={setGrossWeight} keyboardType="decimal-pad" placeholder={t('harvest.grossWeightPlaceholder')} />
         <TextField label={t('harvest.netWeightLabel')} value={netWeight} onChangeText={setNetWeight} keyboardType="decimal-pad" placeholder={t('harvest.netWeightPlaceholder')} />
+        <View style={styles.weightRow}>
+          <View style={{ flex: 1 }}>
+            <TextField
+              label={t('harvest.rawWeightLabel')}
+              value={rawWeight}
+              onChangeText={setRawWeight}
+              keyboardType="decimal-pad"
+              placeholder={t('harvest.rawWeightPlaceholder')}
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <TextField label={t('harvest.humidityLabel')} value={humidity} onChangeText={setHumidity} keyboardType="decimal-pad" placeholder={t('harvest.humidityPlaceholder')} />
+          </View>
+        </View>
+        {rawWeight.trim() ? <Text style={styles.truckHelp}>{t('harvest.rawWeightHelp')}</Text> : null}
         {netWeightNum > 0 ? (
           <>
             <TextField label={t('harvest.kgPerSacaLabel')} value={kgPerSaca} onChangeText={setKgPerSaca} keyboardType="decimal-pad" />
@@ -551,6 +576,10 @@ function createStyles(colors: Colors) {
       ...typography.caption,
       color: colors.textMuted,
       marginTop: -spacing.sm,
+    },
+    weightRow: {
+      flexDirection: 'row',
+      gap: spacing.md,
     },
     computedRow: {
       flexDirection: 'row',
