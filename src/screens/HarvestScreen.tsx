@@ -191,6 +191,7 @@ interface HarvestFormValues {
   notes?: string;
   truck_plate?: string;
   driver_name?: string;
+  buyer_name?: string;
   gross_weight_kg?: number;
   net_weight_kg?: number;
   kg_per_saca?: number;
@@ -285,11 +286,17 @@ function NewHarvestForm({
     setIsSubmitting(true);
     setError(null);
     const grossWeightNum = Number(grossWeight.replace(',', '.'));
+    // O comprador escolhido aqui em cima serve pra venda (se um preço for
+    // preenchido) E pra nota em si — assim o "Por comprador (informado na
+    // nota)" do relatório de logística tem o que mostrar mesmo quando o
+    // usuário só lança a nota, sem preço, e vende depois.
+    const buyerName = buyerId ? buyers.find((b) => b.id === buyerId)?.name : undefined;
     const { error: entryError, id: entryId } = await createEntry({
       quantity_sacas: finalQuantity,
       notes: notes.trim() || undefined,
       truck_plate: truckPlate.trim() || undefined,
       driver_name: driverName.trim() || undefined,
+      buyer_name: buyerName || undefined,
       gross_weight_kg: grossWeightNum > 0 ? grossWeightNum : undefined,
       net_weight_kg: netWeightNum > 0 ? netWeightNum : undefined,
       kg_per_saca: netWeightNum > 0 ? kgPerSacaNum : undefined,
