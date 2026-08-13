@@ -10,6 +10,7 @@ import { FadeSlideIn } from '../../../../src/components/FadeSlideIn';
 import { ScreenHeader } from '../../../../src/components/ScreenHeader';
 import {
   useHarvestLogisticsReport,
+  type BuyerNoteReportRow,
   type BuyerReportRow,
   type DriverReportRow,
   type PlateReportRow,
@@ -39,7 +40,7 @@ export default function HarvestLogisticsReportScreen() {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
-  const { byPlate, byDriver, byBuyer, trips, isLoading, error, reload } = useHarvestLogisticsReport(farmId);
+  const { byPlate, byDriver, byBuyer, byBuyerNote, trips, isLoading, error, reload } = useHarvestLogisticsReport(farmId);
 
   useFocusEffect(
     useCallback(() => {
@@ -60,9 +61,25 @@ export default function HarvestLogisticsReportScreen() {
     { key: 'plate', label: 'Placa', width: 110, render: (r) => r.plate },
     { key: 'date', label: 'Data', width: 100, render: (r) => formatDate(r.harvestedAt) },
     { key: 'driver', label: 'Motorista', width: 180, render: (r) => r.driver },
+    { key: 'buyer', label: 'Comprador', width: 140, render: (r) => r.buyer ?? '—' },
     { key: 'sacas', label: 'Sacas', width: 100, render: (r) => r.sacas.toFixed(1) },
     { key: 'net', label: 'Peso líquido', width: 130, render: (r) => (r.netKg > 0 ? kg(r.netKg) : '—') },
     { key: 'gross', label: 'Peso bruto', width: 130, render: (r) => (r.grossKg > 0 ? kg(r.grossKg) : '—') },
+    { key: 'humidity', label: 'Umidade', width: 100, render: (r) => (r.humidityPct !== null ? `${r.humidityPct.toFixed(1)}%` : '—') },
+    { key: 'rawNet', label: 'Peso antes do desconto', width: 160, render: (r) => (r.rawNetKg !== null ? kg(r.rawNetKg) : '—') },
+    {
+      key: 'loss',
+      label: 'Perda por umidade/impureza',
+      width: 180,
+      render: (r) => (r.qualityLossKg !== null ? kg(r.qualityLossKg) : '—'),
+    },
+  ];
+
+  const buyerNoteColumns: DataTableColumn<BuyerNoteReportRow>[] = [
+    { key: 'buyer', label: 'Comprador', width: 160, render: (r) => r.buyer },
+    { key: 'trips', label: 'Viagens', width: 90, render: (r) => String(r.trips) },
+    { key: 'sacas', label: 'Sacas', width: 100, render: (r) => r.totalSacas.toFixed(1) },
+    { key: 'net', label: 'Peso líquido', width: 130, render: (r) => kg(r.totalNetKg) },
   ];
 
   const driverColumns: DataTableColumn<DriverReportRow>[] = [
@@ -80,7 +97,8 @@ export default function HarvestLogisticsReportScreen() {
     { key: 'avgPrice', label: 'Preço médio/saca', width: 150, render: (r) => currency(r.avgPricePerSaca) },
   ];
 
-  const isEmpty = byPlate.length === 0 && byDriver.length === 0 && byBuyer.length === 0 && trips.length === 0;
+  const isEmpty =
+    byPlate.length === 0 && byDriver.length === 0 && byBuyer.length === 0 && byBuyerNote.length === 0 && trips.length === 0;
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -124,11 +142,22 @@ export default function HarvestLogisticsReportScreen() {
             </FadeSlideIn>
           ) : null}
 
+          {byBuyerNote.length > 0 ? (
+            <FadeSlideIn delay={115}>
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Por comprador (informado na nota)</Text>
+                <Text style={styles.sectionHelp}>Direto da nota de caminhão — não depende de venda registrada</Text>
+                <DataTable columns={buyerNoteColumns} data={byBuyerNote} keyExtractor={(r) => r.buyer} title="Por comprador (nota)" />
+              </View>
+            </FadeSlideIn>
+          ) : null}
+
           {byBuyer.length > 0 ? (
             <FadeSlideIn delay={140}>
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Por comprador</Text>
-                <DataTable columns={buyerColumns} data={byBuyer} keyExtractor={(r) => r.buyer} title="Por comprador" />
+                <Text style={styles.sectionTitle}>Por comprador (vendas registradas)</Text>
+                <Text style={styles.sectionHelp}>Com preço — só aparece depois que a venda é lançada em "Vincular venda"</Text>
+                <DataTable columns={buyerColumns} data={byBuyer} keyExtractor={(r) => r.buyer} title="Vendas por comprador" />
               </View>
             </FadeSlideIn>
           ) : null}
@@ -138,6 +167,8 @@ export default function HarvestLogisticsReportScreen() {
               <Text style={styles.footnote}>
                 Junta tudo que já foi lançado em Colheita e Vendas — de qualquer safra ou solto direto na fazenda —
                 sem inventar nenhum valor novo. "Sacas" aqui é sempre a quantidade lançada na nota de cada caminhão.
+                "Perda por umidade/impureza" é a diferença entre o peso antes do desconto e o peso líquido usado pra
+                fixação — só aparece quando a planilha ou o lançamento trouxe os dois pesos.
               </Text>
             </Card>
           </FadeSlideIn>

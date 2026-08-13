@@ -11,6 +11,7 @@ import { colors } from '../theme';
 const FIELDS: ImportField[] = [
   { key: 'truck_plate', label: 'Placa do caminhão', kind: 'text', aliases: ['placa'] },
   { key: 'driver_name', label: 'Motorista', kind: 'text', aliases: ['motorista', 'chofer'] },
+  { key: 'buyer_name', label: 'Comprador', kind: 'text', aliases: ['comprador', 'empresa', 'cliente'] },
   {
     key: 'quantity_sacas',
     label: 'Sacas colhidas (60kg)',
@@ -18,7 +19,19 @@ const FIELDS: ImportField[] = [
     aliases: ['sacas', 'sacas 60kg', 'sc 60kg', 'qtd sacas', 'quantidade de sacas'],
   },
   { key: 'gross_weight_kg', label: 'Peso bruto (kg)', kind: 'number', aliases: ['peso bruto', 'bruto'] },
-  { key: 'net_weight_kg', label: 'Peso líquido (kg)', kind: 'number', aliases: ['peso liquido', 'liquido', 'so grao'] },
+  {
+    key: 'raw_net_weight_kg',
+    label: 'Peso (kg) — antes do desconto',
+    kind: 'number',
+    aliases: ['peso (kg)', 'peso sem desconto', 'peso antes do desconto'],
+  },
+  {
+    key: 'net_weight_kg',
+    label: 'Peso líquido p/ fixação (kg)',
+    kind: 'number',
+    aliases: ['peso liquido', 'liquido', 'so grao', 'peso liquido p fixacao'],
+  },
+  { key: 'humidity_pct', label: 'Umidade (%)', kind: 'number', aliases: ['umidade', 'humidade'] },
   { key: 'kg_per_saca', label: 'Kg por saca', kind: 'number', aliases: ['kg/saca', 'kg por sc'] },
   { key: 'harvested_at', label: 'Data', kind: 'date', aliases: ['data da colheita'] },
   { key: 'notes', label: 'Observação', kind: 'text', aliases: ['obs', 'observacao'] },
@@ -54,11 +67,16 @@ function normalizeHarvestWeights(row: Record<string, unknown>): Record<string, u
   const impliedKgPerSaca = net / sacas;
   if (impliedKgPerSaca >= 5) return row;
 
+  // Mesma planilha, mesmo erro de unidade — o peso bruto e o peso antes do
+  // desconto (raw_net_weight_kg) vêm da mesma balança, então corrige os
+  // três juntos.
   const gross = Number(row.gross_weight_kg);
+  const rawNet = Number(row.raw_net_weight_kg);
   return {
     ...row,
     net_weight_kg: net * 1000,
     ...(gross > 0 ? { gross_weight_kg: gross * 1000 } : {}),
+    ...(rawNet > 0 ? { raw_net_weight_kg: rawNet * 1000 } : {}),
   };
 }
 

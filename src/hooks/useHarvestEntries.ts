@@ -48,8 +48,11 @@ export function useHarvestEntries({ seasonId, farmId }: HarvestTarget) {
       notes?: string;
       truck_plate?: string;
       driver_name?: string;
+      buyer_name?: string;
       gross_weight_kg?: number;
+      raw_net_weight_kg?: number;
       net_weight_kg?: number;
+      humidity_pct?: number;
       kg_per_saca?: number;
       photo_url?: string;
     }) => {
@@ -65,8 +68,11 @@ export function useHarvestEntries({ seasonId, farmId }: HarvestTarget) {
           notes: input.notes || null,
           truck_plate: input.truck_plate || null,
           driver_name: input.driver_name || null,
+          buyer_name: input.buyer_name || null,
           gross_weight_kg: input.gross_weight_kg ?? null,
+          raw_net_weight_kg: input.raw_net_weight_kg ?? null,
           net_weight_kg: input.net_weight_kg ?? null,
+          humidity_pct: input.humidity_pct ?? null,
           kg_per_saca: input.kg_per_saca ?? null,
           photo_url: input.photo_url || null,
         })

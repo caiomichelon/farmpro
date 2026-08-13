@@ -219,6 +219,17 @@ export type HarvestEntry = {
   kg_per_saca: number | null;
   /** Foto da nota de pesagem física — opcional. */
   photo_url: string | null;
+  /** Comprador informado na nota de pesagem (texto livre) — não exige
+   * cadastro em grain_buyers como a venda com preço exige. Só pra saber
+   * pra quem essa carga foi, mesmo antes de registrar a venda de verdade. */
+  buyer_name: string | null;
+  /** Peso líquido antes do desconto de umidade/impureza da empresa — em
+   * contraste com net_weight_kg, que já é o peso líquido pós-desconto
+   * ("Peso Líquido p/ Fixação" na planilha de balança). A diferença entre
+   * os dois é quanto foi descontado na carga. */
+  raw_net_weight_kg: number | null;
+  /** Umidade (%) informada na nota de pesagem — opcional. */
+  humidity_pct: number | null;
   created_at: string;
 };
 
