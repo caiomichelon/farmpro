@@ -5,7 +5,7 @@ import { ImportWizard, type ImportComputedField } from '../components/ImportWiza
 import { ScreenHeader } from '../components/ScreenHeader';
 import { useT } from '../i18n';
 import { DEFAULT_KG_PER_SACA, calcSacasFromWeight } from '../lib/harvestWeight';
-import type { ImportField } from '../lib/spreadsheetImport';
+import { normalize, type ImportField } from '../lib/spreadsheetImport';
 import { colors } from '../theme';
 
 const FIELDS: ImportField[] = [
@@ -80,6 +80,25 @@ function normalizeHarvestWeights(row: Record<string, unknown>): Record<string, u
   };
 }
 
+/** Assinatura pra reconhecer que duas notas são "a mesma viagem" — mesma
+ * data, placa, motorista e quantidade de sacas. Cobre o caso de mandar uma
+ * planilha atualizada que ainda inclui as notas antigas já lançadas antes
+ * (manualmente ou numa importação anterior): a nota antiga é reconhecida e
+ * pulada, só o que é realmente novo entra. Sem placa/motorista não dá pra
+ * comparar direito (várias notas soltas do mesmo dia ficariam indistintas),
+ * então a checagem exige pelo menos a placa — retorna null quando falta.
+ * Não usa peso/umidade/comprador na assinatura de propósito: se alguém
+ * corrigir esses campos numa nota já lançada e reenviar, ainda quer que
+ * seja reconhecida como a mesma nota, não duplicada. */
+function harvestDedupeKey(row: Record<string, unknown>): string | null {
+  const date = String(row.harvested_at ?? '').trim();
+  const plate = normalize(String(row.truck_plate ?? ''));
+  const sacas = Number(row.quantity_sacas);
+  if (!date || !plate || !Number.isFinite(sacas) || sacas <= 0) return null;
+  const driver = normalize(String(row.driver_name ?? ''));
+  return `${date}|${plate}|${driver}|${sacas.toFixed(2)}`;
+}
+
 /** Importar várias notas de colheita de uma planilha — amarradas a uma
  * safra (seasonId) ou soltas direto na fazenda (sem seasonId). */
 export function ImportHarvestScreen({ farmId, seasonId }: { farmId: string; seasonId?: string }) {
@@ -94,6 +113,7 @@ export function ImportHarvestScreen({ farmId, seasonId }: { farmId: string; seas
         fields={FIELDS}
         computedFields={COMPUTED_FIELDS}
         normalizeRow={normalizeHarvestWeights}
+        dedupeKey={harvestDedupeKey}
         accentColor={colors.lavoura}
         fixedValues={seasonId ? { plot_season_id: seasonId } : { farm_id: farmId }}
         onDone={() => router.replace(`${basePath}/colheita`)}

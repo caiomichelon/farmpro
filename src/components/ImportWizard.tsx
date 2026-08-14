@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { supabase } from '../lib/supabase';
 import {
   bulkInsert,
   convertCellValue,
@@ -44,6 +45,14 @@ interface ImportWizardProps {
    * planilha, usando outro campo já confiável como referência. Roda por
    * último, só em linhas sem nenhum problema até ali. */
   normalizeRow?: (row: Record<string, unknown>) => Record<string, unknown>;
+  /** Assinatura de duplicata (ex.: data+placa+motorista+sacas) — comparada
+   * contra os registros que já existem em `table` (mesmo filtro de
+   * fixedValues) e contra as outras linhas da própria planilha, pra não
+   * lançar de novo algo que já foi importado ou digitado antes. Retorna
+   * `null` quando a linha não tem campo suficiente pra montar uma
+   * assinatura confiável (nesse caso não é checada). Precisa ser uma
+   * referência estável — declare fora do componente, como computedFields. */
+  dedupeKey?: (row: Record<string, unknown>) => string | null;
   onDone: () => void;
 }
 
@@ -58,6 +67,7 @@ export function ImportWizard({
   fixedValues,
   computedFields,
   normalizeRow,
+  dedupeKey,
   onDone,
 }: ImportWizardProps) {
   const colors = useColors();
@@ -68,6 +78,43 @@ export function ImportWizard({
   const [pickError, setPickError] = useState<string | null>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [result, setResult] = useState<ImportResult | null>(null);
+  const [duplicatesSkippedCount, setDuplicatesSkippedCount] = useState(0);
+  // Assinaturas do que já existe em `table` (mesmo farm/safra/lote de
+  // fixedValues) — carregadas em paralelo enquanto o usuário escolhe o
+  // arquivo e mapeia as colunas, pra já estarem prontas na hora da prévia.
+  // `null` = ainda carregando (bloqueia a importação até resolver, pra não
+  // arriscar duplicar por ter comparado contra uma lista incompleta).
+  const [existingSignatures, setExistingSignatures] = useState<Set<string> | null>(dedupeKey ? null : new Set());
+  const fixedValuesKey = JSON.stringify(fixedValues ?? {});
+
+  useEffect(() => {
+    if (!dedupeKey) return;
+    let cancelled = false;
+    (async () => {
+      let query = supabase.from(table as never).select('*');
+      const fv = fixedValuesKey ? (JSON.parse(fixedValuesKey) as Record<string, unknown>) : {};
+      for (const [key, value] of Object.entries(fv)) {
+        query = query.eq(key, value as never);
+      }
+      const { data, error } = await query;
+      if (cancelled) return;
+      const sigs = new Set<string>();
+      if (!error) {
+        for (const row of (data ?? []) as unknown as Record<string, unknown>[]) {
+          const sig = dedupeKey(row);
+          if (sig) sigs.add(sig);
+        }
+      }
+      setExistingSignatures(sigs);
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // dedupeKey é uma referência estável (definida fora do componente que
+    // chama o wizard, como computedFields/normalizeRow) — só table e o
+    // filtro realmente mudam.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [table, fixedValuesKey, dedupeKey]);
 
   async function handlePickFile() {
     setPickError(null);
@@ -92,13 +139,19 @@ export function ImportWizard({
 
   function buildRows(): {
     valid: Record<string, unknown>[];
+    duplicates: { row: number; message: string }[];
     rowErrors: { row: number; message: string }[];
     footerCount: number;
   } {
-    if (!sheet) return { valid: [], rowErrors: [], footerCount: 0 };
+    if (!sheet) return { valid: [], duplicates: [], rowErrors: [], footerCount: 0 };
     const valid: Record<string, unknown>[] = [];
+    const duplicates: { row: number; message: string }[] = [];
     const rowErrors: { row: number; message: string }[] = [];
     let footerCount = 0;
+    // Assinaturas já vistas NESTA planilha — pega tanto duplicata contra o
+    // que já existe no banco quanto duplicata dentro do próprio arquivo
+    // (ex.: a mesma nota colada duas vezes na planilha).
+    const seenInBatch = new Set<string>();
 
     // Colunas de data mapeadas — quando uma delas traz um rótulo tipo
     // "TOTAL" ou "MÉDIA UMIDADE" em vez de uma data de verdade, a linha é
@@ -139,19 +192,38 @@ export function ImportWizard({
 
       if (problems.length > 0) {
         rowErrors.push({ row: rowIndex + 2, message: problems.join('; ') }); // +2: linha 1 é cabeçalho
-      } else {
-        valid.push(normalizeRow ? normalizeRow(mappedRow) : mappedRow);
+        return;
       }
+
+      const finalRow = normalizeRow ? normalizeRow(mappedRow) : mappedRow;
+
+      if (dedupeKey) {
+        const sig = dedupeKey(finalRow);
+        if (sig) {
+          if (existingSignatures?.has(sig)) {
+            duplicates.push({ row: rowIndex + 2, message: 'já estava no aplicativo — não foi importada de novo' });
+            return;
+          }
+          if (seenInBatch.has(sig)) {
+            duplicates.push({ row: rowIndex + 2, message: 'repetida na própria planilha — só a primeira ocorrência conta' });
+            return;
+          }
+          seenInBatch.add(sig);
+        }
+      }
+
+      valid.push(finalRow);
     });
 
-    return { valid, rowErrors, footerCount };
+    return { valid, duplicates, rowErrors, footerCount };
   }
 
   async function handleConfirmImport() {
-    const { valid, rowErrors } = buildRows();
+    const { valid, duplicates, rowErrors } = buildRows();
     setIsImporting(true);
     const insertResult = await bulkInsert(table, valid);
     setIsImporting(false);
+    setDuplicatesSkippedCount(duplicates.length);
     setResult({
       successCount: insertResult.successCount,
       errors: [...rowErrors, ...insertResult.errors.map((e) => ({ ...e, row: e.row }))],
@@ -160,11 +232,16 @@ export function ImportWizard({
   }
 
   const requiredMissing = fields.filter((f) => f.required && mapping[f.key] === null);
+  // Enquanto existingSignatures ainda não carregou (null), não monta a
+  // prévia de verdade — evita mostrar "pronto pra importar" antes de saber
+  // o que já existe, o que deixaria passar duplicata na correria.
+  const isCheckingExisting = dedupeKey !== undefined && existingSignatures === null;
   const {
     valid: previewRows,
+    duplicates: previewDuplicates,
     rowErrors: previewErrors,
     footerCount: previewFooterCount,
-  } = sheet ? buildRows() : { valid: [], rowErrors: [], footerCount: 0 };
+  } = sheet && !isCheckingExisting ? buildRows() : { valid: [], duplicates: [], rowErrors: [], footerCount: 0 };
 
   // Um campo calculado pode ter a mesma key de um campo direto de propósito
   // (ex.: "sacas colhidas" mapeada direto da planilha, com o cálculo a
@@ -232,11 +309,20 @@ export function ImportWizard({
     );
   }
 
+  if (step === 'preview' && sheet && isCheckingExisting) {
+    return (
+      <View style={styles.stepContainer}>
+        <Text style={styles.instructionsText}>Conferindo o que já foi lançado, pra não duplicar nada…</Text>
+      </View>
+    );
+  }
+
   if (step === 'preview' && sheet) {
     return (
       <ScrollView contentContainerStyle={styles.stepContainer}>
         <Text style={styles.instructionsText}>
           {previewRows.length} de {sheet.rows.length} linha(s) prontas pra importar
+          {previewDuplicates.length > 0 ? `, ${previewDuplicates.length} já estavam no aplicativo (não serão duplicadas)` : ''}
           {previewErrors.length > 0 ? `, ${previewErrors.length} com problema (não serão importadas)` : ''}
           {previewFooterCount > 0
             ? `, ${previewFooterCount} linha(s) de rodapé (ex.: total/média) ignorada(s) automaticamente`
@@ -249,6 +335,19 @@ export function ImportWizard({
             data={previewRows.slice(0, 8).map((row, i) => ({ ...row, _previewKey: i }))}
             keyExtractor={(row) => String(row._previewKey)}
           />
+        ) : null}
+        {previewDuplicates.length > 0 ? (
+          <Card style={styles.dupesCard}>
+            <Text style={styles.instructionsTitle}>Já estavam no aplicativo (não serão duplicadas)</Text>
+            {previewDuplicates.slice(0, 10).map((d) => (
+              <Text key={d.row} style={styles.dupeLine}>
+                Linha {d.row}: {d.message}
+              </Text>
+            ))}
+            {previewDuplicates.length > 10 ? (
+              <Text style={styles.dupeLine}>… e mais {previewDuplicates.length - 10} linha(s).</Text>
+            ) : null}
+          </Card>
         ) : null}
         {previewErrors.length > 0 ? (
           <Card style={styles.errorsCard}>
@@ -285,6 +384,9 @@ export function ImportWizard({
           <Text style={styles.instructionsText}>
             {result.successCount} {result.successCount === 1 ? 'registro importado' : 'registros importados'} com
             sucesso.
+            {duplicatesSkippedCount > 0
+              ? ` ${duplicatesSkippedCount} ${duplicatesSkippedCount === 1 ? 'linha já estava' : 'linhas já estavam'} no aplicativo e não ${duplicatesSkippedCount === 1 ? 'foi duplicada' : 'foram duplicadas'}.`
+              : ''}
           </Text>
         </Card>
         {result.errors.length > 0 ? (
@@ -349,6 +451,15 @@ function createStyles(colors: Colors) {
   errorLine: {
     ...typography.caption,
     color: colors.danger,
+  },
+  dupesCard: {
+    gap: spacing.xs,
+    borderColor: colors.border,
+    backgroundColor: colors.surfaceAlt,
+  },
+  dupeLine: {
+    ...typography.caption,
+    color: colors.textSecondary,
   },
   });
 }
