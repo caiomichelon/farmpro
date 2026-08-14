@@ -250,34 +250,6 @@ export default function FarmHomeScreen() {
             </Pressable>
           </FadeSlideIn>
 
-          <FadeSlideIn delay={235}>
-            <Pressable
-              style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
-              onPress={() => router.push(`/farms/${farmId}/meta`)}
-            >
-              <View style={[styles.employeesMarker, { backgroundColor: colors.success }]} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.employeesTitle}>🐷 Cofrinho da meta</Text>
-                <Text style={styles.employeesSubtitle}>Acompanhe o resultado até bater a meta</Text>
-              </View>
-              <Text style={styles.employeesChevron}>→</Text>
-            </Pressable>
-          </FadeSlideIn>
-
-          <FadeSlideIn delay={285}>
-            <Pressable
-              style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
-              onPress={() => router.push(`/farms/${farmId}/cofre`)}
-            >
-              <View style={[styles.employeesMarker, { backgroundColor: colors.textSecondary }]} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.employeesTitle}>🔒 Cofre da fazenda</Text>
-                <Text style={styles.employeesSubtitle}>Sucessor, contato de emergência e notas importantes</Text>
-              </View>
-              <Text style={styles.employeesChevron}>→</Text>
-            </Pressable>
-          </FadeSlideIn>
-
           <FadeSlideIn delay={335}>
             <Pressable
               style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}

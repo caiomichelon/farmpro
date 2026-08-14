@@ -683,7 +683,7 @@ export const pt = {
   'farmHealth.financialComponentEmpty': 'Ainda sem nenhuma venda lançada pra avaliar — esse componente só entra na nota quando existir.',
   'farmHealth.issuesTitle': 'O que está puxando a nota pra baixo',
   'farmHealth.noIssues': 'Nenhum alerta aberto agora — parabéns!',
-  'farmHealth.methodology': 'A nota combina os alertas automáticos da fazenda (documentos, vacinas, partos, mortalidade, clima, safra no prejuízo) com o mesmo resultado financeiro consolidado usado no relatório pra banco e no cofrinho da meta. Sem nenhuma venda lançada ainda, a nota usa só os alertas.',
+  'farmHealth.methodology': 'A nota combina os alertas automáticos da fazenda (documentos, vacinas, partos, mortalidade, clima, safra no prejuízo) com o mesmo resultado financeiro consolidado usado no relatório pra banco. Sem nenhuma venda lançada ainda, a nota usa só os alertas.',
   'farmHealth.homeCardTitle': 'Saúde da fazenda',
 } as const;
 
@@ -1342,7 +1342,7 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'farmHealth.financialComponentEmpty': "No sale logged yet to evaluate — this component only counts once there is one.",
   'farmHealth.issuesTitle': "What's pulling the score down",
   'farmHealth.noIssues': 'No open alerts right now — nice!',
-  'farmHealth.methodology': "The score combines the farm's automatic alerts (documents, vaccines, calvings, mortality, weather, season at a loss) with the same consolidated financial result used in the bank report and the goal tracker. With no sale logged yet, the score uses only the alerts.",
+  'farmHealth.methodology': "The score combines the farm's automatic alerts (documents, vaccines, calvings, mortality, weather, season at a loss) with the same consolidated financial result used in the bank report. With no sale logged yet, the score uses only the alerts.",
   'farmHealth.homeCardTitle': 'Farm health',
 };
 
@@ -1999,6 +1999,6 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'farmHealth.financialComponentEmpty': 'Todavía sin ninguna venta registrada para evaluar — este componente solo entra en la nota cuando exista.',
   'farmHealth.issuesTitle': 'Qué está bajando la nota',
   'farmHealth.noIssues': '¡Ninguna alerta abierta ahora — felicidades!',
-  'farmHealth.methodology': 'La nota combina las alertas automáticas de la granja (documentos, vacunas, partos, mortalidad, clima, cosecha en pérdida) con el mismo resultado financiero consolidado usado en el informe para el banco y en la meta de ahorro. Sin ninguna venta registrada todavía, la nota usa solo las alertas.',
+  'farmHealth.methodology': 'La nota combina las alertas automáticas de la granja (documentos, vacunas, partos, mortalidad, clima, cosecha en pérdida) con el mismo resultado financiero consolidado usado en el informe para el banco. Sin ninguna venta registrada todavía, la nota usa solo las alertas.',
   'farmHealth.homeCardTitle': 'Salud de la granja',
 };
