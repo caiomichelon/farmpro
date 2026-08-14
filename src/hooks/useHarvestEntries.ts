@@ -87,8 +87,38 @@ export function useHarvestEntries({ seasonId, farmId }: HarvestTarget) {
     [seasonId, farmId, reload]
   );
 
+  /** Completa/corrige uma nota já lançada — ex.: adicionar comprador e
+   * umidade numa nota antiga que veio sem esses campos (de uma importação
+   * de planilha que não tinha essas colunas, ou de antes do app capturar
+   * isso). Só grava os campos passados; o resto da nota fica como estava. */
+  const updateEntry = useCallback(
+    async (
+      id: string,
+      input: {
+        quantity_sacas?: number;
+        harvested_at?: string;
+        notes?: string | null;
+        truck_plate?: string | null;
+        driver_name?: string | null;
+        buyer_name?: string | null;
+        gross_weight_kg?: number | null;
+        raw_net_weight_kg?: number | null;
+        net_weight_kg?: number | null;
+        humidity_pct?: number | null;
+        kg_per_saca?: number | null;
+        photo_url?: string | null;
+      }
+    ) => {
+      const { error: updateError } = await supabase.from('harvest_entries').update(input).eq('id', id);
+      if (updateError) return { error: updateError.message };
+      await reload();
+      return { error: null };
+    },
+    [reload]
+  );
+
   const totalSacas = entries.reduce((sum, e) => sum + Number(e.quantity_sacas), 0);
   const daysHarvesting = new Set(entries.map((e) => e.harvested_at)).size;
 
-  return { entries, totalSacas, daysHarvesting, isLoading, error, reload, createEntry };
+  return { entries, totalSacas, daysHarvesting, isLoading, error, reload, createEntry, updateEntry };
 }

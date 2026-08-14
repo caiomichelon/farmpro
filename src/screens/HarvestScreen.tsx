@@ -109,7 +109,7 @@ export function HarvestScreen({ farmId, seasonId }: { farmId: string; seasonId?:
                 const transportInfo = [entry.driver_name, entry.truck_plate].filter(Boolean).join(' · ');
                 const linkedSale = salesByHarvestEntry.get(entry.id);
                 return (
-                  <Card key={entry.id} style={styles.rowCard}>
+                  <Card key={entry.id} style={styles.rowCard} onPress={() => router.push(`/farms/${farmId}/lavoura/colheita-editar?entryId=${entry.id}`)}>
                     <View style={styles.rowTopRow}>
                       {entry.photo_url ? <Image source={{ uri: entry.photo_url }} style={styles.rowThumbnail} /> : null}
                       <View style={{ flex: 1, gap: 2 }}>
@@ -136,7 +136,11 @@ export function HarvestScreen({ farmId, seasonId }: { farmId: string; seasonId?:
                           </Text>
                         ) : (
                           <Pressable
-                            onPress={() =>
+                            // Card inteiro já é clicável (abre editar) — impede que
+                            // esse toque também dispare a navegação da nota, senão
+                            // "Vincular venda" abriria as duas telas ao mesmo tempo.
+                            onPress={(e) => {
+                              e.stopPropagation();
                               router.push({
                                 pathname: `${basePath}/nova-venda`,
                                 params: {
@@ -144,12 +148,13 @@ export function HarvestScreen({ farmId, seasonId }: { farmId: string; seasonId?:
                                   quantity: String(entry.quantity_sacas),
                                   truckPlate: entry.truck_plate ?? '',
                                 },
-                              })
-                            }
+                              });
+                            }}
                           >
                             <Text style={styles.linkSale}>{t('harvest.entryUnsold')} — {t('harvest.linkSale')}</Text>
                           </Pressable>
                         )}
+                        <Text style={styles.editHint}>✎ Toque pra editar (comprador, umidade, peso)</Text>
                       </View>
                     </View>
                   </Card>
@@ -543,6 +548,11 @@ function createStyles(colors: Colors) {
       color: colors.textMuted,
       marginTop: 2,
       textDecorationLine: 'underline',
+    },
+    editHint: {
+      ...typography.caption,
+      color: colors.textMuted,
+      marginTop: 4,
     },
     form: {
       gap: spacing.md,
