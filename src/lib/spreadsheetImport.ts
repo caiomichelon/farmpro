@@ -135,23 +135,39 @@ export interface ImportField {
 }
 
 /** Tenta achar, entre os cabeçalhos da planilha, o que melhor corresponde a
- * este campo — por nome igual, contido, ou por um dos aliases. */
+ * este campo — por nome igual, contido, ou por um dos aliases.
+ *
+ * Entre vários cabeçalhos que "contêm" um alias, prefere o alias mais
+ * específico (o que tem mais texto em comum com o cabeçalho), não o
+ * primeiro que aparece na planilha — importante quando dois cabeçalhos são
+ * variações um do outro (ex.: planilha de balança de caminhão com "Peso
+ * Líquido (kg)" E "Peso Líquido Fixação (kg)" — sem isso, o alias genérico
+ * "líquido" batia com os dois e sempre ganhava o primeiro da planilha,
+ * mesmo quando o campo tinha um alias bem mais específico, "peso líquido
+ * fixação", apontando pro outro). Um match exato sempre vence, não importa
+ * a ordem. Não usa "diferença de tamanho" pra medir especificidade (um
+ * alias curto contra um cabeçalho curto pode empatar por acaso com um alias
+ * longo contra um cabeçalho longo) — usa o tamanho do próprio texto em
+ * comum, que cresce direto com quanto foi realmente reconhecido. */
 export function suggestColumnMatch(field: ImportField, headers: string[]): number | null {
-  const candidates = [field.label, field.key, ...(field.aliases ?? [])].map(normalize);
+  const candidates = [field.label, field.key, ...(field.aliases ?? [])].map(normalize).filter(Boolean);
   let bestIndex: number | null = null;
-  let bestScore = 0;
+  let bestScore = -1;
   headers.forEach((header, index) => {
     const normalizedHeader = normalize(header);
     for (const candidate of candidates) {
-      if (!candidate) continue;
       if (normalizedHeader === candidate) {
         bestIndex = index;
-        bestScore = 3;
+        bestScore = Infinity; // nada bate melhor que um match exato
         return;
       }
-      if (bestScore < 2 && (normalizedHeader.includes(candidate) || candidate.includes(normalizedHeader))) {
-        bestIndex = index;
-        bestScore = 2;
+      if (bestScore === Infinity) continue; // já achou um match exato, não troca mais
+      if (normalizedHeader.includes(candidate) || candidate.includes(normalizedHeader)) {
+        const score = Math.min(normalizedHeader.length, candidate.length);
+        if (score > bestScore) {
+          bestIndex = index;
+          bestScore = score;
+        }
       }
     }
   });
@@ -203,13 +219,20 @@ export function convertCellValue(raw: string, field: ImportField): { value: unkn
   }
 
   if (kind === 'date') {
-    const dmy = trimmed.match(DATE_DMY);
+    // Planilha de balança de caminhão costuma trazer hora junto da data
+    // ("09/07/2026 14:38", "data de pesagem") — a data em si continua sem
+    // ambiguidade, só ignora a hora, que este campo não guarda. Não mexe se
+    // não tiver esse padrão de hora no final (ex.: "20-21/07/2026 12:39",
+    // onde o "dia" da nota é um intervalo — aí cai no erro abaixo mesmo, de
+    // propósito: não dá pra adivinhar qual dos dois dias é o certo.
+    const withoutTime = trimmed.replace(/\s+\d{1,2}:\d{2}(:\d{2})?\s*$/, '');
+    const dmy = withoutTime.match(DATE_DMY);
     if (dmy) {
       const [, d, m, y] = dmy;
       return { value: `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}` };
     }
-    const iso = trimmed.match(DATE_ISO);
-    if (iso) return { value: trimmed };
+    const iso = withoutTime.match(DATE_ISO);
+    if (iso) return { value: withoutTime };
     return { value: null, error: `data inválida: "${trimmed}" (use DD/MM/AAAA)` };
   }
 

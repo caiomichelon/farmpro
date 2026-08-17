@@ -153,16 +153,17 @@ export function ImportWizard({
     // (ex.: a mesma nota colada duas vezes na planilha).
     const seenInBatch = new Set<string>();
 
-    // Colunas de data mapeadas — quando uma delas traz um rótulo tipo
-    // "TOTAL" ou "MÉDIA UMIDADE" em vez de uma data de verdade, a linha é
-    // um rodapé de resumo da planilha, não um registro — ignora sem contar
-    // como "problema" (não é algo pra corrigir na planilha).
-    const dateColIndexes = fields.filter((f) => f.kind === 'date').map((f) => mapping[f.key]);
+    // Quando alguma célula da linha (em qualquer coluna, mapeada ou não)
+    // traz um rótulo tipo "TOTAL" ou "MÉDIA UMIDADE" em vez de dado de
+    // verdade, a linha é um rodapé de resumo da planilha, não um registro —
+    // ignora sem contar como "problema" (não é algo pra corrigir na
+    // planilha). Olha a linha inteira, não só as colunas mapeadas: numa
+    // planilha de balança de caminhão, por exemplo, o rótulo "TOTAL" pode
+    // vir numa coluna (tipo "Carga #") que nem tem campo correspondente no
+    // app — só o peso/sacas do rodapé, que teriam número normal.
 
     sheet.rows.forEach((rawRow, rowIndex) => {
-      const isFooterRow = dateColIndexes.some(
-        (colIndex) => colIndex !== null && colIndex !== undefined && looksLikeFooterLabel(rawRow[colIndex] ?? '')
-      );
+      const isFooterRow = rawRow.some((cell) => looksLikeFooterLabel(cell ?? ''));
       if (isFooterRow) {
         footerCount++;
         return;

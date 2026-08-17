@@ -11,7 +11,7 @@ import { colors } from '../theme';
 const FIELDS: ImportField[] = [
   { key: 'truck_plate', label: 'Placa do caminhão', kind: 'text', aliases: ['placa'] },
   { key: 'driver_name', label: 'Motorista', kind: 'text', aliases: ['motorista', 'chofer'] },
-  { key: 'buyer_name', label: 'Comprador', kind: 'text', aliases: ['comprador', 'empresa', 'cliente'] },
+  { key: 'buyer_name', label: 'Comprador', kind: 'text', aliases: ['comprador', 'empresa', 'cliente', 'cooperativa'] },
   {
     key: 'quantity_sacas',
     label: 'Sacas colhidas (60kg)',
@@ -29,7 +29,13 @@ const FIELDS: ImportField[] = [
     key: 'net_weight_kg',
     label: 'Peso líquido p/ fixação (kg)',
     kind: 'number',
-    aliases: ['peso liquido', 'liquido', 'so grao', 'peso liquido p fixacao'],
+    // "peso liquido fixacao" (sem o "p/") cobre o nome como costuma vir de
+    // planilha exportada pela cooperativa/balança (ex.: "Peso Líquido
+    // Fixação (kg)"), que é mais específico que o "liquido" genérico — sem
+    // esse alias, "liquido" batia igual tanto nessa coluna quanto na coluna
+    // de peso ANTES do desconto ("Peso Líquido (kg)"), e o match genérico
+    // sempre grudava na primeira que aparecesse na planilha.
+    aliases: ['peso liquido', 'liquido', 'so grao', 'peso liquido p fixacao', 'peso liquido fixacao', 'peso corrigido'],
   },
   { key: 'humidity_pct', label: 'Umidade (%)', kind: 'number', aliases: ['umidade', 'humidade'] },
   { key: 'kg_per_saca', label: 'Kg por saca', kind: 'number', aliases: ['kg/saca', 'kg por sc'] },
