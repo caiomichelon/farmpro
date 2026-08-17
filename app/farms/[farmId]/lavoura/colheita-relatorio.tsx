@@ -55,8 +55,8 @@ export default function HarvestLogisticsReportScreen() {
   const plateColumns: DataTableColumn<PlateReportRow>[] = [
     { key: 'plate', label: 'Placa', width: 110, render: (r) => r.plate },
     { key: 'trips', label: 'Viagens', width: 90, render: (r) => String(r.trips) },
-    { key: 'sacas', label: 'Sacas', width: 100, render: (r) => r.totalSacas.toFixed(1) },
     { key: 'net', label: 'Peso líquido', width: 130, render: (r) => kg(r.totalNetKg) },
+    { key: 'sacas', label: 'Sacas', width: 100, render: (r) => r.totalSacas.toFixed(1) },
     { key: 'gross', label: 'Peso bruto', width: 130, render: (r) => kg(r.totalGrossKg) },
     { key: 'rawKg', label: 'Peso antes do desconto', width: 170, render: (r) => (r.totalRawKg > 0 ? kg(r.totalRawKg) : '—') },
     { key: 'qualityLoss', label: 'Perdido em impureza/umidade', width: 190, render: (r) => (r.totalRawKg > 0 ? kg(r.totalQualityLossKg) : '—') },
@@ -70,8 +70,8 @@ export default function HarvestLogisticsReportScreen() {
     { key: 'date', label: 'Data', width: 100, render: (r) => formatDate(r.harvestedAt) },
     { key: 'driver', label: 'Motorista', width: 180, render: (r) => r.driver },
     { key: 'buyer', label: 'Comprador', width: 140, render: (r) => r.buyer ?? '—' },
-    { key: 'sacas', label: 'Sacas', width: 100, render: (r) => r.sacas.toFixed(1) },
     { key: 'net', label: 'Peso líquido', width: 130, render: (r) => (r.netKg > 0 ? kg(r.netKg) : '—') },
+    { key: 'sacas', label: 'Sacas', width: 100, render: (r) => r.sacas.toFixed(1) },
     { key: 'gross', label: 'Peso bruto', width: 130, render: (r) => (r.grossKg > 0 ? kg(r.grossKg) : '—') },
     { key: 'humidity', label: 'Umidade', width: 100, render: (r) => (r.humidityPct !== null ? `${r.humidityPct.toFixed(1)}%` : '—') },
     { key: 'rawNet', label: 'Peso antes do desconto', width: 160, render: (r) => (r.rawNetKg !== null ? kg(r.rawNetKg) : '—') },
@@ -87,8 +87,8 @@ export default function HarvestLogisticsReportScreen() {
   const buyerNoteColumns: DataTableColumn<BuyerNoteReportRow>[] = [
     { key: 'buyer', label: 'Comprador', width: 160, render: (r) => r.buyer },
     { key: 'trips', label: 'Viagens', width: 90, render: (r) => String(r.trips) },
-    { key: 'sacas', label: 'Sacas', width: 100, render: (r) => r.totalSacas.toFixed(1) },
     { key: 'net', label: 'Peso líquido', width: 130, render: (r) => kg(r.totalNetKg) },
+    { key: 'sacas', label: 'Sacas', width: 100, render: (r) => r.totalSacas.toFixed(1) },
     { key: 'rawKg', label: 'Peso antes do desconto', width: 170, render: (r) => (r.totalRawKg > 0 ? kg(r.totalRawKg) : '—') },
     { key: 'qualityLoss', label: 'Impureza/umidade descontada', width: 190, render: (r) => (r.totalRawKg > 0 ? kg(r.totalQualityLossKg) : '—') },
     { key: 'lossPct', label: '% descontado', width: 110, render: (r) => pct(r.lossPercentage) },
@@ -98,8 +98,8 @@ export default function HarvestLogisticsReportScreen() {
   const driverColumns: DataTableColumn<DriverReportRow>[] = [
     { key: 'driver', label: 'Motorista', width: 180, render: (r) => r.driver },
     { key: 'trips', label: 'Viagens', width: 90, render: (r) => String(r.trips) },
-    { key: 'sacas', label: 'Sacas', width: 100, render: (r) => r.totalSacas.toFixed(1) },
     { key: 'net', label: 'Peso líquido', width: 130, render: (r) => kg(r.totalNetKg) },
+    { key: 'sacas', label: 'Sacas', width: 100, render: (r) => r.totalSacas.toFixed(1) },
   ];
 
   const buyerColumns: DataTableColumn<BuyerReportRow>[] = [

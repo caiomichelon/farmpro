@@ -27,7 +27,7 @@ export function HarvestScreen({ farmId, seasonId }: { farmId: string; seasonId?:
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const t = useT();
-  const { entries, totalSacas, daysHarvesting, isLoading, error, createEntry, reload: reloadEntries } = useHarvestEntries({
+  const { entries, totalSacas, totalKg, daysHarvesting, isLoading, error, createEntry, reload: reloadEntries } = useHarvestEntries({
     seasonId,
     farmId,
   });
@@ -62,7 +62,11 @@ export function HarvestScreen({ farmId, seasonId }: { farmId: string; seasonId?:
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScreenHeader
         title={t('harvest.title')}
-        subtitle={t('harvest.subtitle', { sacas: totalSacas.toLocaleString('pt-BR'), days: String(daysHarvesting) })}
+        subtitle={t('harvest.subtitle', {
+          kg: Math.round(totalKg).toLocaleString('pt-BR'),
+          sacas: totalSacas.toLocaleString('pt-BR'),
+          days: String(daysHarvesting),
+        })}
       />
 
       <ScrollView contentContainerStyle={styles.content}>
@@ -114,14 +118,22 @@ export function HarvestScreen({ farmId, seasonId }: { farmId: string; seasonId?:
                       {entry.photo_url ? <Image source={{ uri: entry.photo_url }} style={styles.rowThumbnail} /> : null}
                       <View style={{ flex: 1, gap: 2 }}>
                         <View style={styles.rowBetween}>
-                          <Text style={styles.rowValue}>{Number(entry.quantity_sacas).toLocaleString('pt-BR')} sc</Text>
+                          {/* Quilo em destaque quando a nota tem peso de verdade
+                              (balança); sem isso, sacas continua sendo o número
+                              principal — não estima um "kg" pra não parecer
+                              precisão que a nota não tem. */}
+                          <Text style={styles.rowValue}>
+                            {entry.net_weight_kg !== null
+                              ? `${Number(entry.net_weight_kg).toLocaleString('pt-BR')} kg`
+                              : `${Number(entry.quantity_sacas).toLocaleString('pt-BR')} sc`}
+                          </Text>
                           <Text style={styles.rowDate}>{formatDate(entry.harvested_at)}</Text>
                         </View>
                         {transportInfo ? <Text style={styles.rowTransport}>{t('harvest.entryTruckInfo', { info: transportInfo })}</Text> : null}
                         {entry.net_weight_kg !== null ? (
                           <Text style={styles.rowNotes}>
-                            {t('harvest.entryWeightInfo', {
-                              net: Number(entry.net_weight_kg).toLocaleString('pt-BR'),
+                            {t('harvest.entrySacasInfo', {
+                              sacas: Number(entry.quantity_sacas).toLocaleString('pt-BR'),
                               kgPerSaca: String(entry.kg_per_saca ?? DEFAULT_KG_PER_SACA),
                             })}
                           </Text>

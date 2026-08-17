@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { DEFAULT_KG_PER_SACA } from '../lib/harvestWeight';
 import { supabase } from '../lib/supabase';
 import type { HarvestEntry } from '../types/database';
 
@@ -118,7 +119,15 @@ export function useHarvestEntries({ seasonId, farmId }: HarvestTarget) {
   );
 
   const totalSacas = entries.reduce((sum, e) => sum + Number(e.quantity_sacas), 0);
+  // Prefere o peso líquido de verdade da nota (net_weight_kg) quando tem;
+  // sem isso, estima pelas sacas × kg/saca daquela nota (guardado junto na
+  // hora do lançamento) ou o padrão de 60kg/saca como último recurso — não
+  // trava esperando peso de toda nota, mas usa o real sempre que disponível.
+  const totalKg = entries.reduce((sum, e) => {
+    if (e.net_weight_kg) return sum + Number(e.net_weight_kg);
+    return sum + Number(e.quantity_sacas) * (e.kg_per_saca || DEFAULT_KG_PER_SACA);
+  }, 0);
   const daysHarvesting = new Set(entries.map((e) => e.harvested_at)).size;
 
-  return { entries, totalSacas, daysHarvesting, isLoading, error, reload, createEntry, updateEntry };
+  return { entries, totalSacas, totalKg, daysHarvesting, isLoading, error, reload, createEntry, updateEntry };
 }

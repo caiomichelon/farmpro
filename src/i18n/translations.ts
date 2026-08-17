@@ -580,7 +580,7 @@ export const pt = {
 
   // Colheita e Vendas (Lavoura) — separados, com dados de transporte
   'harvest.title': 'Colheita',
-  'harvest.subtitle': '{{sacas}} sc colhidas · {{days}} dias',
+  'harvest.subtitle': '{{kg}} kg colhidos ({{sacas}} sc) · {{days}} dias',
   'harvest.entriesTitle': 'Lançamentos de colheita',
   'harvest.entriesEmpty': 'Nenhuma colheita lançada ainda.',
   'harvest.newEntry': '+ Lançar colheita do dia',
@@ -656,7 +656,7 @@ export const pt = {
   'harvest.useComputedValue': 'Usar esse valor',
   'harvest.photoLabel': 'Foto da nota de pesagem (opcional)',
   'harvest.entryTruckInfo': '🚚 {{info}}',
-  'harvest.entryWeightInfo': '{{net}} kg líquido ({{kgPerSaca}} kg/sc)',
+  'harvest.entrySacasInfo': '{{sacas}} sc ({{kgPerSaca}} kg/sc)',
   'harvest.saleSectionTitle': 'Venda (opcional)',
   'harvest.saleSectionSubtitle': 'Já sabe pra quem vai vender essa carga? Preencha aqui — a venda fica ligada direto a essa nota, sem digitar caminhão de novo.',
   'harvest.saveAndAddAnother': 'Salvar e lançar outra',
@@ -1239,7 +1239,7 @@ export const en: Partial<Record<TranslationKey, string>> = {
 
   // Harvest and Sales (Lavoura) — split, with transport data
   'harvest.title': 'Harvest',
-  'harvest.subtitle': '{{sacas}} bags harvested · {{days}} days',
+  'harvest.subtitle': '{{kg}} kg harvested ({{sacas}} bags) · {{days}} days',
   'harvest.entriesTitle': 'Harvest entries',
   'harvest.entriesEmpty': 'No harvest logged yet.',
   'harvest.newEntry': "+ Log today's harvest",
@@ -1315,7 +1315,7 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'harvest.useComputedValue': 'Use this value',
   'harvest.photoLabel': 'Weighing ticket photo (optional)',
   'harvest.entryTruckInfo': '🚚 {{info}}',
-  'harvest.entryWeightInfo': '{{net}} kg net ({{kgPerSaca}} kg/bag)',
+  'harvest.entrySacasInfo': '{{sacas}} bags ({{kgPerSaca}} kg/bag)',
   'harvest.saleSectionTitle': 'Sale (optional)',
   'harvest.saleSectionSubtitle': "Already know who you're selling this load to? Fill it in here — the sale gets linked straight to this ticket, no need to re-enter the truck.",
   'harvest.saveAndAddAnother': 'Save and log another',
@@ -1896,7 +1896,7 @@ export const es: Partial<Record<TranslationKey, string>> = {
 
   // Cosecha y Ventas (Lavoura) — separadas, con datos de transporte
   'harvest.title': 'Cosecha',
-  'harvest.subtitle': '{{sacas}} bolsas cosechadas · {{days}} días',
+  'harvest.subtitle': '{{kg}} kg cosechados ({{sacas}} bolsas) · {{days}} días',
   'harvest.entriesTitle': 'Registros de cosecha',
   'harvest.entriesEmpty': 'Todavía no hay cosecha registrada.',
   'harvest.newEntry': '+ Registrar cosecha de hoy',
@@ -1972,7 +1972,7 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'harvest.useComputedValue': 'Usar este valor',
   'harvest.photoLabel': 'Foto del comprobante de pesaje (opcional)',
   'harvest.entryTruckInfo': '🚚 {{info}}',
-  'harvest.entryWeightInfo': '{{net}} kg neto ({{kgPerSaca}} kg/bolsa)',
+  'harvest.entrySacasInfo': '{{sacas}} bolsas ({{kgPerSaca}} kg/bolsa)',
   'harvest.saleSectionTitle': 'Venta (opcional)',
   'harvest.saleSectionSubtitle': '¿Ya sabés a quién le vas a vender esta carga? Completá acá — la venta queda vinculada directo a este comprobante, sin volver a escribir el camión.',
   'harvest.saveAndAddAnother': 'Guardar y registrar otra',
