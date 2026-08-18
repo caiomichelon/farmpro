@@ -177,6 +177,48 @@ export default function LavouraHomeScreen() {
                     onPress={() => router.push(`/farms/${farmId}/comando-de-voz`)}
                     styles={styles}
                   />
+                  <MoreRow
+                    icon="✅"
+                    title="Tarefas do dia"
+                    subtitle="Crie, atribua e acompanhe o que precisa ser feito"
+                    onPress={() => router.push(`/farms/${farmId}/tarefas`)}
+                    styles={styles}
+                  />
+                  <MoreRow
+                    icon="📇"
+                    title="Fornecedores"
+                    subtitle="Agropecuária, veterinário, mecânico e mais"
+                    onPress={() => router.push(`/farms/${farmId}/fornecedores`)}
+                    styles={styles}
+                  />
+                  <MoreRow
+                    icon="👥"
+                    title={t('farmHome.members')}
+                    subtitle={t('farmHome.membersSubtitle')}
+                    onPress={() => router.push(`/farms/${farmId}/membros`)}
+                    styles={styles}
+                  />
+                  <MoreRow
+                    icon="🚗"
+                    title="Modo carro"
+                    subtitle="Painel com boletim automático e comando de voz"
+                    onPress={() => router.push(`/farms/${farmId}/modo-carro`)}
+                    styles={styles}
+                  />
+                  <MoreRow
+                    icon="📣"
+                    title="Boletim da fazenda"
+                    subtitle="Resumo falado do que importa hoje"
+                    onPress={() => router.push(`/farms/${farmId}/boletim`)}
+                    styles={styles}
+                  />
+                  <MoreRow
+                    icon="📤"
+                    title={t('farmHome.export')}
+                    subtitle={t('farmHome.exportSubtitle')}
+                    onPress={() => router.push(`/farms/${farmId}/exportar`)}
+                    styles={styles}
+                  />
                 </View>
               </View>
             </FadeSlideIn>

@@ -104,6 +104,34 @@ export default function PecuariaHomeScreen() {
             onPress={() => router.push(`/farms/${farmId}/exportar`)}
             styles={styles}
           />
+          <MoreRow
+            icon="🔧"
+            title="Maquinário"
+            subtitle="Tratores e implementos — manutenção em dia"
+            onPress={() => router.push(`/farms/${farmId}/equipamentos`)}
+            styles={styles}
+          />
+          <MoreRow
+            icon="⛅"
+            title="Clima"
+            subtitle="Alertas de geada, chuva, calor e vento"
+            onPress={() => router.push(`/farms/${farmId}/clima`)}
+            styles={styles}
+          />
+          <MoreRow
+            icon="🌙"
+            title="Fechamento do dia"
+            subtitle="Ponto, coletas e alertas antes de encerrar"
+            onPress={() => router.push(`/farms/${farmId}/fechamento`)}
+            styles={styles}
+          />
+          <MoreRow
+            icon="🎙️"
+            title="Ei FarmPro"
+            subtitle="Pergunte por voz sobre clima, lotes e mais"
+            onPress={() => router.push(`/farms/${farmId}/comando-de-voz`)}
+            styles={styles}
+          />
         </View>
       </ScrollView>
     </SafeAreaView>
