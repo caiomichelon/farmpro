@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FadeSlideIn } from '../../../../src/components/FadeSlideIn';
@@ -18,7 +18,7 @@ export default function PecuariaHomeScreen() {
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScreenHeader title={t('pecuariaHome.title')} subtitle={t('pecuariaHome.subtitle')} />
 
-      <View style={styles.content}>
+      <ScrollView contentContainerStyle={styles.content}>
         <FadeSlideIn>
           <AreaCard
             title={t('pecuariaHome.corteTitle')}
@@ -43,8 +43,98 @@ export default function PecuariaHomeScreen() {
             styles={styles}
           />
         </FadeSlideIn>
-      </View>
+
+        {/* Itens que não são exclusivos de nenhum setor (fornecedores,
+            membros da fazenda, etc.) — moram aqui e em Lavoura, não na home
+            da fazenda, que fica só com os dois setores. */}
+        <View style={styles.moreSection}>
+          <MoreRow
+            icon="👨‍🌾"
+            title={t('farmHome.employees')}
+            subtitle={t('farmHome.employeesSubtitle')}
+            onPress={() => router.push(`/farms/${farmId}/funcionarios`)}
+            styles={styles}
+          />
+          <MoreRow
+            icon="👷"
+            title="Diaristas"
+            subtitle="Mão de obra avulsa, sem cadastro fixo"
+            onPress={() => router.push(`/farms/${farmId}/diaristas`)}
+            styles={styles}
+          />
+          <MoreRow
+            icon="✅"
+            title="Tarefas do dia"
+            subtitle="Crie, atribua e acompanhe o que precisa ser feito"
+            onPress={() => router.push(`/farms/${farmId}/tarefas`)}
+            styles={styles}
+          />
+          <MoreRow
+            icon="📇"
+            title="Fornecedores"
+            subtitle="Agropecuária, veterinário, mecânico e mais"
+            onPress={() => router.push(`/farms/${farmId}/fornecedores`)}
+            styles={styles}
+          />
+          <MoreRow
+            icon="👥"
+            title={t('farmHome.members')}
+            subtitle={t('farmHome.membersSubtitle')}
+            onPress={() => router.push(`/farms/${farmId}/membros`)}
+            styles={styles}
+          />
+          <MoreRow
+            icon="🚗"
+            title="Modo carro"
+            subtitle="Painel com boletim automático e comando de voz"
+            onPress={() => router.push(`/farms/${farmId}/modo-carro`)}
+            styles={styles}
+          />
+          <MoreRow
+            icon="📣"
+            title="Boletim da fazenda"
+            subtitle="Resumo falado do que importa hoje"
+            onPress={() => router.push(`/farms/${farmId}/boletim`)}
+            styles={styles}
+          />
+          <MoreRow
+            icon="📤"
+            title={t('farmHome.export')}
+            subtitle={t('farmHome.exportSubtitle')}
+            onPress={() => router.push(`/farms/${farmId}/exportar`)}
+            styles={styles}
+          />
+        </View>
+      </ScrollView>
     </SafeAreaView>
+  );
+}
+
+/** Linha compacta pra um item que não é sobre Corte/Cria (funcionários,
+ * fornecedores, etc.) — mesma cara das linhas "soltas" que a home da
+ * fazenda tinha antes de ficar só com Lavoura/Pecuária. */
+function MoreRow({
+  icon,
+  title,
+  subtitle,
+  onPress,
+  styles,
+}: {
+  icon: string;
+  title: string;
+  subtitle: string;
+  onPress: () => void;
+  styles: ReturnType<typeof createStyles>;
+}) {
+  return (
+    <Pressable style={({ pressed }) => [styles.moreRow, pressed && styles.moreRowPressed]} onPress={onPress}>
+      <Text style={styles.moreRowIcon}>{icon}</Text>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.moreRowTitle}>{title}</Text>
+        <Text style={styles.moreRowSubtitle}>{subtitle}</Text>
+      </View>
+      <Text style={styles.moreRowChevron}>→</Text>
+    </Pressable>
   );
 }
 
@@ -101,6 +191,39 @@ function createStyles(colors: Colors) {
   cardDescription: {
     ...typography.caption,
     color: colors.textSecondary,
+  },
+  moreSection: {
+    gap: spacing.sm,
+    marginTop: spacing.md,
+  },
+  moreRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    padding: spacing.md,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+  },
+  moreRowPressed: {
+    opacity: 0.8,
+  },
+  moreRowIcon: {
+    fontSize: 20,
+  },
+  moreRowTitle: {
+    ...typography.subheading,
+    color: colors.textPrimary,
+  },
+  moreRowSubtitle: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  moreRowChevron: {
+    ...typography.heading,
+    color: colors.pecuaria,
   },
   });
 }

@@ -130,6 +130,54 @@ export default function LavouraHomeScreen() {
                     <Text style={styles.link}>{t('lavouraHome.linkFertilizerCalculator')}</Text>
                   </Pressable>
                 </View>
+
+                {/* Itens que não são exclusivos de nenhum setor (clima,
+                    funcionários, etc.) — moram aqui e em Pecuária, não na
+                    home da fazenda, que fica só com os dois setores. */}
+                <View style={styles.moreSection}>
+                  <MoreRow
+                    icon="👨‍🌾"
+                    title={t('farmHome.employees')}
+                    subtitle={t('farmHome.employeesSubtitle')}
+                    onPress={() => router.push(`/farms/${farmId}/funcionarios`)}
+                    styles={styles}
+                  />
+                  <MoreRow
+                    icon="👷"
+                    title="Diaristas"
+                    subtitle="Mão de obra avulsa, sem cadastro fixo"
+                    onPress={() => router.push(`/farms/${farmId}/diaristas`)}
+                    styles={styles}
+                  />
+                  <MoreRow
+                    icon="🔧"
+                    title="Maquinário"
+                    subtitle="Tratores e implementos — manutenção em dia"
+                    onPress={() => router.push(`/farms/${farmId}/equipamentos`)}
+                    styles={styles}
+                  />
+                  <MoreRow
+                    icon="⛅"
+                    title="Clima"
+                    subtitle="Alertas de geada, chuva, calor e vento"
+                    onPress={() => router.push(`/farms/${farmId}/clima`)}
+                    styles={styles}
+                  />
+                  <MoreRow
+                    icon="🌙"
+                    title="Fechamento do dia"
+                    subtitle="Ponto, coletas e alertas antes de encerrar"
+                    onPress={() => router.push(`/farms/${farmId}/fechamento`)}
+                    styles={styles}
+                  />
+                  <MoreRow
+                    icon="🎙️"
+                    title="Ei FarmPro"
+                    subtitle="Pergunte por voz sobre clima, lotes e mais"
+                    onPress={() => router.push(`/farms/${farmId}/comando-de-voz`)}
+                    styles={styles}
+                  />
+                </View>
               </View>
             </FadeSlideIn>
           }
@@ -153,6 +201,34 @@ export default function LavouraHomeScreen() {
         <Button label={t('lavouraHome.newPlot')} onPress={() => router.push(`/farms/${farmId}/lavoura/novo-talhao`)} />
       </View>
     </SafeAreaView>
+  );
+}
+
+/** Linha compacta pra um item que não é sobre talhão/safra (funcionários,
+ * clima, etc.) — mesma cara das linhas "soltas" que a home da fazenda tinha
+ * antes de ficar só com Lavoura/Pecuária. */
+function MoreRow({
+  icon,
+  title,
+  subtitle,
+  onPress,
+  styles,
+}: {
+  icon: string;
+  title: string;
+  subtitle: string;
+  onPress: () => void;
+  styles: ReturnType<typeof createStyles>;
+}) {
+  return (
+    <Pressable style={({ pressed }) => [styles.moreRow, pressed && styles.moreRowPressed]} onPress={onPress}>
+      <Text style={styles.moreRowIcon}>{icon}</Text>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.moreRowTitle}>{title}</Text>
+        <Text style={styles.moreRowSubtitle}>{subtitle}</Text>
+      </View>
+      <Text style={styles.moreRowChevron}>→</Text>
+    </Pressable>
   );
 }
 
@@ -245,6 +321,39 @@ function createStyles(colors: Colors) {
   },
   linkDivider: {
     color: colors.textMuted,
+  },
+  moreSection: {
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+  },
+  moreRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    padding: spacing.md,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+  },
+  moreRowPressed: {
+    opacity: 0.8,
+  },
+  moreRowIcon: {
+    fontSize: 20,
+  },
+  moreRowTitle: {
+    ...typography.subheading,
+    color: colors.textPrimary,
+  },
+  moreRowSubtitle: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  moreRowChevron: {
+    ...typography.heading,
+    color: colors.lavoura,
   },
   card: {
     marginBottom: spacing.md,

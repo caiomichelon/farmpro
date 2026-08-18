@@ -12,7 +12,6 @@ import { SectorButton } from '../../../src/components/SectorButton';
 import { SummaryStat } from '../../../src/components/SummaryStat';
 import { useFarm } from '../../../src/hooks/useFarms';
 import { useFarmHealthScore } from '../../../src/hooks/useFarmHealthScore';
-import { useFarmInventory } from '../../../src/hooks/useFarmInventory';
 import { useSyncCattleNotifications } from '../../../src/hooks/useSyncCattleNotifications';
 import { useSyncDailyBriefingNotification } from '../../../src/hooks/useSyncDailyBriefingNotification';
 import { useSyncDailyPhotoReminder } from '../../../src/hooks/useSyncDailyPhotoReminder';
@@ -29,7 +28,6 @@ export default function FarmHomeScreen() {
   const { farm, isLoading } = useFarm(farmId);
   const health = useFarmHealthScore(farmId);
   const alerts = health.alerts;
-  const inventory = useFarmInventory(farmId);
   useSyncCattleNotifications(farmId);
   useSyncWeatherNotifications(farmId);
   useSyncDailyBriefingNotification(farmId);
@@ -132,192 +130,6 @@ export default function FarmHomeScreen() {
                 onPress={() => router.push(`/farms/${farmId}/pecuaria`)}
               />
             </View>
-          </FadeSlideIn>
-
-          <FadeSlideIn delay={20}>
-            <View style={styles.sectorsRow}>
-              <SectorButton
-                title="📦 Estoque"
-                subtitle={
-                  inventory.lowStockCount > 0
-                    ? `${inventory.lowStockCount} com estoque baixo`
-                    : inventory.expiringCount + inventory.expiredCount > 0
-                      ? `${inventory.expiringCount + inventory.expiredCount} vencendo/vencido`
-                      : 'Ração, sementes e mais'
-                }
-                color={colors.estoque}
-                backgroundColor={colors.estoqueLight}
-                onPress={() => router.push(`/farms/${farmId}/estoque`)}
-              />
-            </View>
-          </FadeSlideIn>
-
-          <FadeSlideIn delay={60}>
-            <Pressable
-              style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
-              onPress={() => router.push(`/farms/${farmId}/funcionarios`)}
-            >
-              <View style={[styles.employeesMarker, { backgroundColor: colors.funcionarios }]} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.employeesTitle}>{t('farmHome.employees')}</Text>
-                <Text style={styles.employeesSubtitle}>{t('farmHome.employeesSubtitle')}</Text>
-              </View>
-              <Text style={styles.employeesChevron}>→</Text>
-            </Pressable>
-          </FadeSlideIn>
-
-          <FadeSlideIn delay={110}>
-            <Pressable
-              style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
-              onPress={() => router.push(`/farms/${farmId}/membros`)}
-            >
-              <View style={[styles.employeesMarker, { backgroundColor: colors.primary }]} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.employeesTitle}>{t('farmHome.members')}</Text>
-                <Text style={styles.employeesSubtitle}>{t('farmHome.membersSubtitle')}</Text>
-              </View>
-              <Text style={styles.employeesChevron}>→</Text>
-            </Pressable>
-          </FadeSlideIn>
-
-          <FadeSlideIn delay={110}>
-            <Pressable
-              style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
-              onPress={() => router.push(`/farms/${farmId}/modo-carro`)}
-            >
-              <View style={[styles.employeesMarker, { backgroundColor: colors.primaryDark }]} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.employeesTitle}>🚗 Modo carro</Text>
-                <Text style={styles.employeesSubtitle}>Painel com boletim automático e comando de voz</Text>
-              </View>
-              <Text style={styles.employeesChevron}>→</Text>
-            </Pressable>
-          </FadeSlideIn>
-
-          <FadeSlideIn delay={135}>
-            <Pressable
-              style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
-              onPress={() => router.push(`/farms/${farmId}/comando-de-voz`)}
-            >
-              <View style={[styles.employeesMarker, { backgroundColor: colors.lavoura }]} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.employeesTitle}>🎙️ Ei FarmPro</Text>
-                <Text style={styles.employeesSubtitle}>Pergunte por voz sobre clima, lotes e mais</Text>
-              </View>
-              <Text style={styles.employeesChevron}>→</Text>
-            </Pressable>
-          </FadeSlideIn>
-
-          <FadeSlideIn delay={160}>
-            <Pressable
-              style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
-              onPress={() => router.push(`/farms/${farmId}/boletim`)}
-            >
-              <View style={[styles.employeesMarker, { backgroundColor: colors.pecuaria }]} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.employeesTitle}>Boletim da fazenda</Text>
-                <Text style={styles.employeesSubtitle}>Resumo falado do que importa hoje</Text>
-              </View>
-              <Text style={styles.employeesChevron}>→</Text>
-            </Pressable>
-          </FadeSlideIn>
-
-          <FadeSlideIn delay={185}>
-            <Pressable
-              style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
-              onPress={() => router.push(`/farms/${farmId}/clima`)}
-            >
-              <View style={[styles.employeesMarker, { backgroundColor: colors.accent }]} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.employeesTitle}>Clima</Text>
-                <Text style={styles.employeesSubtitle}>Alertas de geada, chuva, calor e vento</Text>
-              </View>
-              <Text style={styles.employeesChevron}>→</Text>
-            </Pressable>
-          </FadeSlideIn>
-
-          <FadeSlideIn delay={210}>
-            <Pressable
-              style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
-              onPress={() => router.push(`/farms/${farmId}/fechamento`)}
-            >
-              <View style={[styles.employeesMarker, { backgroundColor: colors.funcionarios }]} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.employeesTitle}>🌙 Fechamento do dia</Text>
-                <Text style={styles.employeesSubtitle}>Ponto, coletas e alertas antes de encerrar</Text>
-              </View>
-              <Text style={styles.employeesChevron}>→</Text>
-            </Pressable>
-          </FadeSlideIn>
-
-          <FadeSlideIn delay={360}>
-            <Pressable
-              style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
-              onPress={() => router.push(`/farms/${farmId}/tarefas`)}
-            >
-              <View style={[styles.employeesMarker, { backgroundColor: colors.funcionarios }]} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.employeesTitle}>✅ Tarefas do dia</Text>
-                <Text style={styles.employeesSubtitle}>Crie, atribua e acompanhe o que precisa ser feito</Text>
-              </View>
-              <Text style={styles.employeesChevron}>→</Text>
-            </Pressable>
-          </FadeSlideIn>
-
-          <FadeSlideIn delay={385}>
-            <Pressable
-              style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
-              onPress={() => router.push(`/farms/${farmId}/equipamentos`)}
-            >
-              <View style={[styles.employeesMarker, { backgroundColor: colors.textMuted }]} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.employeesTitle}>🔧 Maquinário</Text>
-                <Text style={styles.employeesSubtitle}>Tratores e implementos — manutenção em dia</Text>
-              </View>
-              <Text style={styles.employeesChevron}>→</Text>
-            </Pressable>
-          </FadeSlideIn>
-
-          <FadeSlideIn delay={405}>
-            <Pressable
-              style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
-              onPress={() => router.push(`/farms/${farmId}/diaristas`)}
-            >
-              <View style={[styles.employeesMarker, { backgroundColor: colors.accent }]} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.employeesTitle}>👷 Diaristas</Text>
-                <Text style={styles.employeesSubtitle}>Mão de obra avulsa, sem cadastro fixo</Text>
-              </View>
-              <Text style={styles.employeesChevron}>→</Text>
-            </Pressable>
-          </FadeSlideIn>
-
-          <FadeSlideIn delay={420}>
-            <Pressable
-              style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
-              onPress={() => router.push(`/farms/${farmId}/fornecedores`)}
-            >
-              <View style={[styles.employeesMarker, { backgroundColor: colors.primary }]} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.employeesTitle}>📇 Fornecedores</Text>
-                <Text style={styles.employeesSubtitle}>Agropecuária, veterinário, mecânico e mais</Text>
-              </View>
-              <Text style={styles.employeesChevron}>→</Text>
-            </Pressable>
-          </FadeSlideIn>
-
-          <FadeSlideIn delay={260}>
-            <Pressable
-              style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
-              onPress={() => router.push(`/farms/${farmId}/exportar`)}
-            >
-              <View style={[styles.employeesMarker, { backgroundColor: colors.textMuted }]} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.employeesTitle}>{t('farmHome.export')}</Text>
-                <Text style={styles.employeesSubtitle}>{t('farmHome.exportSubtitle')}</Text>
-              </View>
-              <Text style={styles.employeesChevron}>→</Text>
-            </Pressable>
           </FadeSlideIn>
         </ScrollView>
       </SafeAreaView>
