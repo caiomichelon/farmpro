@@ -43,7 +43,7 @@ export default function LoginScreen() {
       setError(signInError);
       return;
     }
-    router.replace('/farms');
+    router.replace('/setor');
   }
 
   return (

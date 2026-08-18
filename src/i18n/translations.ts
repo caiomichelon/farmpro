@@ -76,6 +76,17 @@ export const pt = {
   'farms.emptySubtitle': 'Crie sua primeira fazenda ou entre com um código de convite pra acessar uma já existente.',
   'farms.lavouraChip': 'Lavoura',
   'farms.pecuariaChip': 'Pecuária',
+  'farms.changeSector': '🔁 Trocar setor',
+  'farms.titleLavoura': 'Fazendas de lavoura',
+  'farms.titlePecuaria': 'Fazendas de pecuária',
+  'farms.subtitleFiltered': 'Só as fazendas que trabalham com esse setor',
+
+  // Escolha de setor (primeira tela depois do login)
+  'sector.title': 'O que você quer ver?',
+  'sector.subtitle': 'Escolhe o setor primeiro — só aparecem as fazendas que trabalham com ele',
+  'sector.lavouraSubtitle': 'Talhões, safras e colheita',
+  'sector.pecuariaSubtitle': 'Corte e cria/reprodução',
+  'sector.viewAllFarms': 'Ver todas as fazendas, sem filtrar',
 
   // Home da fazenda
   'farmHome.switchFarm': '← Trocar fazenda',
@@ -754,6 +765,17 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'farms.emptySubtitle': 'Create your first farm or join an existing one with an invite code.',
   'farms.lavouraChip': 'Crops',
   'farms.pecuariaChip': 'Livestock',
+  'farms.changeSector': '🔁 Change sector',
+  'farms.titleLavoura': 'Crop farms',
+  'farms.titlePecuaria': 'Livestock farms',
+  'farms.subtitleFiltered': 'Only farms that work with this sector',
+
+  // Sector selection (first screen after login)
+  'sector.title': 'What do you want to see?',
+  'sector.subtitle': 'Pick a sector first — only farms that work with it show up',
+  'sector.lavouraSubtitle': 'Plots, seasons and harvest',
+  'sector.pecuariaSubtitle': 'Beef and breeding',
+  'sector.viewAllFarms': 'View all farms, unfiltered',
 
   'farmHome.switchFarm': '← Switch farm',
   'farmHome.totalHectares': 'Total hectares',
@@ -1411,6 +1433,17 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'farms.emptySubtitle': 'Creá tu primera finca o entrá con un código de invitación para acceder a una existente.',
   'farms.lavouraChip': 'Agricultura',
   'farms.pecuariaChip': 'Ganadería',
+  'farms.changeSector': '🔁 Cambiar de sector',
+  'farms.titleLavoura': 'Fincas de agricultura',
+  'farms.titlePecuaria': 'Fincas de ganadería',
+  'farms.subtitleFiltered': 'Solo las fincas que trabajan con ese sector',
+
+  // Selección de sector (primera pantalla después de iniciar sesión)
+  'sector.title': '¿Qué querés ver?',
+  'sector.subtitle': 'Elegí el sector primero — solo aparecen las fincas que trabajan con él',
+  'sector.lavouraSubtitle': 'Parcelas, cosechas y cosecha',
+  'sector.pecuariaSubtitle': 'Engorde y cría',
+  'sector.viewAllFarms': 'Ver todas las fincas, sin filtrar',
 
   'farmHome.switchFarm': '← Cambiar finca',
   'farmHome.totalHectares': 'Hectáreas totales',

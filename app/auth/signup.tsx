@@ -38,7 +38,7 @@ export default function SignupScreen() {
     // cadastro já vem com sessão ativa — entra direto, sem pedir confirmação
     // de algo que não é necessário.
     if (hasSession) {
-      router.replace('/farms');
+      router.replace('/setor');
       return;
     }
 

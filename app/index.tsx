@@ -84,7 +84,7 @@ export default function CoverScreen() {
     );
   }
 
-  return <Redirect href={session ? '/farms' : '/auth/login'} />;
+  return <Redirect href={session ? '/setor' : '/auth/login'} />;
 }
 
 function createStyles(colors: Colors) {

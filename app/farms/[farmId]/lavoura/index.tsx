@@ -58,9 +58,14 @@ export default function LavouraHomeScreen() {
         title={t('lavouraHome.title')}
         subtitle={`${summary.totalPlots} ${summary.totalPlots === 1 ? t('lavouraHome.subtitlePlotSingular') : t('lavouraHome.subtitlePlotPlural')} · ${summary.totalHectares.toLocaleString('pt-BR')} ha`}
         right={
-          <Pressable onPress={() => router.push(`/farms/${farmId}/lavoura/compradores`)} hitSlop={12}>
-            <Text style={styles.headerLink}>{t('lavouraHome.buyers')}</Text>
-          </Pressable>
+          <View style={styles.headerLinksRow}>
+            <Pressable onPress={() => router.push(`/farms/${farmId}`)} hitSlop={12}>
+              <Text style={styles.headerLink}>🏠 Fazenda</Text>
+            </Pressable>
+            <Pressable onPress={() => router.push(`/farms/${farmId}/lavoura/compradores`)} hitSlop={12}>
+              <Text style={styles.headerLink}>{t('lavouraHome.buyers')}</Text>
+            </Pressable>
+          </View>
         }
       />
 
@@ -310,6 +315,10 @@ function createStyles(colors: Colors) {
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  headerLinksRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
   },
   headerLink: {
     ...typography.captionMedium,

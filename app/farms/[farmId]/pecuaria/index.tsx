@@ -16,7 +16,15 @@ export default function PecuariaHomeScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <ScreenHeader title={t('pecuariaHome.title')} subtitle={t('pecuariaHome.subtitle')} />
+      <ScreenHeader
+        title={t('pecuariaHome.title')}
+        subtitle={t('pecuariaHome.subtitle')}
+        right={
+          <Pressable onPress={() => router.push(`/farms/${farmId}`)} hitSlop={12}>
+            <Text style={styles.headerLink}>🏠 Fazenda</Text>
+          </Pressable>
+        }
+      />
 
       <ScrollView contentContainerStyle={styles.content}>
         <FadeSlideIn>
@@ -219,6 +227,10 @@ function createStyles(colors: Colors) {
   cardDescription: {
     ...typography.caption,
     color: colors.textSecondary,
+  },
+  headerLink: {
+    ...typography.captionMedium,
+    color: colors.pecuaria,
   },
   moreSection: {
     gap: spacing.sm,

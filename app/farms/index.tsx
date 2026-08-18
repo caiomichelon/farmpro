@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,14 +13,34 @@ import { useT, type TFunction } from '../../src/i18n';
 import { radius, spacing, typography, useColors, type Colors } from '../../src/theme';
 
 type FooterMode = 'none' | 'creating' | 'joining';
+type Sector = 'lavoura' | 'pecuaria';
+
+/** Uma fazenda "pertence" a um setor quando tem hectares registrados nele
+ * — ou, se ainda não tem NENHUM talhão cadastrado (fazenda recém-criada),
+ * aparece nos dois: melhor mostrar a mais do que esconder uma fazenda por
+ * ainda não ter dado tempo de cadastrar nada. */
+function belongsToSector(farm: FarmSummary, sector: Sector): boolean {
+  if (farm.totalPlots === 0) return true;
+  return sector === 'lavoura' ? farm.lavouraHectares > 0 : farm.pecuariaHectares > 0;
+}
 
 export default function FarmSelectionScreen() {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const t = useT();
-  const { farms, isLoading, error, createFarm, reload: reloadFarms } = useFarms();
+  const { sector: sectorParam } = useLocalSearchParams<{ sector?: string }>();
+  const sector: Sector | undefined = sectorParam === 'lavoura' || sectorParam === 'pecuaria' ? sectorParam : undefined;
+  const { farms: allFarms, isLoading, error, createFarm, reload: reloadFarms } = useFarms();
+  const farms = sector ? allFarms.filter((f) => belongsToSector(f, sector)) : allFarms;
   const [footerMode, setFooterMode] = useState<FooterMode>('none');
   const isCreating = footerMode === 'creating';
+
+  // Sem setor escolhido (chegou direto por link ou por "ver todas as
+  // fazendas"), entra na fazenda inteira como sempre; com setor escolhido
+  // lá na tela anterior, pula direto pro hub daquele setor.
+  function goToFarm(farmId: string) {
+    router.push(sector ? `/farms/${farmId}/${sector}` : `/farms/${farmId}`);
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -28,12 +48,19 @@ export default function FarmSelectionScreen() {
         <View style={styles.header}>
           <View style={styles.headerTopRow}>
             <Text style={styles.eyebrow}>{t('farms.eyebrow')}</Text>
-            <Pressable onPress={() => router.push('/ajustes')} hitSlop={12}>
-              <Text style={styles.settingsIcon}>{t('farms.settings')}</Text>
-            </Pressable>
+            <View style={styles.headerLinks}>
+              {sector ? (
+                <Pressable onPress={() => router.push('/setor')} hitSlop={12}>
+                  <Text style={styles.settingsIcon}>{t('farms.changeSector')}</Text>
+                </Pressable>
+              ) : null}
+              <Pressable onPress={() => router.push('/ajustes')} hitSlop={12}>
+                <Text style={styles.settingsIcon}>{t('farms.settings')}</Text>
+              </Pressable>
+            </View>
           </View>
-          <Text style={styles.title}>{t('farms.title')}</Text>
-          <Text style={styles.subtitle}>{t('farms.subtitle')}</Text>
+          <Text style={styles.title}>{sector === 'lavoura' ? t('farms.titleLavoura') : sector === 'pecuaria' ? t('farms.titlePecuaria') : t('farms.title')}</Text>
+          <Text style={styles.subtitle}>{sector ? t('farms.subtitleFiltered') : t('farms.subtitle')}</Text>
           <View style={styles.dotsRow}>
             <SectorDotsCluster size={8} />
           </View>
@@ -50,7 +77,7 @@ export default function FarmSelectionScreen() {
           ListEmptyComponent={!isCreating ? <FarmsEmptyState styles={styles} t={t} /> : null}
           renderItem={({ item, index }) => (
             <FadeSlideIn delay={Math.min(index, 6) * 60}>
-              <FarmCard farm={item} styles={styles} colors={colors} t={t} onPress={() => router.push(`/farms/${item.id}`)} />
+              <FarmCard farm={item} styles={styles} colors={colors} t={t} onPress={() => goToFarm(item.id)} />
             </FadeSlideIn>
           )}
         />
@@ -76,7 +103,7 @@ export default function FarmSelectionScreen() {
               if (!joinError) {
                 setFooterMode('none');
                 await reloadFarms();
-                if (farmId) router.push(`/farms/${farmId}`);
+                if (farmId) goToFarm(farmId);
               }
               return joinError;
             }}
@@ -262,6 +289,11 @@ function createStyles(colors: Colors) {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
+    },
+    headerLinks: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
     },
     eyebrow: {
       ...typography.label,

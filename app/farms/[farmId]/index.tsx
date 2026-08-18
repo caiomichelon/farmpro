@@ -40,7 +40,7 @@ export default function FarmHomeScreen() {
       <SafeAreaView style={styles.safeArea} edges={['bottom']}>
         <View style={styles.header}>
           <View style={styles.headerTopRow}>
-            <Pressable onPress={() => router.push('/farms')} hitSlop={12}>
+            <Pressable onPress={() => router.push('/setor')} hitSlop={12}>
               <Text style={styles.backLink}>{t('farmHome.switchFarm')}</Text>
             </Pressable>
             <Pressable onPress={() => router.push(`/farms/${farmId}/buscar`)} hitSlop={12}>
