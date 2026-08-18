@@ -250,20 +250,6 @@ export default function FarmHomeScreen() {
             </Pressable>
           </FadeSlideIn>
 
-          <FadeSlideIn delay={335}>
-            <Pressable
-              style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
-              onPress={() => router.push(`/farms/${farmId}/diario`)}
-            >
-              <View style={[styles.employeesMarker, { backgroundColor: colors.accent }]} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.employeesTitle}>📓 Diário de bordo</Text>
-                <Text style={styles.employeesSubtitle}>Anote qualquer coisa rapidinho, com foto e GPS</Text>
-              </View>
-              <Text style={styles.employeesChevron}>→</Text>
-            </Pressable>
-          </FadeSlideIn>
-
           <FadeSlideIn delay={360}>
             <Pressable
               style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
@@ -315,20 +301,6 @@ export default function FarmHomeScreen() {
               <View style={{ flex: 1 }}>
                 <Text style={styles.employeesTitle}>📇 Fornecedores</Text>
                 <Text style={styles.employeesSubtitle}>Agropecuária, veterinário, mecânico e mais</Text>
-              </View>
-              <Text style={styles.employeesChevron}>→</Text>
-            </Pressable>
-          </FadeSlideIn>
-
-          <FadeSlideIn delay={245}>
-            <Pressable
-              style={({ pressed }) => [styles.employeesRow, pressed && styles.employeesRowPressed]}
-              onPress={() => router.push(`/farms/${farmId}/dinheiro`)}
-            >
-              <View style={[styles.employeesMarker, { backgroundColor: colors.primary }]} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.employeesTitle}>💰 Pra onde vai o dinheiro</Text>
-                <Text style={styles.employeesSubtitle}>Raio-x dos custos de todos os setores num gráfico só</Text>
               </View>
               <Text style={styles.employeesChevron}>→</Text>
             </Pressable>
