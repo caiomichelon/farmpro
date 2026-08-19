@@ -27,9 +27,16 @@ interface SectorPhotoCardProps {
  * aparelhos com tela mais curta (baixa altura em relação à largura) um
  * quadrado de foto do tamanho da largura toda pode sobrar mais alto do
  * que o cartão inteiro tem de espaço, e o texto acaba espremido a
- * praticamente zero. */
-const FOOTER_MIN_HEIGHT = 92;
-const MIN_PHOTO_SIZE = 96;
+ * praticamente zero.
+ *
+ * IMPORTANTE: não existe piso mínimo pro tamanho da foto (removido de
+ * propósito) — a foto encolhe o quanto precisar pra sempre caber no
+ * espaço de verdade do cartão. Um piso mínimo já causou o cartão pedir
+ * mais altura do que existia de verdade (ex.: navegador do celular com
+ * a barra de endereço ocupando espaço), forçando a tela inteira a
+ * precisar rolar pra mostrar os dois cartões — o que a gente não quer:
+ * os dois cartões têm que caber e dar pra clicar sem descer a tela. */
+const FOOTER_MIN_HEIGHT = 104;
 
 /** Cartão grande com foto, usado só na tela /setor (não é o SectorButton
  * genérico — aquele continua com fundo de cor sólida e é usado em telas
@@ -71,7 +78,7 @@ export function SectorPhotoCard({
   }, []);
 
   const photoSize = cardSize
-    ? Math.max(MIN_PHOTO_SIZE, Math.min(cardSize.width, cardSize.height - FOOTER_MIN_HEIGHT))
+    ? Math.max(0, Math.min(cardSize.width, cardSize.height - FOOTER_MIN_HEIGHT))
     : null;
 
   return (
@@ -88,13 +95,18 @@ export function SectorPhotoCard({
         ]}
       >
         <Image source={image} style={styles.photo} resizeMode="cover" />
-        <View style={styles.creditChip}>
-          <Text style={styles.credit}>{credit}</Text>
-        </View>
       </View>
       <View style={[styles.footer, { backgroundColor: color }]}>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.subtitle}>{subtitle}</Text>
+        {/* Crédito da foto (exigido pela licença Creative Commons) fica
+            aqui na faixa sólida, não mais em cima da foto — quando a
+            foto fica pequena (tela curta), o texto sobreposto virava
+            uma bagunça ilegível, quebrando em 2-3 linhas dentro de um
+            quadrado minúsculo. Aqui sempre tem espaço garantido. */}
+        <Text style={styles.credit} numberOfLines={1}>
+          {credit}
+        </Text>
       </View>
     </Pressable>
   );
@@ -117,18 +129,11 @@ function createStyles(colors: Colors) {
       width: '100%',
       height: '100%',
     },
-    creditChip: {
-      position: 'absolute',
-      bottom: spacing.xs,
-      right: spacing.xs,
-      backgroundColor: 'rgba(0, 0, 0, 0.45)',
-      borderRadius: radius.sm,
-      paddingHorizontal: spacing.xs,
-      paddingVertical: 2,
-    },
     credit: {
       fontSize: 9,
       color: colors.textInverse,
+      opacity: 0.65,
+      marginTop: spacing.xs,
     },
     footer: {
       flex: 1,
