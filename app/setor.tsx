@@ -39,18 +39,22 @@ export default function SectorSelectionScreen() {
       </FadeSlideIn>
 
       <View style={styles.content}>
-        <FadeSlideIn delay={60}>
+        {/* style={{ flex: 1 }} no FadeSlideIn é essencial aqui — sem ele, o
+            Animated.View que ele cria não repassa o flex:1 do SectorButton
+            pro layout em coluna, e os dois cartões colapsavam e ficavam se
+            sobrepondo em vez de dividir a tela. */}
+        <FadeSlideIn delay={60} style={styles.buttonWrap}>
           <SectorButton
-            title={t('farmHome.lavoura')}
+            title={`🌱 ${t('farmHome.lavoura')}`}
             subtitle={t('sector.lavouraSubtitle')}
             color={colors.lavoura}
             backgroundColor={colors.lavouraLight}
             onPress={() => router.push('/farms?sector=lavoura')}
           />
         </FadeSlideIn>
-        <FadeSlideIn delay={110}>
+        <FadeSlideIn delay={110} style={styles.buttonWrap}>
           <SectorButton
-            title={t('farmHome.pecuaria')}
+            title={`🐄 ${t('farmHome.pecuaria')}`}
             subtitle={t('sector.pecuariaSubtitle')}
             color={colors.pecuaria}
             backgroundColor={colors.pecuariaLight}
@@ -108,9 +112,11 @@ function createStyles(colors: Colors) {
     },
     content: {
       flex: 1,
-      justifyContent: 'center',
-      paddingHorizontal: spacing.xl,
+      padding: spacing.xl,
       gap: spacing.lg,
+    },
+    buttonWrap: {
+      flex: 1,
     },
     allFarmsLink: {
       alignItems: 'center',
