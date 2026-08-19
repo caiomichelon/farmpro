@@ -86,6 +86,8 @@ export const pt = {
   'sector.subtitle': 'Escolhe o setor primeiro — só aparecem as fazendas que trabalham com ele',
   'sector.lavouraSubtitle': 'Talhões, safras e colheita',
   'sector.pecuariaSubtitle': 'Corte e cria/reprodução',
+  'sector.lavouraCredit': 'Foto: United Soybean Board (CC BY 2.0)',
+  'sector.pecuariaCredit': 'Foto: Benchill (CC BY-SA 3.0)',
   'sector.viewAllFarms': 'Ver todas as fazendas, sem filtrar',
 
   // Home da fazenda
@@ -775,6 +777,8 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'sector.subtitle': 'Pick a sector first — only farms that work with it show up',
   'sector.lavouraSubtitle': 'Plots, seasons and harvest',
   'sector.pecuariaSubtitle': 'Beef and breeding',
+  'sector.lavouraCredit': 'Photo: United Soybean Board (CC BY 2.0)',
+  'sector.pecuariaCredit': 'Photo: Benchill (CC BY-SA 3.0)',
   'sector.viewAllFarms': 'View all farms, unfiltered',
 
   'farmHome.switchFarm': '← Switch farm',
@@ -1443,6 +1447,8 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'sector.subtitle': 'Elegí el sector primero — solo aparecen las fincas que trabajan con él',
   'sector.lavouraSubtitle': 'Parcelas, cosechas y cosecha',
   'sector.pecuariaSubtitle': 'Engorde y cría',
+  'sector.lavouraCredit': 'Foto: United Soybean Board (CC BY 2.0)',
+  'sector.pecuariaCredit': 'Foto: Benchill (CC BY-SA 3.0)',
   'sector.viewAllFarms': 'Ver todas las fincas, sin filtrar',
 
   'farmHome.switchFarm': '← Cambiar finca',

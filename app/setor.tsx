@@ -4,10 +4,13 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { FadeSlideIn } from '../src/components/FadeSlideIn';
-import { SectorButton } from '../src/components/SectorButton';
 import { SectorDotsCluster } from '../src/components/SectorDotsCluster';
+import { SectorPhotoCard } from '../src/components/SectorPhotoCard';
 import { useT } from '../src/i18n';
 import { spacing, typography, useColors, type Colors } from '../src/theme';
+
+const lavouraImage = require('../src/assets/images/sector/lavoura.jpg');
+const pecuariaImage = require('../src/assets/images/sector/pecuaria.jpg');
 
 /** Primeira tela depois do login — escolhe o SETOR antes da fazenda, não o
  * contrário. Quem trabalha só com lavoura nunca vê fazenda de pecuária na
@@ -44,20 +47,20 @@ export default function SectorSelectionScreen() {
             pro layout em coluna, e os dois cartões colapsavam e ficavam se
             sobrepondo em vez de dividir a tela. */}
         <FadeSlideIn delay={60} style={styles.buttonWrap}>
-          <SectorButton
+          <SectorPhotoCard
             title={`🌱 ${t('farmHome.lavoura')}`}
             subtitle={t('sector.lavouraSubtitle')}
-            color={colors.lavoura}
-            backgroundColor={colors.lavouraLight}
+            image={lavouraImage}
+            credit={t('sector.lavouraCredit')}
             onPress={() => router.push('/farms?sector=lavoura')}
           />
         </FadeSlideIn>
         <FadeSlideIn delay={110} style={styles.buttonWrap}>
-          <SectorButton
+          <SectorPhotoCard
             title={`🐄 ${t('farmHome.pecuaria')}`}
             subtitle={t('sector.pecuariaSubtitle')}
-            color={colors.pecuaria}
-            backgroundColor={colors.pecuariaLight}
+            image={pecuariaImage}
+            credit={t('sector.pecuariaCredit')}
             onPress={() => router.push('/farms?sector=pecuaria')}
           />
         </FadeSlideIn>
