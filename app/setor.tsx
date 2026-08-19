@@ -52,6 +52,8 @@ export default function SectorSelectionScreen() {
             subtitle={t('sector.lavouraSubtitle')}
             image={lavouraImage}
             credit={t('sector.lavouraCredit')}
+            color={colors.lavoura}
+            backgroundColor={colors.lavouraLight}
             onPress={() => router.push('/farms?sector=lavoura')}
           />
         </FadeSlideIn>
@@ -61,6 +63,8 @@ export default function SectorSelectionScreen() {
             subtitle={t('sector.pecuariaSubtitle')}
             image={pecuariaImage}
             credit={t('sector.pecuariaCredit')}
+            color={colors.pecuaria}
+            backgroundColor={colors.pecuariaLight}
             onPress={() => router.push('/farms?sector=pecuaria')}
           />
         </FadeSlideIn>

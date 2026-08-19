@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ImageBackground, Pressable, StyleSheet, Text, View, type ImageSourcePropType } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View, type ImageSourcePropType } from 'react-native';
 
 import { radius, spacing, typography, useColors, type Colors } from '../theme';
 
@@ -8,18 +8,32 @@ interface SectorPhotoCardProps {
   subtitle: string;
   image: ImageSourcePropType;
   credit: string;
+  color: string;
+  backgroundColor: string;
   onPress: () => void;
 }
 
-/** Cartão grande com foto de fundo, usado só na tela /setor (não é o
- * SectorButton genérico — aquele continua com fundo de cor sólida e é
- * usado em telas menores, tipo a home da fazenda). A foto vem de um
- * arquivo local (src/assets/images/sector), pra funcionar offline, com
- * overlay escuro em gradiente (via camadas semi-transparentes) pra
- * garantir contraste do texto em cima de qualquer foto. O crédito da
- * foto (obrigatório pela licença Creative Commons) fica discreto no
- * canto inferior. */
-export function SectorPhotoCard({ title, subtitle, image, credit, onPress }: SectorPhotoCardProps) {
+/** Cartão grande com foto, usado só na tela /setor (não é o SectorButton
+ * genérico — aquele continua com fundo de cor sólida e é usado em telas
+ * menores, tipo a home da fazenda). A foto vem de um arquivo local
+ * (src/assets/images/sector), pra funcionar offline.
+ *
+ * resizeMode="contain" (não "cover") de propósito: com "cover" a foto
+ * era cortada/ampliada pra preencher o cartão inteiro, tipo um zoom que
+ * cortava o rosto do gado ou o broto da soja dependendo do formato da
+ * tela. Com "contain" a foto inteira sempre aparece, sem cortar nada —
+ * o espaço sobrando ao redor dela fica com a cor clara do setor, como
+ * uma moldura. O título/subtítulo saem de cima da foto e vão pra uma
+ * faixa sólida embaixo (mais legível que texto sobre foto). */
+export function SectorPhotoCard({
+  title,
+  subtitle,
+  image,
+  credit,
+  color,
+  backgroundColor,
+  onPress,
+}: SectorPhotoCardProps) {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
@@ -28,14 +42,14 @@ export function SectorPhotoCard({ title, subtitle, image, credit, onPress }: Sec
       onPress={onPress}
       style={({ pressed }) => [styles.container, pressed && styles.pressed]}
     >
-      <ImageBackground source={image} style={styles.image} imageStyle={styles.imageRounded}>
-        <View style={styles.overlay} />
-        <View style={styles.content}>
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.subtitle}>{subtitle}</Text>
-        </View>
+      <View style={[styles.photoArea, { backgroundColor }]}>
+        <Image source={image} style={styles.photo} resizeMode="contain" />
         <Text style={styles.credit}>{credit}</Text>
-      </ImageBackground>
+      </View>
+      <View style={[styles.footer, { backgroundColor: color }]}>
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.subtitle}>{subtitle}</Text>
+      </View>
     </Pressable>
   );
 }
@@ -50,49 +64,35 @@ function createStyles(colors: Colors) {
     pressed: {
       opacity: 0.9,
     },
-    image: {
+    photoArea: {
       flex: 1,
-      justifyContent: 'flex-end',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
-    imageRounded: {
-      // Sem width/height 100% explícitos aqui, o RN Web renderiza a
-      // imagem local (require()) no tamanho intrínseco do arquivo (ex.:
-      // 1280x850) em vez de preencher o cartão — cortando um zoom
-      // enorme e aleatório em vez de um "cover" centralizado de verdade.
+    photo: {
       width: '100%',
       height: '100%',
-      borderRadius: radius.lg,
-    },
-    overlay: {
-      ...StyleSheet.absoluteFillObject,
-      backgroundColor: 'rgba(20, 18, 12, 0.36)',
-    },
-    content: {
-      padding: spacing.lg,
-    },
-    title: {
-      ...typography.heading,
-      color: colors.textInverse,
-      textShadowColor: 'rgba(0, 0, 0, 0.45)',
-      textShadowOffset: { width: 0, height: 1 },
-      textShadowRadius: 4,
-      marginBottom: spacing.xs / 2,
-    },
-    subtitle: {
-      ...typography.caption,
-      color: colors.textInverse,
-      opacity: 0.92,
-      textShadowColor: 'rgba(0, 0, 0, 0.45)',
-      textShadowOffset: { width: 0, height: 1 },
-      textShadowRadius: 4,
     },
     credit: {
       position: 'absolute',
       bottom: spacing.xs,
       right: spacing.sm,
       fontSize: 9,
+      color: colors.textSecondary,
+      opacity: 0.65,
+    },
+    footer: {
+      padding: spacing.lg,
+    },
+    title: {
+      ...typography.heading,
       color: colors.textInverse,
-      opacity: 0.55,
+      marginBottom: spacing.xs / 2,
+    },
+    subtitle: {
+      ...typography.caption,
+      color: colors.textInverse,
+      opacity: 0.92,
     },
   });
 }
