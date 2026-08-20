@@ -8,6 +8,9 @@ interface PhotoPickerProps {
   label: string;
   photoUrl: string | null;
   onChange: (url: string | null) => void;
+  /** Id da fazenda dona do arquivo — usado como trava de acesso (só quem é
+   * membro dessa fazenda consegue ver a foto depois). */
+  farmId: string;
   /** Pasta de organização no storage (ex.: "employee-documents"). */
   folder: string;
   accentColor?: string;
@@ -16,7 +19,7 @@ interface PhotoPickerProps {
 /** Selecionar/tirar foto e anexar — usado em documentos de funcionário
  * (foto do ASO, CNH etc.) e em outros lugares que precisem de anexo visual.
  * Sobe direto pro Supabase Storage, sem passo manual nenhum. */
-export function PhotoPicker({ label, photoUrl, onChange, folder, accentColor }: PhotoPickerProps) {
+export function PhotoPicker({ label, photoUrl, onChange, farmId, folder, accentColor }: PhotoPickerProps) {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const activeAccent = accentColor ?? colors.primary;
@@ -27,7 +30,8 @@ export function PhotoPicker({ label, photoUrl, onChange, folder, accentColor }: 
     setError(null);
     setIsUploading(true);
     try {
-      const url = source === 'library' ? await pickAndUploadFromLibrary(folder) : await pickAndUploadFromCamera(folder);
+      const url =
+        source === 'library' ? await pickAndUploadFromLibrary(farmId, folder) : await pickAndUploadFromCamera(farmId, folder);
       if (url) onChange(url);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível anexar a foto.');

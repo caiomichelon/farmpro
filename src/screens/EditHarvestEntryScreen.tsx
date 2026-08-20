@@ -81,16 +81,18 @@ export function EditHarvestEntryScreen({ farmId, entryId }: { farmId: string; en
 
   // key={entry.id} garante que o formulário abaixo reinicia o estado com os
   // valores certos sempre que a entrada carregada muda.
-  return <EditForm key={entry.id} entry={entry} buyers={buyers} createBuyer={createBuyer} colors={colors} styles={styles} />;
+  return <EditForm key={entry.id} farmId={farmId} entry={entry} buyers={buyers} createBuyer={createBuyer} colors={colors} styles={styles} />;
 }
 
 function EditForm({
+  farmId,
   entry,
   buyers,
   createBuyer,
   colors,
   styles,
 }: {
+  farmId: string;
   entry: HarvestEntry;
   buyers: ReturnType<typeof useGrainBuyers>['buyers'];
   createBuyer: ReturnType<typeof useGrainBuyers>['createBuyer'];
@@ -222,7 +224,7 @@ function EditForm({
           <Card style={styles.card}>
             <Text style={styles.cardTitle}>Outros</Text>
             <TextField label="Observação" value={notes} onChangeText={setNotes} placeholder="Opcional" />
-            <PhotoPicker label="Foto da nota de pesagem" photoUrl={photoUrl} onChange={setPhotoUrl} folder="harvest-entries" accentColor={colors.lavoura} />
+            <PhotoPicker label="Foto da nota de pesagem" photoUrl={photoUrl} onChange={setPhotoUrl} farmId={farmId} folder="harvest-entries" accentColor={colors.lavoura} />
           </Card>
 
           {error ? <Text style={styles.error}>{error}</Text> : null}

@@ -176,6 +176,7 @@ export function HarvestScreen({ farmId, seasonId }: { farmId: string; seasonId?:
 
             {isAdding ? (
               <NewHarvestForm
+                farmId={farmId}
                 t={t}
                 styles={styles}
                 colors={colors}
@@ -218,6 +219,7 @@ interface HarvestFormValues {
 }
 
 function NewHarvestForm({
+  farmId,
   onClose,
   createEntry,
   createSale,
@@ -227,6 +229,7 @@ function NewHarvestForm({
   styles,
   colors,
 }: {
+  farmId: string;
   onClose: () => void;
   createEntry: (values: HarvestFormValues) => Promise<{ error: string | null; id: string | null }>;
   createSale: ReturnType<typeof useGrainSales>['createSale'];
@@ -399,7 +402,7 @@ function NewHarvestForm({
             ) : null}
           </>
         ) : null}
-        <PhotoPicker label={t('harvest.photoLabel')} photoUrl={photoUrl} onChange={setPhotoUrl} folder="harvest-entries" accentColor={colors.lavoura} />
+        <PhotoPicker label={t('harvest.photoLabel')} photoUrl={photoUrl} onChange={setPhotoUrl} farmId={farmId} folder="harvest-entries" accentColor={colors.lavoura} />
       </Card>
 
       <TextField label={t('harvest.quantityLabel')} value={quantity} onChangeText={setQuantity} keyboardType="decimal-pad" placeholder={t('harvest.quantityPlaceholder')} />

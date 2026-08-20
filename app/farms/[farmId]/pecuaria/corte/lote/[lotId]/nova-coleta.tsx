@@ -20,7 +20,7 @@ import { spacing, typography, useColors, type Colors } from '../../../../../../.
 export default function NewFieldCollectionScreen() {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const { lotId } = useLocalSearchParams<{ lotId: string }>();
+  const { farmId, lotId } = useLocalSearchParams<{ farmId: string; lotId: string }>();
   const { createCollection } = useCattleFieldCollections(lotId);
 
   const [category, setCategory] = useState<CattleFieldCollectionCategory>('rebanho');
@@ -115,7 +115,7 @@ export default function NewFieldCollectionScreen() {
             />
           ) : null}
           <TextField label="Observação" value={notes} onChangeText={setNotes} placeholder="Opcional" />
-          <PhotoPicker label="Foto (opcional)" photoUrl={photoUrl} onChange={setPhotoUrl} folder="cattle-field-collections" accentColor={colors.pecuaria} />
+          <PhotoPicker label="Foto (opcional)" photoUrl={photoUrl} onChange={setPhotoUrl} farmId={farmId} folder="cattle-field-collections" accentColor={colors.pecuaria} />
           <Text style={styles.locationNote}>Sua localização atual é anexada automaticamente como evidência da visita.</Text>
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <Button label="Salvar coleta" onPress={handleSubmit} loading={isSubmitting} />

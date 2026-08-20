@@ -142,6 +142,7 @@ export function NewSaleScreen({
             label={t('newSale.photoLabel')}
             photoUrl={photoUrl}
             onChange={setPhotoUrl}
+            farmId={farmId}
             folder="grain-sales"
             accentColor={colors.lavoura}
           />

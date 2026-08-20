@@ -29,7 +29,7 @@ export default function EmployeeDocumentsScreen() {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const ALERT_COLORS = useMemo(() => alertColors(colors), [colors]);
-  const { employeeId } = useLocalSearchParams<{ employeeId: string }>();
+  const { farmId, employeeId } = useLocalSearchParams<{ farmId: string; employeeId: string }>();
   const { documents, isLoading, error, createDocument } = useEmployeeDocuments(employeeId);
   const [isAdding, setIsAdding] = useState(false);
 
@@ -54,6 +54,7 @@ export default function EmployeeDocumentsScreen() {
       <View style={styles.footer}>
         {isAdding ? (
           <NewDocumentForm
+            farmId={farmId}
             styles={styles}
             onCancel={() => setIsAdding(false)}
             onCreate={async (values) => {
@@ -104,10 +105,12 @@ function DocumentRow({
 }
 
 function NewDocumentForm({
+  farmId,
   onCancel,
   onCreate,
   styles,
 }: {
+  farmId: string;
   onCancel: () => void;
   onCreate: (values: {
     document_type: string;
@@ -157,6 +160,7 @@ function NewDocumentForm({
         label="Foto do documento (opcional)"
         photoUrl={photoUrl}
         onChange={setPhotoUrl}
+        farmId={farmId}
         folder="employee-documents"
         accentColor={colors.funcionarios}
       />

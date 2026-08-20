@@ -19,7 +19,7 @@ function formatDate(iso: string): string {
 export default function DailyPhotoScreen() {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const { lotId } = useLocalSearchParams<{ lotId: string }>();
+  const { farmId, lotId } = useLocalSearchParams<{ farmId: string; lotId: string }>();
   const { lot } = useCattleLot(lotId);
   const { photos, isLoading, addPhoto } = useCattleLotPhotos(lotId);
 
@@ -46,7 +46,7 @@ export default function DailyPhotoScreen() {
 
       <ScrollView contentContainerStyle={styles.content}>
         <Card style={styles.card}>
-          <PhotoPicker label="Foto de hoje" photoUrl={photoUrl} onChange={setPhotoUrl} folder="cattle-lot-photos" accentColor={colors.pecuaria} />
+          <PhotoPicker label="Foto de hoje" photoUrl={photoUrl} onChange={setPhotoUrl} farmId={farmId} folder="cattle-lot-photos" accentColor={colors.pecuaria} />
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
           <Button label="Salvar foto do dia" onPress={handleSave} loading={isSaving} disabled={!photoUrl} />
         </Card>

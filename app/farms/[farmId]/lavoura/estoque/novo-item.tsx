@@ -108,7 +108,7 @@ export default function NewLavouraInventoryItemScreen() {
               ) : null}
               <TextField label="Validade" value={expirationDate} onChangeText={setExpirationDate} placeholder="DD/MM/AAAA (opcional)" keyboardType="numbers-and-punctuation" />
               <TextField label="Onde fica guardado" value={location} onChangeText={setLocation} placeholder="Ex.: Barracão 1" />
-              <PhotoPicker label="Foto do item" photoUrl={photoUrl} onChange={setPhotoUrl} folder="lavoura-inventory" accentColor={colors.lavoura} />
+              <PhotoPicker label="Foto do item" photoUrl={photoUrl} onChange={setPhotoUrl} farmId={farmId} folder="lavoura-inventory" accentColor={colors.lavoura} />
             </Card>
           </FadeSlideIn>
 

@@ -108,7 +108,7 @@ export default function NewInventoryItemScreen() {
               ) : null}
               <TextField label="Validade" value={expirationDate} onChangeText={setExpirationDate} placeholder="DD/MM/AAAA (opcional)" keyboardType="numbers-and-punctuation" />
               <TextField label="Onde fica guardado" value={location} onChangeText={setLocation} placeholder="Ex.: Galpão 2" />
-              <PhotoPicker label="Foto do item" photoUrl={photoUrl} onChange={setPhotoUrl} folder="cattle-inventory" accentColor={colors.pecuaria} />
+              <PhotoPicker label="Foto do item" photoUrl={photoUrl} onChange={setPhotoUrl} farmId={farmId} folder="cattle-inventory" accentColor={colors.pecuaria} />
             </Card>
           </FadeSlideIn>
 

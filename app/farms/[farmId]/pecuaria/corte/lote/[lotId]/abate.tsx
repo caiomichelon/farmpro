@@ -128,6 +128,7 @@ export default function SlaughterScreen() {
                 label="Foto da nota (opcional)"
                 photoUrl={photoUrl}
                 onChange={setPhotoUrl}
+                farmId={farmId}
                 folder="cattle-slaughters"
                 accentColor={colors.pecuaria}
               />
