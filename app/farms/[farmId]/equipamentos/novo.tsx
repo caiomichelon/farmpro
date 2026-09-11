@@ -7,11 +7,13 @@ import { Button } from '../../../../src/components/Button';
 import { ScreenHeader } from '../../../../src/components/ScreenHeader';
 import { TextField } from '../../../../src/components/TextField';
 import { useEquipment } from '../../../../src/hooks/useEquipment';
+import { useT } from '../../../../src/i18n';
 import { spacing, useColors, type Colors } from '../../../../src/theme';
 
 export default function NewEquipmentScreen() {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const t = useT();
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const { createEquipment } = useEquipment(farmId);
 
@@ -34,13 +36,13 @@ export default function NewEquipmentScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <ScreenHeader title="Novo equipamento" />
+      <ScreenHeader title={t('equipment.newTitle')} />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={styles.form}>
-          <TextField label="Nome" value={name} onChangeText={setName} placeholder="Ex.: Trator Massey 4x2" />
-          <TextField label="Observações" value={notes} onChangeText={setNotes} placeholder="Opcional" />
+          <TextField label={t('equipment.nameLabel')} value={name} onChangeText={setName} placeholder={t('equipment.namePlaceholder')} />
+          <TextField label={t('equipment.notesLabel')} value={notes} onChangeText={setNotes} placeholder={t('equipment.optionalPlaceholder')} />
           {error ? <Text style={styles.error}>{error}</Text> : null}
-          <Button label="Salvar equipamento" onPress={handleSubmit} loading={isSubmitting} disabled={!name} />
+          <Button label={t('equipment.saveButton')} onPress={handleSubmit} loading={isSubmitting} disabled={!name} />
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

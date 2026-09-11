@@ -9,6 +9,7 @@ import { EmptyState } from '../../../../../src/components/EmptyState';
 import { ScreenHeader } from '../../../../../src/components/ScreenHeader';
 import { TextField } from '../../../../../src/components/TextField';
 import { useEquipment, useEquipmentMaintenance } from '../../../../../src/hooks/useEquipment';
+import { useT } from '../../../../../src/i18n';
 import { radius, spacing, typography, useColors, type Colors } from '../../../../../src/theme';
 
 function formatDateBR(iso: string): string {
@@ -19,6 +20,7 @@ function formatDateBR(iso: string): string {
 export default function EquipmentDetailScreen() {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const t = useT();
   const { farmId, equipmentId } = useLocalSearchParams<{ farmId: string; equipmentId: string }>();
   const { equipment } = useEquipment(farmId);
   const item = equipment.find((e) => e.id === equipmentId);
@@ -52,37 +54,49 @@ export default function EquipmentDetailScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <ScreenHeader title={item?.name ?? 'Equipamento'} subtitle="Histórico de manutenção" />
+      <ScreenHeader title={item?.name ?? t('equipment.fallbackTitle')} subtitle={t('equipment.maintenanceHistorySubtitle')} />
       <ScrollView contentContainerStyle={styles.content}>
         {isAdding ? (
           <Card style={styles.card}>
             <TextField
-              label="Tipo de manutenção"
+              label={t('equipment.maintenanceTypeLabel')}
               value={maintenanceType}
               onChangeText={setMaintenanceType}
-              placeholder="Ex.: Troca de óleo, revisão geral"
+              placeholder={t('equipment.maintenanceTypePlaceholder')}
             />
             <TextField
-              label="Próxima manutenção prevista (AAAA-MM-DD)"
+              label={t('equipment.nextDueLabel')}
               value={nextDueDate}
               onChangeText={setNextDueDate}
-              placeholder="Opcional"
+              placeholder={t('equipment.optionalPlaceholder')}
             />
-            <TextField label="Custo (R$)" value={cost} onChangeText={setCost} placeholder="Opcional" keyboardType="decimal-pad" />
+            <TextField
+              label={t('equipment.costLabel')}
+              value={cost}
+              onChangeText={setCost}
+              placeholder={t('equipment.optionalPlaceholder')}
+              keyboardType="decimal-pad"
+            />
             {error ? <Text style={styles.errorText}>{error}</Text> : null}
             <View style={styles.formButtons}>
-              <Button label="Cancelar" variant="ghost" onPress={() => setIsAdding(false)} style={{ flex: 1 }} />
-              <Button label="Salvar" onPress={handleSave} loading={isSaving} disabled={!maintenanceType} style={{ flex: 1 }} />
+              <Button label={t('equipment.cancelButton')} variant="ghost" onPress={() => setIsAdding(false)} style={{ flex: 1 }} />
+              <Button
+                label={t('equipment.saveMaintenanceButton')}
+                onPress={handleSave}
+                loading={isSaving}
+                disabled={!maintenanceType}
+                style={{ flex: 1 }}
+              />
             </View>
           </Card>
         ) : (
-          <Button label="+ Nova manutenção" onPress={() => setIsAdding(true)} />
+          <Button label={t('equipment.addMaintenanceButton')} onPress={() => setIsAdding(true)} />
         )}
 
         {isLoading ? (
           <ActivityIndicator color={colors.primary} style={styles.loading} />
         ) : maintenances.length === 0 ? (
-          <EmptyState text="Nenhuma manutenção registrada ainda." />
+          <EmptyState text={t('equipment.noMaintenance')} />
         ) : (
           maintenances.map((m) => (
             <Card key={m.id} style={styles.rowCard}>
@@ -90,9 +104,13 @@ export default function EquipmentDetailScreen() {
                 <Text style={styles.rowTitle}>{m.maintenance_type}</Text>
                 <Text style={styles.rowDate}>{formatDateBR(m.performed_at)}</Text>
               </View>
-              {m.next_due_date ? <Text style={styles.rowSubtitle}>Próxima prevista: {formatDateBR(m.next_due_date)}</Text> : null}
+              {m.next_due_date ? (
+                <Text style={styles.rowSubtitle}>{t('equipment.nextDuePrefix', { date: formatDateBR(m.next_due_date) })}</Text>
+              ) : null}
               {m.cost != null ? (
-                <Text style={styles.rowSubtitle}>Custo: {Number(m.cost).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</Text>
+                <Text style={styles.rowSubtitle}>
+                  {t('equipment.costPrefix', { value: Number(m.cost).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) })}
+                </Text>
               ) : null}
             </Card>
           ))
