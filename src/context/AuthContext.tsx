@@ -13,6 +13,7 @@ interface AuthContextValue {
     fullName: string
   ) => Promise<{ error: string | null; hasSession: boolean }>;
   signOut: () => Promise<void>;
+  sendPasswordResetEmail: (email: string, redirectTo: string) => Promise<{ error: string | null }>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -55,6 +56,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
       },
       async signOut() {
         await supabase.auth.signOut();
+      },
+      async sendPasswordResetEmail(email, redirectTo) {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+        return { error: error?.message ?? null };
       },
     }),
     [session, isLoading]

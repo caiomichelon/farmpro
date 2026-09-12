@@ -73,6 +73,9 @@ export default function LoginScreen() {
                 secureTextEntry
                 placeholder="••••••••"
               />
+              <Link href="/auth/esqueci-senha" style={styles.forgotPasswordLink}>
+                {t('auth.login.forgotPassword')}
+              </Link>
               {error ? <Text style={styles.error}>{error}</Text> : null}
               <Button label={t('auth.login.submit')} onPress={handleSubmit} loading={isSubmitting} disabled={!email || !password} />
 
@@ -142,6 +145,12 @@ function createStyles(colors: Colors) {
     error: {
       ...typography.caption,
       color: colors.danger,
+    },
+    forgotPasswordLink: {
+      ...typography.caption,
+      color: colors.primary,
+      alignSelf: 'flex-end',
+      marginTop: -spacing.sm,
     },
     footer: {
       flexDirection: 'row',
