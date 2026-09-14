@@ -172,7 +172,7 @@ function BirdMark({ color, size = 1 }: { color: string; size?: number }) {
 
 const styles = StyleSheet.create({
   fill: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     overflow: 'hidden',
   },
   svg: {
