@@ -10,21 +10,26 @@ import { EmptyState } from '../../../src/components/EmptyState';
 import { ScreenHeader } from '../../../src/components/ScreenHeader';
 import { TextField } from '../../../src/components/TextField';
 import { useSuppliers } from '../../../src/hooks/useSuppliers';
+import { useT, type TFunction } from '../../../src/i18n';
 import type { Supplier } from '../../../src/types/database';
 import { radius, spacing, typography, useColors, type Colors } from '../../../src/theme';
 
-const CATEGORY_OPTIONS: { value: Supplier['category']; label: string }[] = [
-  { value: 'agropecuaria', label: 'Agropecuária' },
-  { value: 'veterinario', label: 'Veterinário' },
-  { value: 'mecanico', label: 'Mecânico' },
-  { value: 'transportadora', label: 'Transportadora' },
-  { value: 'comprador', label: 'Comprador' },
-  { value: 'outro', label: 'Outro' },
-];
+function categoryOptions(t: TFunction): { value: Supplier['category']; label: string }[] {
+  return [
+    { value: 'agropecuaria', label: t('suppliers.categoryAgropecuaria') },
+    { value: 'veterinario', label: t('suppliers.categoryVeterinario') },
+    { value: 'mecanico', label: t('suppliers.categoryMecanico') },
+    { value: 'transportadora', label: t('suppliers.categoryTransportadora') },
+    { value: 'comprador', label: t('suppliers.categoryComprador') },
+    { value: 'outro', label: t('suppliers.categoryOutro') },
+  ];
+}
 
 export default function SuppliersScreen() {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const t = useT();
+  const categoryOpts = useMemo(() => categoryOptions(t), [t]);
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const { suppliers, isLoading, error, createSupplier, deleteSupplier } = useSuppliers(farmId);
 
@@ -52,27 +57,41 @@ export default function SuppliersScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <ScreenHeader title="📇 Fornecedores" subtitle={`${suppliers.length} ${suppliers.length === 1 ? 'contato' : 'contatos'}`} />
+      <ScreenHeader title={t('suppliers.title')} subtitle={t('suppliers.subtitleCount', { count: suppliers.length })} />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.content}>
           <Card style={styles.formCard}>
-            <Text style={styles.sectionTitle}>Novo contato</Text>
-            <TextField label="Nome" value={name} onChangeText={setName} placeholder="Ex.: Agropecuária São José" />
-            <ChipSelect label="Categoria" options={CATEGORY_OPTIONS} value={category} onChange={setCategory} />
-            <TextField label="Telefone (opcional)" value={phone} onChangeText={setPhone} placeholder="Ex.: (11) 98765-4321" keyboardType="phone-pad" />
-            <TextField label="Notas (opcional)" value={notes} onChangeText={setNotes} placeholder="Ex.: entrega às terças" />
+            <Text style={styles.sectionTitle}>{t('suppliers.newContactTitle')}</Text>
+            <TextField label={t('suppliers.nameLabel')} value={name} onChangeText={setName} placeholder={t('suppliers.namePlaceholder')} />
+            <ChipSelect label={t('suppliers.categoryLabel')} options={categoryOpts} value={category} onChange={setCategory} />
+            <TextField
+              label={t('suppliers.phoneLabel')}
+              value={phone}
+              onChangeText={setPhone}
+              placeholder={t('suppliers.phonePlaceholder')}
+              keyboardType="phone-pad"
+            />
+            <TextField label={t('suppliers.notesLabel')} value={notes} onChangeText={setNotes} placeholder={t('suppliers.notesPlaceholder')} />
             {formError ? <Text style={styles.errorText}>{formError}</Text> : null}
-            <Button label={isSaving ? 'Salvando...' : 'Salvar'} onPress={handleSave} disabled={isSaving} />
+            <Button label={isSaving ? t('suppliers.saving') : t('suppliers.save')} onPress={handleSave} disabled={isSaving} />
           </Card>
 
-          <Text style={styles.sectionTitle}>Contatos</Text>
+          <Text style={styles.sectionTitle}>{t('suppliers.contactsTitle')}</Text>
           {isLoading ? (
             <ActivityIndicator color={colors.primary} style={styles.loading} />
           ) : suppliers.length === 0 ? (
-            <EmptyState text="Nenhum fornecedor cadastrado ainda." />
+            <EmptyState text={t('suppliers.empty')} />
           ) : (
             suppliers.map((supplier) => (
-              <SupplierRow key={supplier.id} supplier={supplier} colors={colors} styles={styles} onDelete={() => deleteSupplier(supplier.id)} />
+              <SupplierRow
+                key={supplier.id}
+                supplier={supplier}
+                colors={colors}
+                styles={styles}
+                categoryOpts={categoryOpts}
+                deleteLabel={t('suppliers.delete')}
+                onDelete={() => deleteSupplier(supplier.id)}
+              />
             ))
           )}
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
@@ -86,21 +105,25 @@ function SupplierRow({
   supplier,
   colors,
   styles,
+  categoryOpts,
+  deleteLabel,
   onDelete,
 }: {
   supplier: Supplier;
   colors: Colors;
   styles: ReturnType<typeof createStyles>;
+  categoryOpts: { value: Supplier['category']; label: string }[];
+  deleteLabel: string;
   onDelete: () => void;
 }) {
-  const categoryLabel = CATEGORY_OPTIONS.find((o) => o.value === supplier.category)?.label ?? supplier.category;
+  const categoryLabel = categoryOpts.find((o) => o.value === supplier.category)?.label ?? supplier.category;
 
   return (
     <Card style={styles.rowCard}>
       <View style={styles.rowTop}>
         <Text style={styles.supplierName}>{supplier.name}</Text>
         <Pressable onPress={onDelete} hitSlop={8}>
-          <Text style={styles.deleteLink}>Excluir</Text>
+          <Text style={styles.deleteLink}>{deleteLabel}</Text>
         </Pressable>
       </View>
       <View style={styles.categoryBadge}>

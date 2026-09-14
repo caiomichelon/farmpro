@@ -10,15 +10,18 @@ import { EmptyState } from '../../../src/components/EmptyState';
 import { ScreenHeader } from '../../../src/components/ScreenHeader';
 import { TextField } from '../../../src/components/TextField';
 import { useCasualLaborers } from '../../../src/hooks/useCasualLaborers';
+import { useT, type TFunction } from '../../../src/i18n';
 import type { CasualLaborer } from '../../../src/types/database';
 import { radius, spacing, typography, useColors, type Colors } from '../../../src/theme';
 
-const SECTOR_OPTIONS: { value: CasualLaborer['sector']; label: string }[] = [
-  { value: 'geral', label: 'Geral' },
-  { value: 'lavoura', label: 'Lavoura' },
-  { value: 'corte', label: 'Corte' },
-  { value: 'cria', label: 'Cria' },
-];
+function sectorOptions(t: TFunction): { value: CasualLaborer['sector']; label: string }[] {
+  return [
+    { value: 'geral', label: t('casualLaborers.sectorGeral') },
+    { value: 'lavoura', label: t('casualLaborers.sectorLavoura') },
+    { value: 'corte', label: t('casualLaborers.sectorCorte') },
+    { value: 'cria', label: t('casualLaborers.sectorCria') },
+  ];
+}
 
 function formatDate(iso: string): string {
   const [y, m, d] = iso.split('-');
@@ -32,6 +35,8 @@ function formatCurrency(value: number): string {
 export default function CasualLaborersScreen() {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const t = useT();
+  const sectorOpts = useMemo(() => sectorOptions(t), [t]);
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const { laborers, isLoading, error, createLaborer, deleteLaborer, totalPaid } = useCasualLaborers(farmId);
 
@@ -64,38 +69,54 @@ export default function CasualLaborersScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <ScreenHeader title="👷 Diaristas" subtitle={`${laborers.length} ${laborers.length === 1 ? 'registro' : 'registros'} · ${formatCurrency(totalPaid)} pagos`} />
+      <ScreenHeader
+        title={t('casualLaborers.title')}
+        subtitle={t('casualLaborers.subtitle', { count: laborers.length, total: formatCurrency(totalPaid) })}
+      />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.content}>
           <Card style={styles.formCard}>
-            <Text style={styles.sectionTitle}>Novo registro</Text>
-            <TextField label="Nome do diarista" value={workerName} onChangeText={setWorkerName} placeholder="Ex.: João da Silva" />
-            <ChipSelect label="Setor" options={SECTOR_OPTIONS} value={sector} onChange={setSector} />
+            <Text style={styles.sectionTitle}>{t('casualLaborers.newRecordTitle')}</Text>
             <TextField
-              label="O que fez (opcional)"
+              label={t('casualLaborers.workerNameLabel')}
+              value={workerName}
+              onChangeText={setWorkerName}
+              placeholder={t('casualLaborers.workerNamePlaceholder')}
+            />
+            <ChipSelect label={t('casualLaborers.sectorLabel')} options={sectorOpts} value={sector} onChange={setSector} />
+            <TextField
+              label={t('casualLaborers.taskLabel')}
               value={taskDescription}
               onChangeText={setTaskDescription}
-              placeholder="Ex.: ajudou na colheita"
+              placeholder={t('casualLaborers.taskPlaceholder')}
             />
             <TextField
-              label="Valor pago (R$)"
+              label={t('casualLaborers.amountLabel')}
               value={amountPaid}
               onChangeText={setAmountPaid}
-              placeholder="Ex.: 120"
+              placeholder={t('casualLaborers.amountPlaceholder')}
               keyboardType="decimal-pad"
             />
             {formError ? <Text style={styles.errorText}>{formError}</Text> : null}
-            <Button label={isSaving ? 'Salvando...' : 'Salvar'} onPress={handleSave} disabled={isSaving} />
+            <Button label={isSaving ? t('casualLaborers.saving') : t('casualLaborers.save')} onPress={handleSave} disabled={isSaving} />
           </Card>
 
-          <Text style={styles.sectionTitle}>Histórico</Text>
+          <Text style={styles.sectionTitle}>{t('casualLaborers.historyTitle')}</Text>
           {isLoading ? (
             <ActivityIndicator color={colors.primary} style={styles.loading} />
           ) : laborers.length === 0 ? (
-            <EmptyState text="Nenhum diarista registrado ainda." />
+            <EmptyState text={t('casualLaborers.empty')} />
           ) : (
             laborers.map((laborer) => (
-              <LaborerRow key={laborer.id} laborer={laborer} colors={colors} styles={styles} onDelete={() => deleteLaborer(laborer.id)} />
+              <LaborerRow
+                key={laborer.id}
+                laborer={laborer}
+                colors={colors}
+                styles={styles}
+                sectorOpts={sectorOpts}
+                deleteLabel={t('casualLaborers.delete')}
+                onDelete={() => deleteLaborer(laborer.id)}
+              />
             ))
           )}
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
@@ -109,23 +130,27 @@ function LaborerRow({
   laborer,
   colors,
   styles,
+  sectorOpts,
+  deleteLabel,
   onDelete,
 }: {
   laborer: CasualLaborer;
   colors: Colors;
   styles: ReturnType<typeof createStyles>;
+  sectorOpts: { value: CasualLaborer['sector']; label: string }[];
+  deleteLabel: string;
   onDelete: () => void;
 }) {
   const sectorColor =
     laborer.sector === 'lavoura' ? colors.lavoura : laborer.sector === 'corte' || laborer.sector === 'cria' ? colors.pecuaria : colors.textMuted;
-  const sectorLabel = SECTOR_OPTIONS.find((o) => o.value === laborer.sector)?.label ?? laborer.sector;
+  const sectorLabel = sectorOpts.find((o) => o.value === laborer.sector)?.label ?? laborer.sector;
 
   return (
     <Card style={styles.rowCard}>
       <View style={styles.rowTop}>
         <Text style={styles.workerName}>{laborer.worker_name}</Text>
         <Pressable onPress={onDelete} hitSlop={8}>
-          <Text style={styles.deleteLink}>Excluir</Text>
+          <Text style={styles.deleteLink}>{deleteLabel}</Text>
         </Pressable>
       </View>
       <View style={styles.badgeRow}>
