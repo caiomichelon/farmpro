@@ -58,7 +58,7 @@ export default function SectorSelectionScreen() {
             sobrepondo em vez de dividir a tela. */}
         <FadeSlideIn delay={60} style={styles.buttonWrap}>
           <SectorPhotoCard
-            title={`🌱 ${t('farmHome.lavoura')}`}
+            title={t('farmHome.lavoura')}
             subtitle={t('sector.lavouraSubtitle')}
             image={lavouraImage}
             credit={t('sector.lavouraCredit')}
@@ -69,7 +69,7 @@ export default function SectorSelectionScreen() {
         </FadeSlideIn>
         <FadeSlideIn delay={110} style={styles.buttonWrap}>
           <SectorPhotoCard
-            title={`🐄 ${t('farmHome.pecuaria')}`}
+            title={t('farmHome.pecuaria')}
             subtitle={t('sector.pecuariaSubtitle')}
             image={pecuariaImage}
             credit={t('sector.pecuariaCredit')}

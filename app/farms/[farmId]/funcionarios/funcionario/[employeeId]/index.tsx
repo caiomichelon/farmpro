@@ -66,7 +66,6 @@ export default function EmployeeDetailScreen() {
         {gamification.totalDaysWorked > 0 ? (
           <View style={styles.gamificationCard}>
             <View style={styles.streakRow}>
-              <Text style={styles.streakEmoji}>🔥</Text>
               <View style={{ flex: 1 }}>
                 <Text style={styles.streakValue}>
                   {gamification.currentStreakDays} {gamification.currentStreakDays === 1 ? 'dia seguido' : 'dias seguidos'}
@@ -98,7 +97,7 @@ export default function EmployeeDetailScreen() {
           title="Ponto digital"
           subtitle={
             gamification.currentStreakDays > 0
-              ? `🔥 ${gamification.currentStreakDays} dias seguidos — bater ponto e ver histórico`
+              ? `${gamification.currentStreakDays} dias seguidos — bater ponto e ver histórico`
               : 'Bater ponto e ver histórico'
           }
           onPress={() => router.push(`/farms/${farmId}/funcionarios/funcionario/${employeeId}/ponto`)}
@@ -238,9 +237,6 @@ function createStyles(colors: Colors) {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-  },
-  streakEmoji: {
-    fontSize: 28,
   },
   streakValue: {
     ...typography.heading,

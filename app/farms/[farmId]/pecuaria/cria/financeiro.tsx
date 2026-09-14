@@ -7,7 +7,7 @@ import { DataTable, type DataTableColumn } from '../../../../../src/components/D
 import { EmptyState } from '../../../../../src/components/EmptyState';
 import { ScreenHeader } from '../../../../../src/components/ScreenHeader';
 import { useBreedingCows, type BreedingCowSummary } from '../../../../../src/hooks/useBreedingCows';
-import { spacing, typography, useColors, type Colors } from '../../../../../src/theme';
+import { radius, spacing, typography, useColors, type Colors } from '../../../../../src/theme';
 
 function formatBRL(value: number) {
   return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -103,7 +103,7 @@ function createStyles(colors: Colors) {
       backgroundColor: colors.surface,
       borderWidth: 1,
       borderColor: colors.border,
-      borderRadius: 10,
+      borderRadius: radius.md,
       padding: spacing.md,
     },
     summaryCell: {

@@ -45,7 +45,7 @@ export default function EndOfDayScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         {allGood ? (
           <Card style={styles.successCard}>
-            <Text style={styles.cardTitle}>Tudo certo por hoje ✓</Text>
+            <Text style={styles.cardTitle}>Tudo certo por hoje</Text>
             <Text style={styles.infoText}>Ponto batido, sem alertas em aberto. Bom descanso!</Text>
           </Card>
         ) : null}

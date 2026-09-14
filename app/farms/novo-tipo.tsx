@@ -40,7 +40,6 @@ export default function NewFarmSectorTypeScreen() {
       <View style={styles.content}>
         <FadeSlideIn delay={60} style={styles.cardWrap}>
           <TypeCard
-            icon="🌱"
             title={t('farms.sectorTypeLavoura')}
             subtitle={t('newFarmType.lavouraSubtitle')}
             color={colors.lavoura}
@@ -50,7 +49,6 @@ export default function NewFarmSectorTypeScreen() {
         </FadeSlideIn>
         <FadeSlideIn delay={100} style={styles.cardWrap}>
           <TypeCard
-            icon="🐄"
             title={t('farms.sectorTypePecuaria')}
             subtitle={t('newFarmType.pecuariaSubtitle')}
             color={colors.pecuaria}
@@ -60,7 +58,6 @@ export default function NewFarmSectorTypeScreen() {
         </FadeSlideIn>
         <FadeSlideIn delay={140} style={styles.cardWrap}>
           <TypeCard
-            icon="🌱🐄"
             title={t('farms.sectorTypeAmbos')}
             subtitle={t('newFarmType.ambosSubtitle')}
             color={colors.primary}
@@ -74,14 +71,12 @@ export default function NewFarmSectorTypeScreen() {
 }
 
 function TypeCard({
-  icon,
   title,
   subtitle,
   color,
   backgroundColor,
   onPress,
 }: {
-  icon: string;
   title: string;
   subtitle: string;
   color: string;
@@ -96,7 +91,6 @@ function TypeCard({
       style={({ pressed }) => [styles.card, { backgroundColor, borderColor: color }, pressed && styles.cardPressed]}
       onPress={onPress}
     >
-      <Text style={styles.cardIcon}>{icon}</Text>
       <Text style={[styles.cardTitle, { color }]}>{title}</Text>
       <Text style={styles.cardSubtitle}>{subtitle}</Text>
     </Pressable>
@@ -146,9 +140,6 @@ function createStyles(colors: Colors) {
     },
     cardPressed: {
       opacity: 0.8,
-    },
-    cardIcon: {
-      fontSize: 32,
     },
     cardTitle: {
       ...typography.subheading,

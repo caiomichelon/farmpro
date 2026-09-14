@@ -8,7 +8,7 @@ import { Card } from '../../../src/components/Card';
 import { ScreenHeader } from '../../../src/components/ScreenHeader';
 import { useFarm } from '../../../src/hooks/useFarms';
 import { exportFarmData, type ExportProgress } from '../../../src/lib/spreadsheetExport';
-import { spacing, typography, useColors, type Colors } from '../../../src/theme';
+import { radius, spacing, typography, useColors, type Colors } from '../../../src/theme';
 
 type Status = 'idle' | 'exporting' | 'done' | 'error';
 
@@ -133,7 +133,7 @@ function createStyles(colors: Colors) {
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 14,
+    borderRadius: radius.lg,
     marginTop: spacing.sm,
   },
   reportRowPressed: {

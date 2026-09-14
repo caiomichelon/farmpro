@@ -23,7 +23,7 @@ export default function AdminDashboardScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <ScreenHeader title="📈 Painel administrativo" subtitle="Dados reais de uso do FarmPro" />
+      <ScreenHeader title="Painel administrativo" subtitle="Dados reais de uso do FarmPro" />
       <ScrollView contentContainerStyle={styles.content}>
         {isLoading ? (
           <ActivityIndicator color={colors.primary} style={styles.loading} />

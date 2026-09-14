@@ -103,7 +103,7 @@ export default function CarModeScreen() {
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.farmName}>{farm?.name ?? '...'}</Text>
-        <Text style={styles.modeLabel}>🚗 Modo carro</Text>
+        <Text style={styles.modeLabel}>Modo carro</Text>
 
         {isLoading ? (
           <ActivityIndicator color={colors.textInverse} style={{ marginTop: spacing.xxl }} />
@@ -119,11 +119,11 @@ export default function CarModeScreen() {
               style={[styles.playButton, isSpeaking && styles.playButtonActive]}
               onPress={isSpeaking ? () => Speech.stop() : handleReplay}
             >
-              <Text style={styles.playButtonText}>{isSpeaking ? '⏹ Parar' : '🔁 Repetir boletim'}</Text>
+              <Text style={styles.playButtonText}>{isSpeaking ? 'Parar' : 'Repetir boletim'}</Text>
             </Pressable>
 
             <Pressable style={styles.voiceButton} onPress={() => router.push(`/farms/${farmId}/comando-de-voz`)}>
-              <Text style={styles.voiceButtonText}>🎙️ Falar comando</Text>
+              <Text style={styles.voiceButtonText}>Falar comando</Text>
             </Pressable>
 
             <Pressable style={styles.exitButton} onPress={() => router.back()}>

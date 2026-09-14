@@ -93,8 +93,8 @@ export default function FarmInventoryDashboardScreen() {
   const sections = useMemo(() => {
     if (sectorFilter !== 'todos') return null;
     return [
-      { sector: 'lavoura' as const, label: 'Lavoura', icon: '🌾', color: colors.lavoura, backgroundColor: colors.lavouraLight, data: filtered.filter((i) => i.sector === 'lavoura') },
-      { sector: 'pecuaria' as const, label: 'Pecuária', icon: '🐄', color: colors.pecuaria, backgroundColor: colors.pecuariaLight, data: filtered.filter((i) => i.sector === 'pecuaria') },
+      { sector: 'lavoura' as const, label: 'Lavoura', color: colors.lavoura, backgroundColor: colors.lavouraLight, data: filtered.filter((i) => i.sector === 'lavoura') },
+      { sector: 'pecuaria' as const, label: 'Pecuária', color: colors.pecuaria, backgroundColor: colors.pecuariaLight, data: filtered.filter((i) => i.sector === 'pecuaria') },
     ];
   }, [filtered, sectorFilter, colors]);
 
@@ -105,7 +105,7 @@ export default function FarmInventoryDashboardScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScreenHeader
-        title="📦 Estoque"
+        title="Estoque"
         subtitle={`${items.length} ${items.length === 1 ? 'item' : 'itens'} · valor total ${currency(totalValue)}`}
       />
 
@@ -175,9 +175,7 @@ export default function FarmInventoryDashboardScreen() {
                 s.data.length > 0 ? (
                   <View key={s.sector} style={[styles.sectorArea, { backgroundColor: s.backgroundColor }]}>
                     <View style={styles.sectorAreaHeader}>
-                      <Text style={[styles.sectorAreaTitle, { color: s.color }]}>
-                        {s.icon} {s.label}
-                      </Text>
+                      <Text style={[styles.sectorAreaTitle, { color: s.color }]}>{s.label}</Text>
                       <Text style={styles.sectorAreaCount}>
                         {s.data.length} {s.data.length === 1 ? 'item' : 'itens'}
                       </Text>
@@ -246,6 +244,7 @@ function ItemCard({
   styles: ReturnType<typeof createStyles>;
   colors: Colors;
 }) {
+  const initial = item.name.trim().charAt(0).toUpperCase() || '?';
   const statusColor =
     item.stockStatus === 'critico'
       ? colors.danger
@@ -264,7 +263,7 @@ function ItemCard({
           <Image source={{ uri: item.photoUrl }} style={styles.cardThumb} />
         ) : (
           <View style={[styles.cardThumbPlaceholder, { backgroundColor: sectorColor + '22' }]}>
-            <Text style={{ color: sectorColor }}>📦</Text>
+            <Text style={{ color: sectorColor, ...typography.subheading }}>{initial}</Text>
           </View>
         )}
         <View style={{ flex: 1, gap: 2 }}>

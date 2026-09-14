@@ -60,7 +60,7 @@ export default function LavouraHomeScreen() {
         right={
           <View style={styles.headerLinksRow}>
             <Pressable onPress={() => router.push(`/farms/${farmId}`)} hitSlop={12}>
-              <Text style={styles.headerLink}>🏠 Fazenda</Text>
+              <Text style={styles.headerLink}>Fazenda</Text>
             </Pressable>
             <Pressable onPress={() => router.push(`/farms/${farmId}/lavoura/compradores`)} hitSlop={12}>
               <Text style={styles.headerLink}>{t('lavouraHome.buyers')}</Text>
@@ -142,84 +142,72 @@ export default function LavouraHomeScreen() {
                     home da fazenda, que fica só com os dois setores. */}
                 <View style={styles.moreSection}>
                   <MoreRow
-                    icon="👨‍🌾"
                     title={t('farmHome.employees')}
                     subtitle={t('farmHome.employeesSubtitle')}
                     onPress={() => router.push(`/farms/${farmId}/funcionarios`)}
                     styles={styles}
                   />
                   <MoreRow
-                    icon="👷"
                     title="Diaristas"
                     subtitle="Mão de obra avulsa, sem cadastro fixo"
                     onPress={() => router.push(`/farms/${farmId}/diaristas`)}
                     styles={styles}
                   />
                   <MoreRow
-                    icon="🔧"
                     title="Maquinário"
                     subtitle="Tratores e implementos — manutenção em dia"
                     onPress={() => router.push(`/farms/${farmId}/equipamentos`)}
                     styles={styles}
                   />
                   <MoreRow
-                    icon="⛅"
                     title="Clima"
                     subtitle="Alertas de geada, chuva, calor e vento"
                     onPress={() => router.push(`/farms/${farmId}/clima`)}
                     styles={styles}
                   />
                   <MoreRow
-                    icon="🌙"
                     title="Fechamento do dia"
                     subtitle="Ponto, coletas e alertas antes de encerrar"
                     onPress={() => router.push(`/farms/${farmId}/fechamento`)}
                     styles={styles}
                   />
                   <MoreRow
-                    icon="🎙️"
                     title="Ei FarmPro"
                     subtitle="Pergunte por voz sobre clima, lotes e mais"
                     onPress={() => router.push(`/farms/${farmId}/comando-de-voz`)}
                     styles={styles}
                   />
                   <MoreRow
-                    icon="✅"
                     title="Tarefas do dia"
                     subtitle="Crie, atribua e acompanhe o que precisa ser feito"
                     onPress={() => router.push(`/farms/${farmId}/tarefas`)}
                     styles={styles}
                   />
                   <MoreRow
-                    icon="📇"
                     title="Fornecedores"
                     subtitle="Agropecuária, veterinário, mecânico e mais"
                     onPress={() => router.push(`/farms/${farmId}/fornecedores`)}
                     styles={styles}
                   />
                   <MoreRow
-                    icon="👥"
                     title={t('farmHome.members')}
                     subtitle={t('farmHome.membersSubtitle')}
                     onPress={() => router.push(`/farms/${farmId}/membros`)}
                     styles={styles}
                   />
                   <MoreRow
-                    icon="🚗"
                     title="Modo carro"
                     subtitle="Painel com boletim automático e comando de voz"
                     onPress={() => router.push(`/farms/${farmId}/modo-carro`)}
                     styles={styles}
                   />
                   <MoreRow
-                    icon="📣"
                     title="Boletim da fazenda"
                     subtitle="Resumo falado do que importa hoje"
                     onPress={() => router.push(`/farms/${farmId}/boletim`)}
                     styles={styles}
                   />
                   <MoreRow
-                    icon="📤"
                     title={t('farmHome.export')}
                     subtitle={t('farmHome.exportSubtitle')}
                     onPress={() => router.push(`/farms/${farmId}/exportar`)}
@@ -256,13 +244,11 @@ export default function LavouraHomeScreen() {
  * clima, etc.) — mesma cara das linhas "soltas" que a home da fazenda tinha
  * antes de ficar só com Lavoura/Pecuária. */
 function MoreRow({
-  icon,
   title,
   subtitle,
   onPress,
   styles,
 }: {
-  icon: string;
   title: string;
   subtitle: string;
   onPress: () => void;
@@ -270,7 +256,6 @@ function MoreRow({
 }) {
   return (
     <Pressable style={({ pressed }) => [styles.moreRow, pressed && styles.moreRowPressed]} onPress={onPress}>
-      <Text style={styles.moreRowIcon}>{icon}</Text>
       <View style={{ flex: 1 }}>
         <Text style={styles.moreRowTitle}>{title}</Text>
         <Text style={styles.moreRowSubtitle}>{subtitle}</Text>
@@ -393,9 +378,6 @@ function createStyles(colors: Colors) {
   },
   moreRowPressed: {
     opacity: 0.8,
-  },
-  moreRowIcon: {
-    fontSize: 20,
   },
   moreRowTitle: {
     ...typography.subheading,

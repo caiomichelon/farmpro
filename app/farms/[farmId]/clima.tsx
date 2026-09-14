@@ -81,7 +81,7 @@ export default function ClimaScreen() {
 
       <ScrollView contentContainerStyle={styles.content}>
         <Pressable onPress={() => router.push(`/farms/${farmId}/chuva`)} hitSlop={8}>
-          <Text style={styles.rainLink}>🌧️ Pluviômetro — lançar chuva do dia</Text>
+          <Text style={styles.rainLink}>Pluviômetro — lançar chuva do dia</Text>
         </Pressable>
         {!hasLocation ? (
           <Card style={styles.card}>

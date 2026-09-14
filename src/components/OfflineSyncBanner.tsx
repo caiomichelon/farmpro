@@ -16,7 +16,6 @@ export function OfflineSyncBanner() {
 
   return (
     <View style={styles.banner}>
-      <Text style={styles.icon}>📡</Text>
       <View style={styles.textArea}>
         <Text style={styles.title}>
           {pendingCount > 0
@@ -49,9 +48,6 @@ function createStyles(colors: Colors) {
       borderWidth: 1,
       borderColor: colors.warning,
       backgroundColor: colors.warningLight,
-    },
-    icon: {
-      fontSize: 20,
     },
     textArea: {
       flex: 1,

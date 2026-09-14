@@ -44,7 +44,7 @@ export default function FarmHomeScreen() {
               <Text style={styles.backLink}>{t('farmHome.switchFarm')}</Text>
             </Pressable>
             <Pressable onPress={() => router.push(`/farms/${farmId}/buscar`)} hitSlop={12}>
-              <Text style={styles.backLink}>🔎 Buscar</Text>
+              <Text style={styles.backLink}>Buscar</Text>
             </Pressable>
           </View>
 
@@ -86,7 +86,6 @@ export default function FarmHomeScreen() {
           {alerts.length > 0 ? (
             <View style={styles.alertsSection}>
               <Text style={styles.alertsTitle}>
-                {alerts.some((a) => a.severity === 'danger') ? '⚠ ' : ''}
                 {t('farmHome.alerts')} ({alerts.length})
               </Text>
               {alerts.slice(0, 4).map((alert) => (
@@ -241,7 +240,7 @@ function createStyles(colors: Colors) {
       backgroundColor: colors.surface,
       borderWidth: 1,
       borderColor: colors.border,
-      borderRadius: 14,
+      borderRadius: radius.lg,
     },
     employeesRowPressed: {
       opacity: 0.8,
@@ -249,7 +248,7 @@ function createStyles(colors: Colors) {
     employeesMarker: {
       width: 4,
       height: 32,
-      borderRadius: 999,
+      borderRadius: radius.full,
     },
     employeesTitle: {
       ...typography.subheading,

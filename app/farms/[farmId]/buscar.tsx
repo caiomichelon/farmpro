@@ -23,7 +23,7 @@ export default function UniversalSearchScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <ScreenHeader title="🔎 Buscar" subtitle="Animal, lote, matriz, talhão ou funcionário — tudo junto" />
+      <ScreenHeader title="Buscar" subtitle="Animal, lote, matriz, talhão ou funcionário — tudo junto" />
       <View style={styles.searchBar}>
         <TextField label="" value={query} onChangeText={setQuery} placeholder="Digite pelo menos 2 letras..." autoFocus />
       </View>

@@ -131,7 +131,7 @@ function SupplierRow({
       </View>
       {supplier.phone ? (
         <Pressable onPress={() => Linking.openURL(`tel:${supplier.phone}`)} hitSlop={4}>
-          <Text style={[styles.phoneText, { color: colors.primary }]}>📞 {supplier.phone}</Text>
+          <Text style={[styles.phoneText, { color: colors.primary }]}>{supplier.phone}</Text>
         </Pressable>
       ) : null}
       {supplier.notes ? <Text style={styles.notesText}>{supplier.notes}</Text> : null}

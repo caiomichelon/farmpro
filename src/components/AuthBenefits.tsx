@@ -24,14 +24,14 @@ function benefitAccentColors(colors: Colors, accent: BenefitAccent): { color: st
   }
 }
 
-function buildBenefits(t: TFunction): { icon: string; title: string; description: string; accent: BenefitAccent }[] {
+function buildBenefits(t: TFunction): { title: string; description: string; accent: BenefitAccent }[] {
   return [
-    { icon: '🌱', title: t('auth.login.benefit1Title'), description: t('auth.login.benefit1Description'), accent: 'lavoura' },
-    { icon: '☁️', title: t('auth.login.benefit2Title'), description: t('auth.login.benefit2Description'), accent: 'funcionarios' },
-    { icon: '🔔', title: t('auth.login.benefit3Title'), description: t('auth.login.benefit3Description'), accent: 'warning' },
-    { icon: '📊', title: t('auth.login.benefit4Title'), description: t('auth.login.benefit4Description'), accent: 'accent' },
-    { icon: '🧮', title: t('auth.login.benefit5Title'), description: t('auth.login.benefit5Description'), accent: 'success' },
-    { icon: '📶', title: t('auth.login.benefit6Title'), description: t('auth.login.benefit6Description'), accent: 'pecuaria' },
+    { title: t('auth.login.benefit1Title'), description: t('auth.login.benefit1Description'), accent: 'lavoura' },
+    { title: t('auth.login.benefit2Title'), description: t('auth.login.benefit2Description'), accent: 'funcionarios' },
+    { title: t('auth.login.benefit3Title'), description: t('auth.login.benefit3Description'), accent: 'warning' },
+    { title: t('auth.login.benefit4Title'), description: t('auth.login.benefit4Description'), accent: 'accent' },
+    { title: t('auth.login.benefit5Title'), description: t('auth.login.benefit5Description'), accent: 'success' },
+    { title: t('auth.login.benefit6Title'), description: t('auth.login.benefit6Description'), accent: 'pecuaria' },
   ];
 }
 
@@ -58,9 +58,7 @@ export function AuthBenefits() {
           return (
             <FadeSlideIn key={benefit.title} delay={100 + index * 55} style={styles.cardWrap}>
               <View style={[styles.card, { backgroundColor: tint }]}>
-                <View style={[styles.iconBadge, { backgroundColor: colors.surface }]}>
-                  <Text style={styles.icon}>{benefit.icon}</Text>
-                </View>
+                <View style={[styles.accentMarker, { backgroundColor: color }]} />
                 <Text style={[styles.cardTitle, { color }]}>{benefit.title}</Text>
                 <Text style={styles.cardDescription}>{benefit.description}</Text>
               </View>
@@ -100,15 +98,10 @@ function createStyles(colors: Colors) {
       padding: spacing.md,
       gap: spacing.xs,
     },
-    iconBadge: {
-      width: 36,
-      height: 36,
+    accentMarker: {
+      width: 24,
+      height: 4,
       borderRadius: radius.full,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    icon: {
-      fontSize: 18,
     },
     cardTitle: {
       ...typography.bodyMedium,

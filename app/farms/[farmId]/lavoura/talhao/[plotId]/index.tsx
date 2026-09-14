@@ -77,7 +77,7 @@ export default function PlotDetailScreen() {
           onPress={() => router.push(`/farms/${farmId}/lavoura/talhao/${plotId}/nova-safra`)}
         />
         <Button
-          label="📊 Você, no passado"
+          label="Você, no passado"
           variant="ghost"
           onPress={() => router.push(`/farms/${farmId}/lavoura/talhao/${plotId}/comparativo`)}
         />

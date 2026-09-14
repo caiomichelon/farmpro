@@ -31,7 +31,7 @@ export default function LavouraRegionalBenchmarkScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <ScreenHeader title="🌎 Comparativo regional" subtitle="Lavoura — como sua produtividade está em relação a outras fazendas" />
+      <ScreenHeader title="Comparativo regional" subtitle="Lavoura — como sua produtividade está em relação a outras fazendas" />
       <ScrollView contentContainerStyle={styles.content}>
         <Card style={styles.card}>
           <View style={styles.toggleRow}>
@@ -76,7 +76,7 @@ export default function LavouraRegionalBenchmarkScreen() {
             </View>
             {better !== null ? (
               <Text style={[styles.metricBadge, { color: better ? colors.success : colors.warning }]}>
-                {better ? '✓ Acima da média regional' : 'Abaixo da média regional'}
+                {better ? 'Acima da média regional' : 'Abaixo da média regional'}
               </Text>
             ) : null}
           </Card>

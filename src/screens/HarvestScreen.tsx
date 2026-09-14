@@ -94,7 +94,7 @@ export function HarvestScreen({ farmId, seasonId }: { farmId: string; seasonId?:
             onPress={() => router.push(reportPath)}
           >
             <View style={{ flex: 1 }}>
-              <Text style={styles.reportRowTitle}>📊 Relatório por caminhão e comprador</Text>
+              <Text style={styles.reportRowTitle}>Relatório por caminhão e comprador</Text>
               <Text style={styles.salesRowSubtitle}>Viagens, peso e sacas por placa, motorista e comprador</Text>
             </View>
             <Text style={styles.reportRowChevron}>→</Text>
@@ -166,7 +166,7 @@ export function HarvestScreen({ farmId, seasonId }: { farmId: string; seasonId?:
                             <Text style={styles.linkSale}>{t('harvest.entryUnsold')} — {t('harvest.linkSale')}</Text>
                           </Pressable>
                         )}
-                        <Text style={styles.editHint}>✎ Toque pra editar (comprador, umidade, peso)</Text>
+                        <Text style={styles.editHint}>Toque pra editar (comprador, umidade, peso)</Text>
                       </View>
                     </View>
                   </Card>

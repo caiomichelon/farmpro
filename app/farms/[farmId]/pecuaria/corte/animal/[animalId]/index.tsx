@@ -113,7 +113,7 @@ export default function AnimalDetailScreen() {
 
         {animal.hasOverdueHealth ? (
           <View style={styles.healthAlert}>
-            <Text style={styles.healthAlertText}>⚠ Tem dose de vacina/tratamento vencida</Text>
+            <Text style={styles.healthAlertText}>Tem dose de vacina/tratamento vencida</Text>
           </View>
         ) : null}
 

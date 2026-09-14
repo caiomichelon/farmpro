@@ -177,7 +177,7 @@ function EditForm({
       <ScreenHeader title="Editar nota de colheita" subtitle="Corrija ou complete o que faltou — comprador, umidade, peso antes do desconto" />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          {saved ? <Text style={styles.savedBanner}>✓ Nota atualizada</Text> : null}
+          {saved ? <Text style={styles.savedBanner}>Nota atualizada</Text> : null}
 
           <Card style={styles.card}>
             <Text style={styles.cardTitle}>Nota</Text>

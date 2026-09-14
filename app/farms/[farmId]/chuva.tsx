@@ -56,7 +56,7 @@ export default function RainGaugeScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <ScreenHeader title="🌧️ Pluviômetro" subtitle="Chuva do dia — acompanhe o acumulado por mês" />
+      <ScreenHeader title="Pluviômetro" subtitle="Chuva do dia — acompanhe o acumulado por mês" />
       <ScrollView contentContainerStyle={styles.content}>
         <Card style={styles.card}>
           <Text style={styles.cardTitle}>Chuva no mês</Text>

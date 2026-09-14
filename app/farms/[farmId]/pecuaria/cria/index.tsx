@@ -111,7 +111,7 @@ export default function CriaHomeScreen() {
                   onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/atencao`)}
                 >
                   <Text style={styles.attentionBannerText}>
-                    ⚠ {attentionCount} {attentionCount === 1 ? t('criaHome.attentionCowSingular') : t('criaHome.attentionCowPlural')}{' '}
+                    {attentionCount} {attentionCount === 1 ? t('criaHome.attentionCowSingular') : t('criaHome.attentionCowPlural')}{' '}
                     {t('criaHome.attentionSuffix')}
                   </Text>
                   <Text style={styles.attentionBannerChevron}>→</Text>
@@ -124,7 +124,7 @@ export default function CriaHomeScreen() {
                   onPress={() => router.push(`/farms/${farmId}/pecuaria/cria/atencao`)}
                 >
                   <Text style={styles.repasseBannerText}>
-                    🔄 {repasseCount} {repasseCount === 1 ? t('criaHome.repasseCowSingular') : t('criaHome.repasseCowPlural')}{' '}
+                    {repasseCount} {repasseCount === 1 ? t('criaHome.repasseCowSingular') : t('criaHome.repasseCowPlural')}{' '}
                     {t('criaHome.repasseSuffix')}
                   </Text>
                   <Text style={styles.repasseBannerChevron}>→</Text>

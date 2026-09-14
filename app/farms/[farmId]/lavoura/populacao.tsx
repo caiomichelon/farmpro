@@ -34,7 +34,7 @@ export default function PlantPopulationCalculatorScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <ScreenHeader title="🌱 Calculadora de estande" subtitle="População de plantas e sementes necessárias" />
+      <ScreenHeader title="Calculadora de estande" subtitle="População de plantas e sementes necessárias" />
       <ScrollView contentContainerStyle={styles.content}>
         <Card style={styles.card}>
           <TextField

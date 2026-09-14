@@ -147,7 +147,7 @@ function EmployeeCard({
         </View>
         {employee.currentStreakDays >= 3 ? (
           <Text style={styles.streakText}>
-            🔥 {employee.currentStreakDays} {employee.currentStreakDays === 1 ? t('employeesHome.daySingular') : t('employeesHome.dayPlural')}
+            {employee.currentStreakDays} {employee.currentStreakDays === 1 ? t('employeesHome.daySingular') : t('employeesHome.dayPlural')}
           </Text>
         ) : null}
       </View>

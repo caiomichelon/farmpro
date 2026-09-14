@@ -149,14 +149,14 @@ function FarmCard({
           {farm.lavouraHectares > 0 ? (
             <View style={[styles.cardChip, { backgroundColor: colors.lavouraLight }]}>
               <Text style={[styles.cardChipText, { color: colors.lavoura }]}>
-                🌱 {t('farms.lavouraChip')} · {farm.lavouraHectares.toLocaleString('pt-BR')} ha
+                {t('farms.lavouraChip')} · {farm.lavouraHectares.toLocaleString('pt-BR')} ha
               </Text>
             </View>
           ) : null}
           {farm.pecuariaHectares > 0 ? (
             <View style={[styles.cardChip, { backgroundColor: colors.pecuariaLight }]}>
               <Text style={[styles.cardChipText, { color: colors.pecuaria }]}>
-                🐄 {t('farms.pecuariaChip')} · {farm.pecuariaHectares.toLocaleString('pt-BR')} ha
+                {t('farms.pecuariaChip')} · {farm.pecuariaHectares.toLocaleString('pt-BR')} ha
               </Text>
             </View>
           ) : null}
@@ -170,9 +170,6 @@ function FarmsEmptyState({ styles, t }: { styles: ReturnType<typeof createStyles
   return (
     <FadeSlideIn delay={80}>
       <View style={styles.emptyState}>
-        <View style={styles.emptyBadge}>
-          <Text style={styles.emptyBadgeIcon}>🌾</Text>
-        </View>
         <Text style={styles.emptyTitle}>{t('farms.emptyTitle')}</Text>
         <Text style={styles.emptySubtitle}>{t('farms.emptySubtitle')}</Text>
       </View>
@@ -343,18 +340,6 @@ function createStyles(colors: Colors) {
       paddingVertical: spacing.xxl,
       paddingHorizontal: spacing.xl,
       gap: spacing.sm,
-    },
-    emptyBadge: {
-      width: 64,
-      height: 64,
-      borderRadius: radius.full,
-      backgroundColor: colors.lavouraLight,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginBottom: spacing.xs,
-    },
-    emptyBadgeIcon: {
-      fontSize: 30,
     },
     emptyTitle: {
       ...typography.subheading,

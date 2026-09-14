@@ -103,7 +103,7 @@ export default function CorteHomeScreen() {
                   onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/prontos-para-abate`)}
                 >
                   <Text style={styles.readyBannerText}>
-                    ✓ {readyLots.length} {readyLots.length === 1 ? t('corteHome.readyLotSingular') : t('corteHome.readyLotPlural')}{' '}
+                    {readyLots.length} {readyLots.length === 1 ? t('corteHome.readyLotSingular') : t('corteHome.readyLotPlural')}{' '}
                     {t('corteHome.readyBannerSuffix')}
                   </Text>
                   <Text style={styles.readyBannerChevron}>→</Text>

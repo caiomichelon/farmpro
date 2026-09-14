@@ -29,7 +29,7 @@ export default function CriaRegionalBenchmarkScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <ScreenHeader title="🌎 Comparativo regional" subtitle="Cria — como sua fazenda está em relação a outras" />
+      <ScreenHeader title="Comparativo regional" subtitle="Cria — como sua fazenda está em relação a outras" />
       <ScrollView contentContainerStyle={styles.content}>
         <Card style={styles.card}>
           <View style={styles.toggleRow}>
@@ -74,7 +74,7 @@ export default function CriaRegionalBenchmarkScreen() {
             </View>
             {better !== null ? (
               <Text style={[styles.metricBadge, { color: better ? colors.success : colors.warning }]}>
-                {better ? '✓ Acima da média regional' : 'Abaixo da média regional'}
+                {better ? 'Acima da média regional' : 'Abaixo da média regional'}
               </Text>
             ) : null}
           </Card>

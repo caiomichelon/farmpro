@@ -66,7 +66,7 @@ export default function EmployeeTasksScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScreenHeader
-        title="✅ Tarefas do dia"
+        title="Tarefas do dia"
         subtitle={`${pending.length} ${pending.length === 1 ? 'pendente' : 'pendentes'} · ${done.length} concluída(s)`}
       />
       <ScrollView contentContainerStyle={styles.content}>

@@ -34,7 +34,7 @@ export default function SprayMixCalculatorScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <ScreenHeader title="🧪 Calculadora de calda" subtitle="Mistura de defensivo — quanto colocar em cada tanque" />
+      <ScreenHeader title="Calculadora de calda" subtitle="Mistura de defensivo — quanto colocar em cada tanque" />
       <ScrollView contentContainerStyle={styles.content}>
         <Card style={styles.card}>
           <TextField label="Área a pulverizar (ha)" value={area} onChangeText={setArea} placeholder="Ex.: 50" keyboardType="decimal-pad" />

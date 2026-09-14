@@ -7,7 +7,7 @@ import { ScreenHeader } from '../../src/components/ScreenHeader';
 import { isAdminEmail } from '../../src/config/admin';
 import { useAuth } from '../../src/context/AuthContext';
 import { useT, type TFunction } from '../../src/i18n';
-import { spacing, typography, useColors, type Colors } from '../../src/theme';
+import { radius, spacing, typography, useColors, type Colors } from '../../src/theme';
 
 function buildItems(t: TFunction, isAdmin: boolean) {
   const items = [
@@ -18,7 +18,7 @@ function buildItems(t: TFunction, isAdmin: boolean) {
   ];
   if (isAdmin) {
     items.push({
-      title: '📈 Painel administrativo',
+      title: 'Painel administrativo',
       subtitle: 'Fazendas, usuários e atividade — dado real do banco',
       href: '/admin',
       marker: 'admin',
@@ -82,7 +82,7 @@ function createStyles(colors: Colors) {
       backgroundColor: colors.surface,
       borderWidth: 1,
       borderColor: colors.border,
-      borderRadius: 14,
+      borderRadius: radius.lg,
     },
     rowPressed: {
       opacity: 0.8,
@@ -90,7 +90,7 @@ function createStyles(colors: Colors) {
     marker: {
       width: 4,
       height: 32,
-      borderRadius: 999,
+      borderRadius: radius.full,
     },
     rowTitle: {
       ...typography.subheading,

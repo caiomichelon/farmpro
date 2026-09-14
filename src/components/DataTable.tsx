@@ -86,7 +86,7 @@ export function DataTable<T>({ columns, data, keyExtractor, onRowPress, title }:
         </Pressable>
         {chartableColumns.length > 0 ? (
           <Pressable style={({ pressed }) => [styles.toolbarButton, pressed && styles.toolbarButtonPressed]} onPress={handleToggleChart}>
-            <Text style={styles.toolbarButtonText}>{chartOpen ? '✕ Fechar gráfico' : '📊 Gráfico'}</Text>
+            <Text style={styles.toolbarButtonText}>{chartOpen ? 'Fechar gráfico' : 'Gráfico'}</Text>
           </Pressable>
         ) : null}
       </View>
