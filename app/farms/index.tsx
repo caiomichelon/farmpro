@@ -4,24 +4,25 @@ import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from '
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../src/components/Button';
+import { ChipSelect } from '../../src/components/ChipSelect';
 import { FadeSlideIn } from '../../src/components/FadeSlideIn';
 import { SectorDotsCluster } from '../../src/components/SectorDotsCluster';
 import { TextField } from '../../src/components/TextField';
 import { useFarms, type FarmSummary } from '../../src/hooks/useFarms';
 import { joinFarmByCode } from '../../src/hooks/useFarmMembers';
 import { useT, type TFunction } from '../../src/i18n';
+import type { FarmSectorType } from '../../src/types/database';
 import { radius, spacing, typography, useColors, type Colors } from '../../src/theme';
 
 type FooterMode = 'none' | 'creating' | 'joining';
 type Sector = 'lavoura' | 'pecuaria';
 
-/** Uma fazenda "pertence" a um setor quando tem hectares registrados nele
- * — ou, se ainda não tem NENHUM talhão cadastrado (fazenda recém-criada),
- * aparece nos dois: melhor mostrar a mais do que esconder uma fazenda por
- * ainda não ter dado tempo de cadastrar nada. */
+/** Uma fazenda "pertence" a um setor quando o tipo escolhido na criação
+ * (Lavoura, Pecuária ou Ambos) inclui esse setor — não é mais inferido dos
+ * talhões cadastrados, pra não ficar mostrando setor errado até o
+ * primeiro talhão daquele tipo ser lançado. */
 function belongsToSector(farm: FarmSummary, sector: Sector): boolean {
-  if (farm.totalPlots === 0) return true;
-  return sector === 'lavoura' ? farm.lavouraHectares > 0 : farm.pecuariaHectares > 0;
+  return farm.sector_type === 'ambos' || farm.sector_type === sector;
 }
 
 export default function FarmSelectionScreen() {
@@ -196,20 +197,28 @@ function NewFarmForm({
   onCreate,
 }: {
   onCancel: () => void;
-  onCreate: (values: { name: string; city?: string; state?: string }) => Promise<string | null>;
+  onCreate: (values: { name: string; sectorType: FarmSectorType; city?: string; state?: string }) => Promise<string | null>;
 }) {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const t = useT();
   const [name, setName] = useState('');
+  const [sectorType, setSectorType] = useState<FarmSectorType | null>(null);
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const sectorTypeOptions: { value: FarmSectorType; label: string }[] = [
+    { value: 'lavoura', label: t('farms.sectorTypeLavoura') },
+    { value: 'pecuaria', label: t('farms.sectorTypePecuaria') },
+    { value: 'ambos', label: t('farms.sectorTypeAmbos') },
+  ];
+
   async function handleSubmit() {
+    if (!sectorType) return;
     setIsSubmitting(true);
-    const createError = await onCreate({ name: name.trim(), city: city.trim(), state: state.trim() });
+    const createError = await onCreate({ name: name.trim(), sectorType, city: city.trim(), state: state.trim() });
     setIsSubmitting(false);
     if (createError) setError(createError);
   }
@@ -217,6 +226,8 @@ function NewFarmForm({
   return (
     <View style={styles.form}>
       <TextField label={t('farms.newFarmName')} value={name} onChangeText={setName} placeholder={t('farms.newFarmNamePlaceholder')} />
+      <ChipSelect label={t('farms.sectorTypeLabel')} options={sectorTypeOptions} value={sectorType} onChange={setSectorType} />
+      <Text style={styles.sectorTypeHelp}>{t('farms.sectorTypeHelp')}</Text>
       <View style={styles.formRow}>
         <View style={{ flex: 2 }}>
           <TextField label={t('farms.city')} value={city} onChangeText={setCity} placeholder={t('farms.optional')} />
@@ -228,7 +239,7 @@ function NewFarmForm({
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
       <View style={styles.formActions}>
         <Button label={t('farms.cancel')} variant="ghost" onPress={onCancel} style={{ flex: 1 }} />
-        <Button label={t('farms.save')} onPress={handleSubmit} loading={isSubmitting} disabled={!name} style={{ flex: 1 }} />
+        <Button label={t('farms.save')} onPress={handleSubmit} loading={isSubmitting} disabled={!name || !sectorType} style={{ flex: 1 }} />
       </View>
     </View>
   );
@@ -446,6 +457,11 @@ function createStyles(colors: Colors) {
       flexDirection: 'row',
       gap: spacing.md,
       marginTop: spacing.xs,
+    },
+    sectorTypeHelp: {
+      ...typography.caption,
+      color: colors.textMuted,
+      marginTop: -spacing.xs,
     },
   });
 }

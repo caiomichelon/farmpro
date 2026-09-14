@@ -115,20 +115,24 @@ export default function FarmHomeScreen() {
 
           <FadeSlideIn>
             <View style={styles.sectorsRow}>
-              <SectorButton
-                title={t('farmHome.lavoura')}
-                subtitle={t('farmHome.lavouraSubtitle')}
-                color={colors.lavoura}
-                backgroundColor={colors.lavouraLight}
-                onPress={() => router.push(`/farms/${farmId}/lavoura`)}
-              />
-              <SectorButton
-                title={t('farmHome.pecuaria')}
-                subtitle={t('farmHome.pecuariaSubtitle')}
-                color={colors.pecuaria}
-                backgroundColor={colors.pecuariaLight}
-                onPress={() => router.push(`/farms/${farmId}/pecuaria`)}
-              />
+              {farm && farm.sector_type !== 'pecuaria' ? (
+                <SectorButton
+                  title={t('farmHome.lavoura')}
+                  subtitle={t('farmHome.lavouraSubtitle')}
+                  color={colors.lavoura}
+                  backgroundColor={colors.lavouraLight}
+                  onPress={() => router.push(`/farms/${farmId}/lavoura`)}
+                />
+              ) : null}
+              {farm && farm.sector_type !== 'lavoura' ? (
+                <SectorButton
+                  title={t('farmHome.pecuaria')}
+                  subtitle={t('farmHome.pecuariaSubtitle')}
+                  color={colors.pecuaria}
+                  backgroundColor={colors.pecuariaLight}
+                  onPress={() => router.push(`/farms/${farmId}/pecuaria`)}
+                />
+              ) : null}
             </View>
           </FadeSlideIn>
         </ScrollView>

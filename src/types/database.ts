@@ -7,6 +7,11 @@
  */
 
 export type PlotType = 'lavoura' | 'pecuaria';
+/** Setor(es) que a fazenda trabalha — escolhido obrigatoriamente na
+ * criação, não inferido dos talhões: sem isso, uma fazenda 100% lavoura
+ * ficava mostrando menu/botão de Pecuária (e vice-versa) até o primeiro
+ * talhão daquele tipo ser cadastrado. */
+export type FarmSectorType = 'lavoura' | 'pecuaria' | 'ambos';
 export type FarmRole = 'admin' | 'campo';
 export type SubscriptionStatus = 'trialing' | 'active' | 'past_due' | 'canceled';
 export type SeasonStatus = 'planejada' | 'plantada' | 'colhendo' | 'colhida';
@@ -65,6 +70,9 @@ export type FarmInvite = {
 export type Farm = {
   id: string;
   name: string;
+  /** Setor(es) que a fazenda trabalha — escolhido obrigatoriamente na
+   * criação (ver FarmSectorType). */
+  sector_type: FarmSectorType;
   city: string | null;
   state: string | null;
   /** Localização usada pros alertas de clima proativos — nulo até o usuário
@@ -799,7 +807,7 @@ export interface Database {
       };
       farms: {
         Row: Farm;
-        Insert: Partial<Farm> & { name: string; created_by: string };
+        Insert: Partial<Farm> & { name: string; created_by: string; sector_type: FarmSectorType };
         Update: Partial<Farm>;
         Relationships: [];
       };

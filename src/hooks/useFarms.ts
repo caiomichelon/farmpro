@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { supabase } from '../lib/supabase';
-import type { Farm } from '../types/database';
+import type { Farm, FarmSectorType } from '../types/database';
 
 export interface FarmSummary extends Farm {
   totalHectares: number;
@@ -71,13 +71,14 @@ export function useFarms() {
   }, [reload]);
 
   const createFarm = useCallback(
-    async (input: { name: string; city?: string; state?: string }) => {
+    async (input: { name: string; sectorType: FarmSectorType; city?: string; state?: string }) => {
       const { data: userData } = await supabase.auth.getUser();
       const userId = userData.user?.id;
       if (!userId) return { error: 'Usuário não autenticado.' };
 
       const { error: insertError } = await supabase.from('farms').insert({
         name: input.name,
+        sector_type: input.sectorType,
         city: input.city ?? null,
         state: input.state ?? null,
         created_by: userId,
