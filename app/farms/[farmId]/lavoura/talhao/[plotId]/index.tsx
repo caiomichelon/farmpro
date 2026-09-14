@@ -46,6 +46,7 @@ export default function PlotDetailScreen() {
         <ActivityIndicator style={styles.loading} color={colors.lavoura} />
       ) : (
         <FlatList
+          style={styles.list}
           data={seasons}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
@@ -136,6 +137,9 @@ function createStyles(colors: Colors) {
   },
   loading: {
     marginTop: spacing.xxl,
+  },
+  list: {
+    flex: 1,
   },
   listContent: {
     paddingHorizontal: spacing.xl,
