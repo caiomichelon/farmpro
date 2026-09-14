@@ -4,17 +4,15 @@ import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from '
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../src/components/Button';
-import { ChipSelect } from '../../src/components/ChipSelect';
 import { FadeSlideIn } from '../../src/components/FadeSlideIn';
 import { SectorDotsCluster } from '../../src/components/SectorDotsCluster';
 import { TextField } from '../../src/components/TextField';
 import { useFarms, type FarmSummary } from '../../src/hooks/useFarms';
 import { joinFarmByCode } from '../../src/hooks/useFarmMembers';
 import { useT, type TFunction } from '../../src/i18n';
-import type { FarmSectorType } from '../../src/types/database';
 import { radius, spacing, typography, useColors, type Colors } from '../../src/theme';
 
-type FooterMode = 'none' | 'creating' | 'joining';
+type FooterMode = 'none' | 'joining';
 type Sector = 'lavoura' | 'pecuaria';
 
 /** Uma fazenda "pertence" a um setor quando o tipo escolhido na criação
@@ -31,10 +29,9 @@ export default function FarmSelectionScreen() {
   const t = useT();
   const { sector: sectorParam } = useLocalSearchParams<{ sector?: string }>();
   const sector: Sector | undefined = sectorParam === 'lavoura' || sectorParam === 'pecuaria' ? sectorParam : undefined;
-  const { farms: allFarms, isLoading, error, createFarm, reload: reloadFarms } = useFarms();
+  const { farms: allFarms, isLoading, error, reload: reloadFarms } = useFarms();
   const farms = sector ? allFarms.filter((f) => belongsToSector(f, sector)) : allFarms;
   const [footerMode, setFooterMode] = useState<FooterMode>('none');
-  const isCreating = footerMode === 'creating';
 
   // Sem setor escolhido (chegou direto por link ou por "ver todas as
   // fazendas"), entra na fazenda inteira como sempre; com setor escolhido
@@ -76,7 +73,7 @@ export default function FarmSelectionScreen() {
           data={farms}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
-          ListEmptyComponent={!isCreating ? <FarmsEmptyState styles={styles} t={t} /> : null}
+          ListEmptyComponent={<FarmsEmptyState styles={styles} t={t} />}
           renderItem={({ item, index }) => (
             <FadeSlideIn delay={Math.min(index, 6) * 60}>
               <FarmCard farm={item} styles={styles} colors={colors} t={t} onPress={() => goToFarm(item.id)} />
@@ -88,16 +85,7 @@ export default function FarmSelectionScreen() {
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
       <View style={styles.footer}>
-        {footerMode === 'creating' ? (
-          <NewFarmForm
-            onCancel={() => setFooterMode('none')}
-            onCreate={async (values) => {
-              const { error: createError } = await createFarm(values);
-              if (!createError) setFooterMode('none');
-              return createError;
-            }}
-          />
-        ) : footerMode === 'joining' ? (
+        {footerMode === 'joining' ? (
           <JoinFarmForm
             onCancel={() => setFooterMode('none')}
             onJoin={async (code) => {
@@ -112,7 +100,7 @@ export default function FarmSelectionScreen() {
           />
         ) : (
           <View style={styles.footerButtons}>
-            <Button label={t('farms.newFarm')} variant="secondary" onPress={() => setFooterMode('creating')} style={{ flex: 1 }} />
+            <Button label={t('farms.newFarm')} variant="secondary" onPress={() => router.push('/farms/novo-tipo')} style={{ flex: 1 }} />
             <Button label={t('farms.joinWithCode')} variant="ghost" onPress={() => setFooterMode('joining')} style={{ flex: 1 }} />
           </View>
         )}
@@ -189,59 +177,6 @@ function FarmsEmptyState({ styles, t }: { styles: ReturnType<typeof createStyles
         <Text style={styles.emptySubtitle}>{t('farms.emptySubtitle')}</Text>
       </View>
     </FadeSlideIn>
-  );
-}
-
-function NewFarmForm({
-  onCancel,
-  onCreate,
-}: {
-  onCancel: () => void;
-  onCreate: (values: { name: string; sectorType: FarmSectorType; city?: string; state?: string }) => Promise<string | null>;
-}) {
-  const colors = useColors();
-  const styles = useMemo(() => createStyles(colors), [colors]);
-  const t = useT();
-  const [name, setName] = useState('');
-  const [sectorType, setSectorType] = useState<FarmSectorType | null>(null);
-  const [city, setCity] = useState('');
-  const [state, setState] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const sectorTypeOptions: { value: FarmSectorType; label: string }[] = [
-    { value: 'lavoura', label: t('farms.sectorTypeLavoura') },
-    { value: 'pecuaria', label: t('farms.sectorTypePecuaria') },
-    { value: 'ambos', label: t('farms.sectorTypeAmbos') },
-  ];
-
-  async function handleSubmit() {
-    if (!sectorType) return;
-    setIsSubmitting(true);
-    const createError = await onCreate({ name: name.trim(), sectorType, city: city.trim(), state: state.trim() });
-    setIsSubmitting(false);
-    if (createError) setError(createError);
-  }
-
-  return (
-    <View style={styles.form}>
-      <TextField label={t('farms.newFarmName')} value={name} onChangeText={setName} placeholder={t('farms.newFarmNamePlaceholder')} />
-      <ChipSelect label={t('farms.sectorTypeLabel')} options={sectorTypeOptions} value={sectorType} onChange={setSectorType} />
-      <Text style={styles.sectorTypeHelp}>{t('farms.sectorTypeHelp')}</Text>
-      <View style={styles.formRow}>
-        <View style={{ flex: 2 }}>
-          <TextField label={t('farms.city')} value={city} onChangeText={setCity} placeholder={t('farms.optional')} />
-        </View>
-        <View style={{ flex: 1 }}>
-          <TextField label={t('farms.state')} value={state} onChangeText={setState} placeholder={t('farms.optional')} maxLength={2} autoCapitalize="characters" />
-        </View>
-      </View>
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
-      <View style={styles.formActions}>
-        <Button label={t('farms.cancel')} variant="ghost" onPress={onCancel} style={{ flex: 1 }} />
-        <Button label={t('farms.save')} onPress={handleSubmit} loading={isSubmitting} disabled={!name || !sectorType} style={{ flex: 1 }} />
-      </View>
-    </View>
   );
 }
 
@@ -457,11 +392,6 @@ function createStyles(colors: Colors) {
       flexDirection: 'row',
       gap: spacing.md,
       marginTop: spacing.xs,
-    },
-    sectorTypeHelp: {
-      ...typography.caption,
-      color: colors.textMuted,
-      marginTop: -spacing.xs,
     },
   });
 }

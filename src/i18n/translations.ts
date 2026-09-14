@@ -87,11 +87,9 @@ export const pt = {
   'farms.city': 'Cidade',
   'farms.state': 'UF',
   'farms.optional': 'Opcional',
-  'farms.sectorTypeLabel': 'Essa fazenda trabalha com',
   'farms.sectorTypeLavoura': '🌱 Lavoura',
   'farms.sectorTypePecuaria': '🐄 Pecuária',
   'farms.sectorTypeAmbos': 'Ambos',
-  'farms.sectorTypeHelp': 'Define quais menus aparecem pra essa fazenda — não dá pra mudar depois.',
   'farms.cancel': 'Cancelar',
   'farms.save': 'Salvar',
   'farms.inviteCode': 'Código de convite',
@@ -109,6 +107,15 @@ export const pt = {
   'farms.titleLavoura': 'Fazendas de lavoura',
   'farms.titlePecuaria': 'Fazendas de pecuária',
   'farms.subtitleFiltered': 'Só as fazendas que trabalham com esse setor',
+
+  // Nova fazenda: escolha do tipo (tela cheia) + detalhes
+  'newFarmType.title': 'Que tipo de fazenda?',
+  'newFarmType.subtitle': 'Define quais menus você vai ver — não dá pra mudar depois.',
+  'newFarmType.lavouraSubtitle': 'Só telas de lavoura',
+  'newFarmType.pecuariaSubtitle': 'Só telas de pecuária',
+  'newFarmType.ambosSubtitle': 'Lavoura e pecuária juntas',
+  'newFarmDetails.title': 'Dados da fazenda',
+  'newFarmDetails.subtitle': '{{type}}',
 
   // Escolha de setor (primeira tela depois do login)
   'sector.title': 'O que você quer ver?',
@@ -878,11 +885,9 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'farms.city': 'City',
   'farms.state': 'State',
   'farms.optional': 'Optional',
-  'farms.sectorTypeLabel': 'This farm works with',
   'farms.sectorTypeLavoura': '🌱 Crops',
   'farms.sectorTypePecuaria': '🐄 Livestock',
   'farms.sectorTypeAmbos': 'Both',
-  'farms.sectorTypeHelp': "Sets which menus show up for this farm — can't be changed later.",
   'farms.cancel': 'Cancel',
   'farms.save': 'Save',
   'farms.inviteCode': 'Invite code',
@@ -900,6 +905,15 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'farms.titleLavoura': 'Crop farms',
   'farms.titlePecuaria': 'Livestock farms',
   'farms.subtitleFiltered': 'Only farms that work with this sector',
+
+  // New farm: type choice (full screen) + details
+  'newFarmType.title': 'What type of farm?',
+  'newFarmType.subtitle': "Sets which menus you'll see — can't be changed later.",
+  'newFarmType.lavouraSubtitle': 'Crop screens only',
+  'newFarmType.pecuariaSubtitle': 'Livestock screens only',
+  'newFarmType.ambosSubtitle': 'Crops and livestock together',
+  'newFarmDetails.title': 'Farm details',
+  'newFarmDetails.subtitle': '{{type}}',
 
   // Sector selection (first screen after login)
   'sector.title': 'What do you want to see?',
@@ -1647,11 +1661,9 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'farms.city': 'Ciudad',
   'farms.state': 'Provincia',
   'farms.optional': 'Opcional',
-  'farms.sectorTypeLabel': 'Esta granja trabaja con',
   'farms.sectorTypeLavoura': '🌱 Agricultura',
   'farms.sectorTypePecuaria': '🐄 Ganadería',
   'farms.sectorTypeAmbos': 'Ambos',
-  'farms.sectorTypeHelp': 'Define qué menús aparecen para esta granja — no se puede cambiar después.',
   'farms.cancel': 'Cancelar',
   'farms.save': 'Guardar',
   'farms.inviteCode': 'Código de invitación',
@@ -1669,6 +1681,15 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'farms.titleLavoura': 'Fincas de agricultura',
   'farms.titlePecuaria': 'Fincas de ganadería',
   'farms.subtitleFiltered': 'Solo las fincas que trabajan con ese sector',
+
+  // Nueva finca: elección del tipo (pantalla completa) + detalles
+  'newFarmType.title': '¿Qué tipo de finca?',
+  'newFarmType.subtitle': 'Define qué menús vas a ver — no se puede cambiar después.',
+  'newFarmType.lavouraSubtitle': 'Solo pantallas de agricultura',
+  'newFarmType.pecuariaSubtitle': 'Solo pantallas de ganadería',
+  'newFarmType.ambosSubtitle': 'Agricultura y ganadería juntas',
+  'newFarmDetails.title': 'Datos de la finca',
+  'newFarmDetails.subtitle': '{{type}}',
 
   // Selección de sector (primera pantalla después de iniciar sesión)
   'sector.title': '¿Qué querés ver?',
