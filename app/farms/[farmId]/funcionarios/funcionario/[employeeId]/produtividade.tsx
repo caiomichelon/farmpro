@@ -40,7 +40,9 @@ export default function ProductivityScreen() {
       ) : records.length === 0 ? (
         <EmptyState text="Nenhum registro de produtividade ainda." />
       ) : (
-        <ScrollView contentContainerStyle={styles.listContent}>
+        <ScrollView
+          style={styles.list}
+          contentContainerStyle={styles.listContent}>
           <DataTable title="Produtividade" columns={columns} data={records} keyExtractor={(r) => r.id} />
         </ScrollView>
       )}
@@ -134,6 +136,9 @@ function createStyles(colors: Colors) {
   },
   loading: {
     marginTop: spacing.xxl,
+  },
+  list: {
+    flex: 1,
   },
   listContent: {
     paddingHorizontal: spacing.xl,

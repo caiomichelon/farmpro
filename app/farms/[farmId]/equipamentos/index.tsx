@@ -33,7 +33,9 @@ export default function EquipmentListScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScreenHeader title={t('equipment.title')} subtitle={t('equipment.subtitle')} />
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        style={styles.list}
+        contentContainerStyle={styles.content}>
         {isLoading ? (
           <ActivityIndicator color={colors.primary} style={styles.loading} />
         ) : equipment.length === 0 ? (
@@ -98,6 +100,9 @@ function createStyles(colors: Colors) {
     container: {
       flex: 1,
       backgroundColor: colors.background,
+    },
+    list: {
+      flex: 1,
     },
     content: {
       paddingHorizontal: spacing.xl,

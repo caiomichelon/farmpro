@@ -49,7 +49,9 @@ export default function PasturesScreen() {
       {isLoading || isLoadingLots ? (
         <ActivityIndicator style={styles.loading} color={colors.pecuaria} />
       ) : (
-        <ScrollView contentContainerStyle={styles.content}>
+        <ScrollView
+          style={styles.list}
+          contentContainerStyle={styles.content}>
           {summaries.length === 0 ? (
             <EmptyState text={t('pastures.empty')} />
           ) : (
@@ -201,6 +203,9 @@ function createStyles(colors: Colors) {
     },
     loading: {
       marginTop: spacing.xxl,
+    },
+    list: {
+      flex: 1,
     },
     content: {
       paddingHorizontal: spacing.xl,
