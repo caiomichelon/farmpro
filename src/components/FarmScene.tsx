@@ -11,75 +11,54 @@ interface FarmSceneProps {
   variant?: 'hero' | 'cover';
 }
 
-/** Fileiras de sulcos de plantio — um "V" de linhas curtas repetido,
- * lembrando um talhão visto de longe. Gerado em código (não hardcoded)
- * pra dar pra ajustar quantidade/espaçamento num lugar só. */
+/** Fileiras de sulcos de plantio — traços retos e grossos, tipo terra
+ * arada de verdade vista de longe (não um hachurado fino e delicado).
+ * Gerado em código (não hardcoded) pra dar pra ajustar quantidade/
+ * espaçamento num lugar só. */
 function buildFurrowLines(count: number, startX: number, endX: number, y: number, tilt: number) {
   const lines: { x1: number; x2: number; y1: number; y2: number }[] = [];
   const step = (endX - startX) / (count - 1);
   for (let i = 0; i < count; i++) {
     const x = startX + step * i;
-    lines.push({ x1: x, y1: y, x2: x + tilt, y2: y + 10 });
+    lines.push({ x1: x, y1: y, x2: x + tilt, y2: y + 14 });
   }
   return lines;
 }
 
-/** Cenário de campo estilizado: colinas em camadas, sol com brilho
- * pulsante, sulcos de plantio e pássaros cruzando o céu — um desenho de
- * linha simples nas cores da própria paleta do app (sem gradiente, sem
- * foto, sem clichê de IA). Usado como fundo animado no hero do
- * login/signup e na tela de abertura. */
+/**
+ * Cenário de campo: relevo com contorno mais duro (não onda suave de
+ * ilustração genérica), sol chapado sem brilho difuso, sulcos de plantio
+ * grossos e bem marcados — deliberadamente sem o acabamento
+ * "arredondado/suave/pulsante" de ilustração de app padrão. Usado como
+ * fundo animado no hero do login/signup e na tela de abertura.
+ */
 export function FarmScene({ variant = 'hero' }: FarmSceneProps) {
   const colors = useColors();
   const isCover = variant === 'cover';
 
   const entrance = useRef(new Animated.Value(0)).current;
-  const sunPulse = useRef(new Animated.Value(0)).current;
   const bird1 = useRef(new Animated.Value(0)).current;
-  const bird2 = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.timing(entrance, { toValue: 1, duration: 900, useNativeDriver: true }).start();
 
+    // Só um pássaro, cruzando devagar e bem de leve — presença mínima, não
+    // um bando "fofinho" de ilustração de onboarding.
     Animated.loop(
       Animated.sequence([
-        Animated.timing(sunPulse, { toValue: 1, duration: 2400, useNativeDriver: true }),
-        Animated.timing(sunPulse, { toValue: 0, duration: 2400, useNativeDriver: true }),
-      ])
-    ).start();
-
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(bird1, { toValue: 1, duration: 10000, useNativeDriver: true }),
+        Animated.delay(3000),
+        Animated.timing(bird1, { toValue: 1, duration: 13000, useNativeDriver: true }),
         Animated.timing(bird1, { toValue: 0, duration: 0, useNativeDriver: true }),
-        Animated.delay(2600),
-      ])
-    ).start();
-
-    Animated.loop(
-      Animated.sequence([
-        Animated.delay(4200),
-        Animated.timing(bird2, { toValue: 1, duration: 12000, useNativeDriver: true }),
-        Animated.timing(bird2, { toValue: 0, duration: 0, useNativeDriver: true }),
-        Animated.delay(3200),
+        Animated.delay(4000),
       ])
     ).start();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const furrows = useMemo(() => buildFurrowLines(9, 6, 96, isCover ? 78 : 46, 5), [isCover]);
+  const furrows = useMemo(() => buildFurrowLines(7, 4, 98, isCover ? 74 : 42, 7), [isCover]);
 
-  const sunGlowScale = sunPulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.22] });
-  const sunGlowOpacity = sunPulse.interpolate({ inputRange: [0, 1], outputRange: [0.32, 0.1] });
-  // Faixa em pontos (não %) porque translateX com string percentual não é
-  // suportado de forma confiável fora da web pelo driver nativo — a faixa
-  // cobre a largura típica de tela de celular de sobra.
   const bird1X = bird1.interpolate({ inputRange: [0, 1], outputRange: [-24, 420] });
-  const bird2X = bird2.interpolate({ inputRange: [0, 1], outputRange: [-24, 420] });
-
-  const sunTop = isCover ? '28%' : '6%';
-  const sunSize = isCover ? 38 : 30;
 
   return (
     <Animated.View
@@ -89,51 +68,51 @@ export function FarmScene({ variant = 'hero' }: FarmSceneProps) {
         { opacity: entrance, transform: [{ translateY: entrance.interpolate({ inputRange: [0, 1], outputRange: [14, 0] }) }] },
       ]}
     >
-      {/* Sol com anéis de brilho — Views comuns (não SVG) pra animar com
-          o driver nativo sem depender de props animadas do SVG. */}
+      {/* Sol chapado, sem brilho difuso: um círculo de verdade (View, não
+          dentro do SVG — o viewBox esticado não-uniformemente deformaria
+          um círculo em oval). Estático, sem pulsar — mais gráfico do que
+          "pôr do sol suave de ilustração de app". */}
       <View
         style={[
-          styles.sunWrap,
-          { top: sunTop, right: isCover ? '14%' : '10%', width: sunSize * 2.6, height: sunSize * 2.6 },
+          styles.sun,
+          {
+            top: isCover ? '24%' : '5%',
+            right: isCover ? '15%' : '11%',
+            width: isCover ? 34 : 26,
+            height: isCover ? 34 : 26,
+            borderRadius: isCover ? 17 : 13,
+            backgroundColor: colors.accent,
+          },
         ]}
-      >
-        <Animated.View
-          style={[
-            styles.sunGlow,
-            {
-              width: sunSize * 2.6,
-              height: sunSize * 2.6,
-              borderRadius: sunSize * 1.3,
-              backgroundColor: colors.accent,
-              opacity: sunGlowOpacity,
-              transform: [{ scale: sunGlowScale }],
-            },
-          ]}
-        />
-        <View
-          style={[
-            styles.sunCore,
-            { width: sunSize, height: sunSize, borderRadius: sunSize / 2, backgroundColor: colors.accent },
-          ]}
-        />
-      </View>
+      />
 
-      {/* Colinas em camadas + sulcos de plantio */}
+      {/* Relevo em camadas + sulcos de plantio, no mesmo SVG —
+          contornos irregulares (não curva única suave) e cores chapadas,
+          sem gradiente nem brilho difuso. */}
       <Svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none" style={styles.svg}>
         <Path
-          d={isCover ? 'M0,68 C22,54 45,76 68,60 C82,50 92,60 100,54 L100,100 L0,100 Z' : 'M0,78 C24,66 46,86 70,70 C84,60 92,70 100,64 L100,100 L0,100 Z'}
+          d={
+            isCover
+              ? 'M0,64 L14,58 L27,66 L41,52 L56,62 L70,50 L84,58 L100,48 L100,100 L0,100 Z'
+              : 'M0,76 L14,70 L27,78 L41,66 L56,74 L70,64 L84,72 L100,62 L100,100 L0,100 Z'
+          }
           fill={colors.primaryDark}
-          opacity={0.85}
         />
         <Path
-          d={isCover ? 'M0,79 C22,68 48,87 72,74 C86,66 94,74 100,68 L100,100 L0,100 Z' : 'M0,87 C22,78 48,96 74,84 C86,78 94,84 100,80 L100,100 L0,100 Z'}
+          d={
+            isCover
+              ? 'M0,76 L16,70 L30,79 L46,68 L60,77 L76,67 L88,75 L100,66 L100,100 L0,100 Z'
+              : 'M0,86 L16,80 L30,90 L46,80 L60,88 L76,78 L88,86 L100,79 L100,100 L0,100 Z'
+          }
           fill={colors.pecuaria}
-          opacity={0.55}
         />
         <Path
-          d={isCover ? 'M0,86 C20,78 50,94 76,82 C88,76 94,84 100,80 L100,100 L0,100 Z' : 'M0,92 C20,86 50,100 76,90 C88,86 94,92 100,90 L100,100 L0,100 Z'}
+          d={
+            isCover
+              ? 'M0,85 L18,80 L34,90 L50,81 L66,89 L82,80 L92,86 L100,81 L100,100 L0,100 Z'
+              : 'M0,93 L18,89 L34,98 L50,91 L66,97 L82,90 L92,95 L100,92 L100,100 L0,100 Z'
+          }
           fill={colors.lavoura}
-          opacity={0.92}
         />
         {furrows.map((line, index) => (
           <Line
@@ -143,29 +122,25 @@ export function FarmScene({ variant = 'hero' }: FarmSceneProps) {
             x2={line.x2}
             y2={line.y2}
             stroke={colors.textInverse}
-            strokeWidth={0.7}
-            opacity={0.2}
-            strokeLinecap="round"
+            strokeWidth={1.6}
+            opacity={0.4}
+            strokeLinecap="square"
           />
         ))}
       </Svg>
 
-      {/* Pássaros — dois traços em "M" cruzando o céu em velocidades
-          diferentes, num loop com pausa entre passagens. */}
-      <Animated.View style={[styles.bird, { top: isCover ? '18%' : '20%', transform: [{ translateX: bird1X }] }]}>
+      {/* Um único traço de pássaro — presença mínima, sem "bando fofinho". */}
+      <Animated.View style={[styles.bird, { top: isCover ? '20%' : '22%', transform: [{ translateX: bird1X }] }]}>
         <BirdMark color={colors.textInverse} />
-      </Animated.View>
-      <Animated.View style={[styles.bird, { top: isCover ? '26%' : '32%', transform: [{ translateX: bird2X }] }]}>
-        <BirdMark color={colors.textInverse} size={0.75} />
       </Animated.View>
     </Animated.View>
   );
 }
 
-function BirdMark({ color, size = 1 }: { color: string; size?: number }) {
+function BirdMark({ color }: { color: string }) {
   return (
-    <Svg width={16 * size} height={9 * size} viewBox="0 0 16 9">
-      <Path d="M0,6 Q4,0 8,6 Q12,0 16,6" stroke={color} strokeWidth={1.3} fill="none" opacity={0.4} strokeLinecap="round" />
+    <Svg width={14} height={6} viewBox="0 0 14 6">
+      <Path d="M0,5 L3.5,0.5 L7,5 L10.5,0.5 L14,5" stroke={color} strokeWidth={1.4} fill="none" opacity={0.35} strokeLinecap="square" />
     </Svg>
   );
 }
@@ -180,17 +155,9 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
   },
-  sunWrap: {
+  sun: {
     position: 'absolute',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  sunGlow: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-  },
-  sunCore: {},
   bird: {
     position: 'absolute',
     left: 0,
