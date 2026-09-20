@@ -256,29 +256,46 @@ export interface ImportResult {
   errors: { row: number; message: string }[];
 }
 
-/** Insere as linhas no Supabase — tenta tudo de uma vez (mais rápido); se
- * falhar, refaz uma por uma pra descobrir exatamente quais linhas têm
- * problema, sem perder as que estão válidas. */
+/** Quantas linhas manda por vez pro Supabase. Uma planilha grande (muito
+ * gado, muito funcionário) inteira numa chamada só arrisca estourar limite
+ * de tamanho de requisição ou dar timeout numa conexão de campo ruim — aí a
+ * importação inteira falha e cai pro modo linha-por-linha (bem mais lento)
+ * pra tudo, não só pro que realmente tinha problema. Em lotes menores, só o
+ * lote com problema precisa desse modo mais lento. */
+const INSERT_CHUNK_SIZE = 500;
+
+/** Insere as linhas no Supabase em lotes — tenta cada lote de uma vez (mais
+ * rápido); se um lote falhar, refaz só aquele lote linha por linha pra
+ * descobrir exatamente quais linhas têm problema, sem perder as que estão
+ * válidas nem precisar reenviar os lotes que já deram certo. */
 export async function bulkInsert(table: string, rows: Record<string, unknown>[]): Promise<ImportResult> {
   if (rows.length === 0) return { successCount: 0, errors: [] };
 
-  // O nome da tabela é dinâmico (essa função é reusada pra 4 tabelas
+  // O nome da tabela é dinâmico (essa função é reusada por várias tabelas
   // diferentes), então o cliente tipado do Supabase não consegue inferir a
   // Row/Insert shape aqui — cast local e isolado, resto do arquivo tipado.
   const table_ = supabase.from(table as never);
 
-  const { error: bulkError } = await table_.insert(rows as never[]);
-  if (!bulkError) return { successCount: rows.length, errors: [] };
-
   let successCount = 0;
   const errors: { row: number; message: string }[] = [];
-  for (let i = 0; i < rows.length; i++) {
-    const { error } = await table_.insert(rows[i] as never);
-    if (error) {
-      errors.push({ row: i + 1, message: error.message });
-    } else {
-      successCount++;
+
+  for (let start = 0; start < rows.length; start += INSERT_CHUNK_SIZE) {
+    const chunk = rows.slice(start, start + INSERT_CHUNK_SIZE);
+    const { error: chunkError } = await table_.insert(chunk as never[]);
+    if (!chunkError) {
+      successCount += chunk.length;
+      continue;
+    }
+
+    for (let i = 0; i < chunk.length; i++) {
+      const { error } = await table_.insert(chunk[i] as never);
+      if (error) {
+        errors.push({ row: start + i + 1, message: error.message });
+      } else {
+        successCount++;
+      }
     }
   }
+
   return { successCount, errors };
 }

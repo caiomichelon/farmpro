@@ -3,7 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ImportWizard } from '../../../../../../../../src/components/ImportWizard';
 import { ScreenHeader } from '../../../../../../../../src/components/ScreenHeader';
-import type { ImportField } from '../../../../../../../../src/lib/spreadsheetImport';
+import { normalize, type ImportField } from '../../../../../../../../src/lib/spreadsheetImport';
 import { useColors } from '../../../../../../../../src/theme';
 
 const FIELDS: ImportField[] = [
@@ -30,6 +30,15 @@ const FIELDS: ImportField[] = [
   { key: 'notes', label: 'Observações', kind: 'text', aliases: ['obs'] },
 ];
 
+/** Assinatura = brinco do animal, normalizado — fixedValues já filtra por
+ * farm_id + lot_id, então só precisa ser único dentro deste lote. Não usa
+ * peso/raça/sexo na assinatura, pelo mesmo motivo do lote e da matriz:
+ * corrigir esses dados numa reimportação não deve criar um animal novo. */
+function animalDedupeKey(row: Record<string, unknown>): string | null {
+  const tag = normalize(String(row.tag_number ?? ''));
+  return tag || null;
+}
+
 export default function ImportAnimalsScreen() {
   const { farmId, lotId } = useLocalSearchParams<{ farmId: string; lotId: string }>();
   const colors = useColors();
@@ -40,6 +49,7 @@ export default function ImportAnimalsScreen() {
       <ImportWizard
         table="cattle_animals"
         fields={FIELDS}
+        dedupeKey={animalDedupeKey}
         accentColor={colors.pecuaria}
         fixedValues={{ farm_id: farmId, lot_id: lotId }}
         onDone={() => router.back()}
