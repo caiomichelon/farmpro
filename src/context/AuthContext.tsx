@@ -23,16 +23,45 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
+    // getSession() pode ficar pendurado pra sempre se o backend do Supabase
+    // não responder (por exemplo, projeto do plano gratuito pausado por
+    // inatividade) — sem timeout, isLoading nunca vira false e a tela de
+    // capa (app/index.tsx) fica travada esperando pra sempre, sem cair nem
+    // pro login nem pro app. Uma corrida com um timeout garante que a gente
+    // sempre sai desse estado, mesmo que sem sessão restaurada dessa vez.
+    let settled = false;
+    const timeout = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      console.warn('[auth] getSession demorou demais pra responder — seguindo sem sessão restaurada.');
       setIsLoading(false);
-    });
+    }, 8000);
+
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timeout);
+        setSession(data.session);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timeout);
+        console.warn('[auth] Falha ao restaurar sessão:', error);
+        setIsLoading(false);
+      });
 
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       setSession(nextSession);
     });
 
-    return () => subscription.subscription.unsubscribe();
+    return () => {
+      clearTimeout(timeout);
+      subscription.subscription.unsubscribe();
+    };
   }, []);
 
   const value = useMemo<AuthContextValue>(
