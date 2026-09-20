@@ -169,6 +169,14 @@ export default function CorteHomeScreen() {
                   <Text style={styles.link}>{t('corteHome.linkImportLots')}</Text>
                 </Pressable>
                 <Text style={styles.linkDivider}>·</Text>
+                <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/carimbados/importar`)} hitSlop={8}>
+                  <Text style={styles.link}>{t('corteHome.linkStampedAnimals')}</Text>
+                </Pressable>
+                <Text style={styles.linkDivider}>·</Text>
+                <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/carimbados/buscar-agrupar`)} hitSlop={8}>
+                  <Text style={styles.link}>{t('corteHome.linkSearchAndGroup')}</Text>
+                </Pressable>
+                <Text style={styles.linkDivider}>·</Text>
                 <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/protocolos`)} hitSlop={8}>
                   <Text style={styles.link}>{t('corteHome.linkProtocols')}</Text>
                 </Pressable>

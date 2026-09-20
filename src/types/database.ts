@@ -201,6 +201,27 @@ export type CasualLaborer = {
   created_at: string;
 };
 
+/** Registro geral de animais "carimbados" — o histórico de compra do gado
+ * (identificado pelo IDV), importado da planilha do produtor. É o "pool"
+ * de onde a ferramenta de busca em lote monta um grupo pro semi-confinamento
+ * (ver create_lot_from_stamped_animals); allocated_lot_id fica preenchido
+ * assim que o animal entra num lote, pra não ser usado de novo por engano. */
+export type StampedAnimal = {
+  id: string;
+  farm_id: string;
+  idv: number;
+  entry_date: string | null;
+  entry_weight_kg: number | null;
+  carimbo: string | null;
+  lote_label: string | null;
+  breed: string | null;
+  category: string | null;
+  official_id_number: string | null;
+  allocated_lot_id: string | null;
+  allocated_at: string | null;
+  created_at: string;
+};
+
 /** Fornecedor / contato útil da fazenda (loja agropecuária, veterinário,
  * mecânico, transportadora, comprador etc.). */
 export type Supplier = {
@@ -831,6 +852,12 @@ export interface Database {
         Update: Partial<CommodityQuoteRow>;
         Relationships: [];
       };
+      stamped_animals: {
+        Row: StampedAnimal;
+        Insert: Partial<StampedAnimal> & { farm_id: string; idv: number };
+        Update: Partial<StampedAnimal>;
+        Relationships: [];
+      };
       farm_members: {
         Row: FarmMember;
         Insert: Partial<FarmMember> & { farm_id: string; user_id: string };
@@ -1186,6 +1213,30 @@ export interface Database {
       admin_dashboard_stats: {
         Args: Record<string, never>;
         Returns: unknown;
+      };
+      preview_stamped_animals: {
+        Args: { p_farm_id: string; p_idvs: number[] };
+        Returns: {
+          idv: number;
+          entry_date: string | null;
+          entry_weight_kg: number | null;
+          carimbo: string | null;
+          lote_label: string | null;
+          breed: string | null;
+          category: string | null;
+          official_id_number: string | null;
+          allocated_lot_id: string | null;
+          allocated_lot_name: string | null;
+        }[];
+      };
+      create_lot_from_stamped_animals: {
+        Args: { p_farm_id: string; p_idvs: number[]; p_lot_name: string; p_entry_date?: string | null };
+        Returns: {
+          lot_id: string;
+          matched_count: number;
+          already_allocated_idvs: number[];
+          not_found_idvs: number[];
+        }[];
       };
     };
     Enums: Record<string, never>;
