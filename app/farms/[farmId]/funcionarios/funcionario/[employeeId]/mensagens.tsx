@@ -59,7 +59,7 @@ export default function EmployeeMessagesScreen() {
       ) : messages.length === 0 ? (
         <EmptyState text="Nenhuma mensagem ainda. Comece a conversa." />
       ) : (
-        <ScrollView ref={scrollRef} contentContainerStyle={styles.messageList}>
+        <ScrollView ref={scrollRef} style={styles.messageScroll} contentContainerStyle={styles.messageList}>
           {messages.map((m) => (
             <MessageBubble key={m.id} message={m} styles={styles} colors={colors} />
           ))}
@@ -118,6 +118,13 @@ function createStyles(colors: Colors) {
     },
     loading: {
       marginTop: spacing.xxl,
+    },
+    // Sem isso, o composer de mensagem (sibling logo abaixo) pode sumir no
+    // iOS com New Architecture — bug conhecido de FlatList/ScrollView sem
+    // style={flex:1} escondendo conteúdo irmão renderizado depois dele
+    // (facebook/react-native#44683).
+    messageScroll: {
+      flex: 1,
     },
     messageList: {
       paddingHorizontal: spacing.xl,

@@ -129,7 +129,7 @@ export default function TimeClockScreen() {
       ) : entries.length === 0 ? (
         <EmptyState text="Nenhum ponto registrado ainda." />
       ) : (
-        <ScrollView contentContainerStyle={styles.listContent}>
+        <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
           <DataTable title="Ponto" columns={columns} data={entries} keyExtractor={(e) => e.id} />
         </ScrollView>
       )}
@@ -203,6 +203,13 @@ function createStyles(colors: Colors) {
   },
   loading: {
     marginTop: spacing.xl,
+  },
+  // Sem isso, o aviso de erro (sibling logo abaixo) pode sumir no iOS com
+  // New Architecture — bug conhecido de FlatList/ScrollView sem
+  // style={flex:1} escondendo conteúdo irmão renderizado depois dele
+  // (facebook/react-native#44683).
+  list: {
+    flex: 1,
   },
   listContent: {
     paddingHorizontal: spacing.xl,

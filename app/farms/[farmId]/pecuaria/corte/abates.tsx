@@ -50,7 +50,7 @@ export default function SlaughtersSpreadsheetScreen() {
       ) : slaughters.length === 0 ? (
         <EmptyState text="Nenhum abate registrado ainda em nenhum lote." />
       ) : (
-        <ScrollView contentContainerStyle={styles.content}>
+        <ScrollView style={styles.list} contentContainerStyle={styles.content}>
           <DataTable title="Abates" columns={columns} data={slaughters} keyExtractor={(s) => s.id} />
         </ScrollView>
       )}
@@ -68,6 +68,13 @@ function createStyles(colors: Colors) {
     },
     loading: {
       marginTop: spacing.xxl,
+    },
+    // Sem isso, o aviso de erro (sibling logo abaixo) pode sumir no iOS com
+    // New Architecture — bug conhecido de FlatList/ScrollView sem
+    // style={flex:1} escondendo conteúdo irmão renderizado depois dele
+    // (facebook/react-native#44683).
+    list: {
+      flex: 1,
     },
     content: {
       paddingHorizontal: spacing.xl,
