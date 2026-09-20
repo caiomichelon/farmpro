@@ -8,8 +8,8 @@ const PIXELS_PER_SECOND = 36;
 
 /**
  * Barra de commodities fixa, com rolagem automática contínua (efeito
- * "letreiro"). Os dados hoje vêm de `getCommodityQuotes` (mock) — ver
- * src/data/commodities.ts para o que falta pra virar tempo real.
+ * "letreiro"). Preço de fechamento da B3 (ver src/data/commodities.ts) —
+ * some sozinha (fica vazia) se a tabela ainda não tiver nenhuma cotação.
  */
 export function CommodityTicker() {
   const colors = useColors();
@@ -76,11 +76,12 @@ function QuoteRow({
 
 function QuoteItem({ quote, styles }: { quote: CommodityQuote; styles: ReturnType<typeof createStyles> }) {
   const isUp = quote.changePercent >= 0;
+  const currencySymbol = quote.currency === 'USD' ? 'US$' : 'R$';
   return (
     <View style={styles.item}>
       <Text style={styles.label}>{quote.label}</Text>
       <Text style={styles.price}>
-        R$ {quote.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+        {currencySymbol} {quote.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
         <Text style={styles.unit}> /{quote.unit}</Text>
       </Text>
       <Text style={[styles.change, { color: isUp ? '#8FD19E' : '#E8A79C' }]}>

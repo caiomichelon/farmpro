@@ -56,6 +56,20 @@ export type Profile = {
   created_at: string;
 };
 
+/** Cotação de fechamento da B3 (ver src/data/commodities.ts) — escrita só
+ * pela Edge Function sync-b3-quotes, nunca pelo app. */
+export type CommodityQuoteRow = {
+  id: string;
+  label: string;
+  unit: string;
+  currency: 'BRL' | 'USD';
+  price: number;
+  change_percent: number;
+  contract: string | null;
+  quote_date: string;
+  updated_at: string;
+};
+
 /** Convite por código pra entrar numa fazenda já existente (multiusuário). */
 export type FarmInvite = {
   id: string;
@@ -809,6 +823,12 @@ export interface Database {
         Row: Farm;
         Insert: Partial<Farm> & { name: string; created_by: string; sector_type: FarmSectorType };
         Update: Partial<Farm>;
+        Relationships: [];
+      };
+      commodity_quotes: {
+        Row: CommodityQuoteRow;
+        Insert: Partial<CommodityQuoteRow> & { id: string; label: string; unit: string; price: number; quote_date: string };
+        Update: Partial<CommodityQuoteRow>;
         Relationships: [];
       };
       farm_members: {

@@ -1,33 +1,48 @@
 /**
- * Fonte de dados da barra de commodities.
+ * Fonte de dados da barra de commodities — cotação de fechamento da B3
+ * (Boi Gordo, Milho, Soja), sincronizada uma vez por dia útil por uma Edge
+ * Function (supabase/functions/sync-b3-quotes) direto na tabela
+ * public.commodity_quotes. Não é tempo real: a B3 não oferece cotação
+ * intradiária gratuita pra terceiros, só o fechamento do pregão.
  *
- * ⚠️ Os preços abaixo são estáticos/placeholder — o briefing pede cotação em
- * tempo real (boi gordo, soja, milho, algodão), mas isso depende de escolher
- * um provedor de dados (ex.: CEPEA/ESALQ, B3, ou uma cooperativa específica),
- * o que ainda não foi decidido. `getCommodityQuotes` é a única função que
- * precisa mudar quando essa integração entrar: troque o corpo por uma
- * chamada HTTP/websocket real, mantendo o formato de `CommodityQuote`.
+ * Algodão não entra aqui porque a B3 não tem contrato futuro ativo dessa
+ * commodity hoje — não dá pra fabricar esse dado, então fica de fora até
+ * surgir uma fonte real.
  */
+import { supabase } from '../lib/supabase';
 
-export type CommodityUnit = '@' | 'saca 60kg' | 'arroba' | '£';
+export type CommodityUnit = '@' | 'saca 60kg';
+export type CommodityCurrency = 'BRL' | 'USD';
 
 export interface CommodityQuote {
   id: string;
   label: string;
   unit: CommodityUnit;
+  currency: CommodityCurrency;
   price: number;
   changePercent: number;
+  /** Data do pregão a que esse preço se refere (não "agora") — a tabela é o
+   * fechamento do último dia útil processado. */
+  quoteDate: string;
   updatedAt: string;
 }
 
-const MOCK_QUOTES: CommodityQuote[] = [
-  { id: 'boi-gordo', label: 'Boi Gordo', unit: '@', price: 298.5, changePercent: 0.42, updatedAt: new Date().toISOString() },
-  { id: 'soja', label: 'Soja', unit: 'saca 60kg', price: 132.9, changePercent: -0.85, updatedAt: new Date().toISOString() },
-  { id: 'milho', label: 'Milho', unit: 'saca 60kg', price: 62.4, changePercent: 1.15, updatedAt: new Date().toISOString() },
-  { id: 'algodao', label: 'Algodão', unit: '£', price: 1.58, changePercent: -0.12, updatedAt: new Date().toISOString() },
-];
-
 export async function getCommodityQuotes(): Promise<CommodityQuote[]> {
-  // TODO: substituir por integração real (ver aviso acima).
-  return MOCK_QUOTES;
+  const { data, error } = await supabase
+    .from('commodity_quotes')
+    .select('id, label, unit, currency, price, change_percent, quote_date, updated_at')
+    .order('id');
+
+  if (error || !data) return [];
+
+  return data.map((row) => ({
+    id: row.id,
+    label: row.label,
+    unit: row.unit as CommodityUnit,
+    currency: row.currency as CommodityCurrency,
+    price: Number(row.price),
+    changePercent: Number(row.change_percent),
+    quoteDate: row.quote_date,
+    updatedAt: row.updated_at,
+  }));
 }
