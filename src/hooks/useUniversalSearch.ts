@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { supabase } from '../lib/supabase';
 
-export type UniversalSearchResultType = 'animal' | 'lot' | 'cow' | 'plot' | 'employee';
+export type UniversalSearchResultType = 'animal' | 'lot' | 'plot' | 'employee';
 
 export interface UniversalSearchResult {
   type: UniversalSearchResultType;
@@ -15,7 +15,6 @@ export interface UniversalSearchResult {
 const TYPE_LABELS: Record<UniversalSearchResultType, string> = {
   animal: 'Animal (Corte)',
   lot: 'Lote (Corte)',
-  cow: 'Matriz (Cria)',
   plot: 'Talhão (Lavoura)',
   employee: 'Funcionário',
 };
@@ -41,10 +40,9 @@ export function useUniversalSearch(farmId: string | undefined, query: string) {
       setIsLoading(true);
       try {
         const like = `%${trimmed}%`;
-        const [animals, lots, cows, plots, employees] = await Promise.all([
+        const [animals, lots, plots, employees] = await Promise.all([
           supabase.from('cattle_animals').select('id, tag_number').eq('farm_id', farmId).ilike('tag_number', like).limit(5),
           supabase.from('cattle_lots').select('id, name').eq('farm_id', farmId).ilike('name', like).limit(5),
-          supabase.from('breeding_cows').select('id, identification').eq('farm_id', farmId).ilike('identification', like).limit(5),
           supabase.from('plots').select('id, name').eq('farm_id', farmId).ilike('name', like).limit(5),
           supabase.from('employees').select('id, full_name, role').eq('farm_id', farmId).ilike('full_name', like).limit(5),
         ]);
@@ -65,13 +63,6 @@ export function useUniversalSearch(farmId: string | undefined, query: string) {
             label: l.name,
             sublabel: TYPE_LABELS.lot,
             href: `/farms/${farmId}/pecuaria/corte/lote/${l.id}`,
-          })),
-          ...(cows.data ?? []).map((c) => ({
-            type: 'cow' as const,
-            id: c.id,
-            label: c.identification,
-            sublabel: TYPE_LABELS.cow,
-            href: `/farms/${farmId}/pecuaria/cria/matriz/${c.id}`,
           })),
           ...(plots.data ?? []).map((p) => ({
             type: 'plot' as const,

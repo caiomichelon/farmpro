@@ -34,13 +34,6 @@ export interface BankReportInput {
     projectedMargin: number;
   };
 
-  cria: {
-    totalCows: number;
-    pregnantCount: number;
-    totalCalvesBorn: number;
-    totalCost: number;
-  };
-
   funcionarios: {
     totalCount: number;
     countBySector: { label: string; count: number }[];
@@ -53,15 +46,13 @@ export interface BankReportInput {
  * bem diferente da planilha crua de exportação: aqui é texto corrido +
  * tabelas resumo, não um dump de cada registro. */
 export function buildBankReportHtml(input: BankReportInput): string {
-  const { farmName, city, state, generatedAt, lavoura, corte, cria, funcionarios } = input;
+  const { farmName, city, state, generatedAt, lavoura, corte, funcionarios } = input;
   const location = [city, state].filter(Boolean).join(' / ') || '—';
   const dateStr = generatedAt.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
 
   const consolidatedRevenue = lavoura.totalRevenue + corte.projectedRevenue;
-  const consolidatedCost = lavoura.totalCost + corte.totalCost + cria.totalCost;
+  const consolidatedCost = lavoura.totalCost + corte.totalCost;
   const consolidatedResult = consolidatedRevenue - consolidatedCost;
-
-  const pregnancyRatePct = cria.totalCows > 0 ? (cria.pregnantCount / cria.totalCows) * 100 : 0;
 
   return `<!doctype html>
 <html lang="pt-BR">
@@ -107,7 +98,6 @@ export function buildBankReportHtml(input: BankReportInput): string {
   <div class="grid">
     <div class="stat"><div class="value">${number(lavoura.totalHectares)} ha</div><div class="label">Área total (Lavoura)</div></div>
     <div class="stat"><div class="value">${corte.totalHeadCount}</div><div class="label">Cabeças de gado de corte</div></div>
-    <div class="stat"><div class="value">${cria.totalCows}</div><div class="label">Matrizes de cria</div></div>
     <div class="stat"><div class="value">${funcionarios.totalCount}</div><div class="label">Funcionários</div></div>
   </div>
 
@@ -131,14 +121,6 @@ export function buildBankReportHtml(input: BankReportInput): string {
     <tr><th>Margem projetada</th><td class="${corte.projectedMargin >= 0 ? 'result-positive' : 'result-negative'}">${currency(corte.projectedMargin)}</td></tr>
   </table>
 
-  <h2>Pecuária — Cria</h2>
-  <table>
-    <tr><th>Matrizes no plantel</th><td>${cria.totalCows}</td></tr>
-    <tr><th>Prenhas atualmente</th><td>${cria.pregnantCount} (${number(pregnancyRatePct, 1)}%)</td></tr>
-    <tr><th>Bezerros nascidos (histórico)</th><td>${cria.totalCalvesBorn}</td></tr>
-    <tr><th>Custo lançado</th><td>${currency(cria.totalCost)}</td></tr>
-  </table>
-
   <h2>Funcionários</h2>
   <table>
     <tr><th>Total de funcionários</th><td>${funcionarios.totalCount}</td></tr>
@@ -150,7 +132,7 @@ export function buildBankReportHtml(input: BankReportInput): string {
   <div class="summary-box">
     <table>
       <tr><th>Receita consolidada (Lavoura + Corte projetado)</th><td>${currency(consolidatedRevenue)}</td></tr>
-      <tr><th>Custo consolidado (Lavoura + Corte + Cria)</th><td>${currency(consolidatedCost)}</td></tr>
+      <tr><th>Custo consolidado (Lavoura + Corte)</th><td>${currency(consolidatedCost)}</td></tr>
       <tr><th>Resultado consolidado</th><td class="${consolidatedResult >= 0 ? 'result-positive' : 'result-negative'}">${currency(consolidatedResult)}</td></tr>
     </table>
   </div>

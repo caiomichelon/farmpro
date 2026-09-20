@@ -5,16 +5,10 @@ import { requestNotificationPermission, scheduleLocalNotification } from '../lib
 import { supabase } from '../lib/supabase';
 import { useProfile } from './useProfile';
 
-function formatDateBR(isoDate: string) {
-  const [year, month, day] = isoDate.split('-');
-  return `${day}/${month}/${year}`;
-}
-
 /** Agenda notificações locais no aparelho pra vacinas/tratamentos pendentes
- * e partos previstos nos próximos 30 dias — assim o aviso chega mesmo com o
- * app fechado, sem depender de abrir e olhar a central de alertas. Não faz
- * nada na web nem se o usuário desligou a categoria em Ajustes →
- * Notificações. */
+ * nos próximos 30 dias — assim o aviso chega mesmo com o app fechado, sem
+ * depender de abrir e olhar a central de alertas. Não faz nada na web nem
+ * se o usuário desligou a categoria em Ajustes → Notificações. */
 export function useSyncCattleNotifications(farmId: string | undefined) {
   const { isAlertEnabled } = useProfile();
 
@@ -55,45 +49,6 @@ export function useSyncCattleNotifications(farmId: string | undefined) {
             `Brinco ${row.cattle_animals?.tag_number ?? '—'}: ${row.description}`,
             due
           );
-        }
-      }
-
-      if (isAlertEnabled('parto_previsto')) {
-        const { data } = await supabase
-          .from('inseminations')
-          .select('id, expected_calving_date, breeding_cows!inner(farm_id, identification)')
-          .eq('breeding_cows.farm_id', farmId)
-          .not('expected_calving_date', 'is', null)
-          .lte('expected_calving_date', in30DaysStr);
-
-        const rows = (data ?? []) as unknown as {
-          id: string;
-          expected_calving_date: string;
-          breeding_cows: { identification: string } | null;
-        }[];
-
-        if (rows.length > 0) {
-          const { data: calvings } = await supabase
-            .from('calvings')
-            .select('insemination_id')
-            .in(
-              'insemination_id',
-              rows.map((r) => r.id)
-            );
-          const calvedIds = new Set((calvings ?? []).map((c) => c.insemination_id));
-
-          for (const row of rows) {
-            if (cancelled || calvedIds.has(row.id)) continue;
-            // Avisa 3 dias antes da data prevista, às 8h.
-            const reminder = new Date(`${row.expected_calving_date}T08:00:00`);
-            reminder.setDate(reminder.getDate() - 3);
-            await scheduleLocalNotification(
-              `parto-${row.id}`,
-              'Parto previsto se aproximando',
-              `Matriz ${row.breeding_cows?.identification ?? '—'}: previsão pra ${formatDateBR(row.expected_calving_date)}`,
-              reminder
-            );
-          }
         }
       }
     })();

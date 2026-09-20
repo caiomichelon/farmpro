@@ -13,10 +13,7 @@ import { SummaryStat } from '../../../src/components/SummaryStat';
 import { useFarm } from '../../../src/hooks/useFarms';
 import { useFarmHealthScore } from '../../../src/hooks/useFarmHealthScore';
 import { useSyncCattleNotifications } from '../../../src/hooks/useSyncCattleNotifications';
-import { useSyncDailyBriefingNotification } from '../../../src/hooks/useSyncDailyBriefingNotification';
 import { useSyncDailyPhotoReminder } from '../../../src/hooks/useSyncDailyPhotoReminder';
-import { useSyncEndOfDayNotification } from '../../../src/hooks/useSyncEndOfDayNotification';
-import { useSyncWeatherNotifications } from '../../../src/hooks/useSyncWeatherNotifications';
 import { useT } from '../../../src/i18n';
 import { radius, spacing, typography, useColors, type Colors } from '../../../src/theme';
 
@@ -29,9 +26,6 @@ export default function FarmHomeScreen() {
   const health = useFarmHealthScore(farmId);
   const alerts = health.alerts;
   useSyncCattleNotifications(farmId);
-  useSyncWeatherNotifications(farmId);
-  useSyncDailyBriefingNotification(farmId);
-  useSyncEndOfDayNotification(farmId);
   useSyncDailyPhotoReminder(farmId);
 
   return (

@@ -333,56 +333,6 @@ const SHEETS: ExportSheet[] = [
     },
   },
 
-  // ── Pecuária — Cria/Reprodução ────────────────────────────────────────
-  {
-    name: 'Matrizes',
-    fetch: async (farmId) => {
-      const rows = await selectByFarm('breeding_cows', farmId);
-      return rows.map((r) => ({
-        Identificação: r.identification,
-        Nascimento: formatDate(r.birth_date as string),
-        Observações: r.notes ?? '',
-      }));
-    },
-  },
-  {
-    name: 'Inseminações',
-    fetch: async (farmId) => {
-      const { data, error } = await supabase
-        .from('inseminations')
-        .select('*, breeding_cows!inner(farm_id, identification)')
-        .eq('breeding_cows.farm_id', farmId);
-      if (error) throw error;
-      return ((data ?? []) as unknown as (Row & { breeding_cows: { identification: string } | null })[]).map(
-        (r) => ({
-          Matriz: r.breeding_cows?.identification ?? '',
-          Data: formatDate(r.insemination_date as string),
-          Veterinário: r.veterinarian ?? '',
-          Método: r.method ?? '',
-          'Previsão de parto': formatDate(r.expected_calving_date as string),
-        })
-      );
-    },
-  },
-  {
-    name: 'Partos',
-    fetch: async (farmId) => {
-      const { data, error } = await supabase
-        .from('calvings')
-        .select('*, breeding_cows!inner(farm_id, identification)')
-        .eq('breeding_cows.farm_id', farmId);
-      if (error) throw error;
-      return ((data ?? []) as unknown as (Row & { breeding_cows: { identification: string } | null })[]).map(
-        (r) => ({
-          Matriz: r.breeding_cows?.identification ?? '',
-          Data: formatDate(r.calving_date as string),
-          'Bezerros nascidos': r.calf_count,
-          'Identificação do bezerro': r.calf_identification ?? '',
-        })
-      );
-    },
-  },
-
   // ── Funcionários ──────────────────────────────────────────────────────
   {
     name: 'Funcionários',

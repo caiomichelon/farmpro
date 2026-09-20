@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { getDocumentAlertStatus } from '../lib/documentAlerts';
 import { supabase } from '../lib/supabase';
-import { deriveWeatherRisks, fetchWeatherForecast } from '../lib/weather';
 import type { AlertPreferenceKey } from '../types/database';
 import { useProfile } from './useProfile';
 
@@ -227,45 +226,6 @@ export function useFarmAlerts(farmId: string | undefined) {
         });
       }
 
-      const { data: inseminations } = await supabase
-        .from('inseminations')
-        .select('id, expected_calving_date, breeding_cows!inner(farm_id)')
-        .eq('breeding_cows.farm_id', farmId)
-        .not('expected_calving_date', 'is', null)
-        .lte('expected_calving_date', in7DaysStr);
-
-      const dueInseminations = (inseminations ?? []) as unknown as { id: string; expected_calving_date: string }[];
-      if (dueInseminations.length > 0) {
-        const { data: calvings } = await supabase
-          .from('calvings')
-          .select('insemination_id')
-          .in('insemination_id', dueInseminations.map((i) => i.id));
-        const calvedIds = new Set((calvings ?? []).map((c) => c.insemination_id));
-        const pendingCalvings = dueInseminations.filter((i) => !calvedIds.has(i.id));
-        const overdueCalvings = pendingCalvings.filter((i) => i.expected_calving_date < today);
-        const upcomingCalvings = pendingCalvings.filter((i) => i.expected_calving_date >= today);
-
-        if (overdueCalvings.length > 0) {
-          result.push({
-            id: 'parto-vencido',
-            category: 'parto_previsto',
-            severity: 'danger',
-            title: `${overdueCalvings.length} ${overdueCalvings.length === 1 ? 'parto previsto já passou' : 'partos previstos já passaram'} da data`,
-            description: 'Confira a planilha de partos previstos da Cria.',
-            href: `/farms/${farmId}/pecuaria/cria/partos-previstos`,
-          });
-        } else if (upcomingCalvings.length > 0) {
-          result.push({
-            id: 'parto-proximo',
-            category: 'parto_previsto',
-            severity: 'warning',
-            title: `${upcomingCalvings.length} ${upcomingCalvings.length === 1 ? 'parto previsto' : 'partos previstos'} nos próximos 7 dias`,
-            description: 'Confira a planilha de partos previstos da Cria.',
-            href: `/farms/${farmId}/pecuaria/cria/partos-previstos`,
-          });
-        }
-      }
-
       // ── Lavoura — safra com prejuízo ────────────────────────────────────
       const { data: plots } = await supabase.from('plots').select('id, name').eq('farm_id', farmId).eq('type', 'lavoura');
       if (plots && plots.length > 0) {
@@ -301,25 +261,6 @@ export function useFarmAlerts(farmId: string | undefined) {
                 href: `/farms/${farmId}/lavoura/safra/${season.id}`,
               });
             }
-          }
-        }
-      }
-
-      // ── Clima — só quando a fazenda já tem localização definida ────────
-      if (isAlertEnabled('clima')) {
-        const { data: farmRow } = await supabase.from('farms').select('latitude, longitude').eq('id', farmId).single();
-        if (farmRow?.latitude != null && farmRow?.longitude != null) {
-          const forecast = await fetchWeatherForecast(Number(farmRow.latitude), Number(farmRow.longitude));
-          const risks = deriveWeatherRisks(forecast);
-          for (const risk of risks) {
-            result.push({
-              id: `clima-${risk.type}`,
-              category: 'clima',
-              severity: risk.severity,
-              title: risk.title,
-              description: risk.description,
-              href: `/farms/${farmId}/clima`,
-            });
           }
         }
       }

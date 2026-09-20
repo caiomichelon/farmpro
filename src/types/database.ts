@@ -39,12 +39,8 @@ export type AlertPreferenceKey =
   | 'peso_lote'
   | 'financeiro_safra'
   | 'vacina_pendente'
-  | 'parto_previsto'
-  | 'clima'
   | 'abigeato'
   | 'cocho_baixo'
-  | 'boletim_diario'
-  | 'fechamento_diario'
   | 'foto_diaria';
 export type AlertPreferences = Partial<Record<AlertPreferenceKey, boolean>>;
 
@@ -395,98 +391,6 @@ export type CattleSlaughter = {
   created_at: string;
 };
 
-/** Matriz (vaca reprodutora) — área de Cria/Reprodução, separada do Corte. */
-export type BreedingCow = {
-  id: string;
-  farm_id: string;
-  identification: string;
-  birth_date: string | null;
-  notes: string | null;
-  /** Mãe desta matriz, se ela também estiver cadastrada no rebanho — base
-   * da genealogia leve (o pai/sêmen fica por inseminação, em
-   * inseminations.sire_or_semen). */
-  dam_id: string | null;
-  /** Número oficial de rastreamento (SISBOV, SIAP/SITRAP etc.) — diferente
-   * da identificação de manejo. Opcional, formato livre (varia por país). */
-  official_id_number: string | null;
-  created_at: string;
-};
-
-/** Inseminação de uma matriz. */
-export type Insemination = {
-  id: string;
-  cow_id: string;
-  insemination_date: string;
-  veterinarian: string | null;
-  method: string | null;
-  sire_or_semen: string | null;
-  expected_calving_date: string | null;
-  notes: string | null;
-  created_at: string;
-};
-
-/** Parto de uma matriz — histórico de quantos bezerros ela já deu. */
-export type Calving = {
-  id: string;
-  cow_id: string;
-  insemination_id: string | null;
-  calving_date: string;
-  calf_count: number;
-  calf_identification: string | null;
-  notes: string | null;
-  created_at: string;
-};
-
-export type BreedingCowCostCategory = 'racao' | 'sanidade' | 'mao_de_obra' | 'outro';
-
-/** Custo lançado numa matriz — ração, sanidade, mão de obra. */
-export type BreedingCowCost = {
-  id: string;
-  cow_id: string;
-  category: BreedingCowCostCategory;
-  description: string;
-  amount: number;
-  applied_at: string;
-  created_at: string;
-};
-
-export type PregnancyDiagnosisResult = 'positivo' | 'negativo' | 'reabsorcao';
-
-/** Diagnóstico de gestação (DG) — confirma ou descarta a prenhez de uma
- * inseminação, normalmente feito ~30 dias depois por palpação/ultrassom. */
-export type PregnancyDiagnosis = {
-  id: string;
-  insemination_id: string;
-  diagnosis_date: string;
-  result: PregnancyDiagnosisResult;
-  method: string | null;
-  notes: string | null;
-  created_at: string;
-};
-
-/** Desmame de um parto — peso e data em que o(s) bezerro(s) foram
- * desmamados, base do "peso de desmame" (KPI zootécnico padrão). */
-export type Weaning = {
-  id: string;
-  calving_id: string;
-  weaning_date: string;
-  weight_kg: number | null;
-  notes: string | null;
-  created_at: string;
-};
-
-/** Pesagem/escore de condição corporal (ECC) da própria matriz — nutrição
- * afeta reprodução diretamente. */
-export type CowWeighing = {
-  id: string;
-  cow_id: string;
-  weighed_at: string;
-  weight_kg: number;
-  body_condition_score: number | null;
-  notes: string | null;
-  created_at: string;
-};
-
 /** Ficha completa de um funcionário — separado por setor. */
 export type Employee = {
   id: string;
@@ -674,29 +578,6 @@ export type CattleLotPhoto = {
   lot_id: string;
   photo_url: string;
   taken_at: string;
-};
-
-/** Diário de bordo — nota rápida da fazenda (texto e/ou foto, GPS
- * opcional), sem precisar escolher lote/talhão/animal antes. */
-export type FarmNote = {
-  id: string;
-  farm_id: string;
-  note_text: string | null;
-  photo_url: string | null;
-  latitude: number | null;
-  longitude: number | null;
-  created_by: string | null;
-  created_at: string;
-};
-
-/** Pluviômetro manual — chuva do dia (mm) lançada pelo produtor. Uma
- * leitura por dia (upsert por data). */
-export type RainReading = {
-  id: string;
-  farm_id: string;
-  reading_date: string;
-  mm: number;
-  created_at: string;
 };
 
 /** Equipamento/maquinário da fazenda (trator, implemento) — farm-wide,
@@ -1001,48 +882,6 @@ export interface Database {
         Update: Partial<CattleSlaughter>;
         Relationships: [];
       };
-      breeding_cows: {
-        Row: BreedingCow;
-        Insert: Partial<BreedingCow> & { farm_id: string; identification: string };
-        Update: Partial<BreedingCow>;
-        Relationships: [];
-      };
-      breeding_cow_costs: {
-        Row: BreedingCowCost;
-        Insert: Partial<BreedingCowCost> & { cow_id: string; description: string; amount: number };
-        Update: Partial<BreedingCowCost>;
-        Relationships: [];
-      };
-      inseminations: {
-        Row: Insemination;
-        Insert: Partial<Insemination> & { cow_id: string };
-        Update: Partial<Insemination>;
-        Relationships: [];
-      };
-      calvings: {
-        Row: Calving;
-        Insert: Partial<Calving> & { cow_id: string };
-        Update: Partial<Calving>;
-        Relationships: [];
-      };
-      pregnancy_diagnoses: {
-        Row: PregnancyDiagnosis;
-        Insert: Partial<PregnancyDiagnosis> & { insemination_id: string; result: PregnancyDiagnosisResult };
-        Update: Partial<PregnancyDiagnosis>;
-        Relationships: [];
-      };
-      weanings: {
-        Row: Weaning;
-        Insert: Partial<Weaning> & { calving_id: string };
-        Update: Partial<Weaning>;
-        Relationships: [];
-      };
-      cow_weighings: {
-        Row: CowWeighing;
-        Insert: Partial<CowWeighing> & { cow_id: string; weight_kg: number };
-        Update: Partial<CowWeighing>;
-        Relationships: [];
-      };
       employees: {
         Row: Employee;
         Insert: Partial<Employee> & {
@@ -1134,18 +973,6 @@ export interface Database {
         Update: Partial<CattleLotPhoto>;
         Relationships: [];
       };
-      farm_notes: {
-        Row: FarmNote;
-        Insert: Partial<FarmNote> & { farm_id: string };
-        Update: Partial<FarmNote>;
-        Relationships: [];
-      };
-      rain_readings: {
-        Row: RainReading;
-        Insert: Partial<RainReading> & { farm_id: string; reading_date: string; mm: number };
-        Update: Partial<RainReading>;
-        Relationships: [];
-      };
       employee_tasks: {
         Row: EmployeeTask;
         Insert: Partial<EmployeeTask> & { farm_id: string; title: string };
@@ -1202,10 +1029,6 @@ export interface Database {
           regional_avg_cost_per_arroba: number | null;
           participant_farm_count: number;
         }[];
-      };
-      regional_benchmark_cria: {
-        Args: { p_farm_id: string };
-        Returns: { regional_avg_pregnancy_rate_pct: number | null; participant_farm_count: number }[];
       };
       regional_benchmark_lavoura: {
         Args: { p_farm_id: string };

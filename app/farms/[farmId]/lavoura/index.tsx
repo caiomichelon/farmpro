@@ -137,8 +137,8 @@ export default function LavouraHomeScreen() {
                   </Pressable>
                 </View>
 
-                {/* Itens que não são exclusivos de nenhum setor (clima,
-                    funcionários, etc.) — moram aqui e em Pecuária, não na
+                {/* Itens que não são exclusivos de nenhum setor (funcionários,
+                    fornecedores, etc.) — moram aqui e em Pecuária, não na
                     home da fazenda, que fica só com os dois setores. */}
                 <View style={styles.moreSection}>
                   <MoreRow
@@ -160,24 +160,6 @@ export default function LavouraHomeScreen() {
                     styles={styles}
                   />
                   <MoreRow
-                    title="Clima"
-                    subtitle="Alertas de geada, chuva, calor e vento"
-                    onPress={() => router.push(`/farms/${farmId}/clima`)}
-                    styles={styles}
-                  />
-                  <MoreRow
-                    title="Fechamento do dia"
-                    subtitle="Ponto, coletas e alertas antes de encerrar"
-                    onPress={() => router.push(`/farms/${farmId}/fechamento`)}
-                    styles={styles}
-                  />
-                  <MoreRow
-                    title="Ei FarmPro"
-                    subtitle="Pergunte por voz sobre clima, lotes e mais"
-                    onPress={() => router.push(`/farms/${farmId}/comando-de-voz`)}
-                    styles={styles}
-                  />
-                  <MoreRow
                     title="Tarefas do dia"
                     subtitle="Crie, atribua e acompanhe o que precisa ser feito"
                     onPress={() => router.push(`/farms/${farmId}/tarefas`)}
@@ -193,18 +175,6 @@ export default function LavouraHomeScreen() {
                     title={t('farmHome.members')}
                     subtitle={t('farmHome.membersSubtitle')}
                     onPress={() => router.push(`/farms/${farmId}/membros`)}
-                    styles={styles}
-                  />
-                  <MoreRow
-                    title="Modo carro"
-                    subtitle="Painel com boletim automático e comando de voz"
-                    onPress={() => router.push(`/farms/${farmId}/modo-carro`)}
-                    styles={styles}
-                  />
-                  <MoreRow
-                    title="Boletim da fazenda"
-                    subtitle="Resumo falado do que importa hoje"
-                    onPress={() => router.push(`/farms/${farmId}/boletim`)}
                     styles={styles}
                   />
                   <MoreRow

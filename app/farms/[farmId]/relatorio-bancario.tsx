@@ -7,7 +7,6 @@ import { Button } from '../../../src/components/Button';
 import { Card } from '../../../src/components/Card';
 import { ScreenHeader } from '../../../src/components/ScreenHeader';
 import { EMPLOYEE_SECTOR_LABELS, EMPLOYEE_SECTOR_OPTIONS } from '../../../src/data/employeeOptions';
-import { useBreedingCows } from '../../../src/hooks/useBreedingCows';
 import { useCattleLots } from '../../../src/hooks/useCattleLots';
 import { useEmployees } from '../../../src/hooks/useEmployees';
 import { useFarm } from '../../../src/hooks/useFarms';
@@ -27,7 +26,6 @@ export default function BankReportScreen() {
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const { farm } = useFarm(farmId);
   const { lots, isLoading: lotsLoading } = useCattleLots(farmId);
-  const { cows, isLoading: cowsLoading } = useBreedingCows(farmId);
   const { seasons, isLoading: seasonsLoading } = useSeasonsByFarm(farmId);
   const { employees, isLoading: employeesLoading } = useEmployees(farmId);
   const { revenue: grainRevenue, isLoading: revenueLoading } = useGrainRevenue(farmId);
@@ -36,7 +34,7 @@ export default function BankReportScreen() {
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
 
-  const isLoading = lotsLoading || cowsLoading || seasonsLoading || employeesLoading || revenueLoading || !farm;
+  const isLoading = lotsLoading || seasonsLoading || employeesLoading || revenueLoading || !farm;
 
   const activeLots = lots.filter((l) => l.status === 'ativo');
   const lotsWithGmd = activeLots.filter((l) => l.gmdKgPerDay !== null);
@@ -64,12 +62,6 @@ export default function BankReportScreen() {
       projectedRevenue: activeLots.reduce((sum, l) => sum + l.projectedRevenue, 0),
       projectedMargin: activeLots.reduce((sum, l) => sum + l.projectedMargin, 0),
     },
-    cria: {
-      totalCows: cows.length,
-      pregnantCount: cows.filter((c) => c.isPregnant).length,
-      totalCalvesBorn: cows.reduce((sum, c) => sum + c.calfCount, 0),
-      totalCost: cows.reduce((sum, c) => sum + c.totalCost, 0),
-    },
     funcionarios: {
       totalCount: employees.length,
       countBySector,
@@ -80,7 +72,7 @@ export default function BankReportScreen() {
   const consolidatedResult =
     summary.lavoura.totalRevenue +
     summary.corte.projectedRevenue -
-    (summary.lavoura.totalCost + summary.corte.totalCost + summary.cria.totalCost);
+    (summary.lavoura.totalCost + summary.corte.totalCost);
 
   async function handleGenerate() {
     if (!farm) return;
@@ -122,7 +114,6 @@ export default function BankReportScreen() {
           <View style={styles.grid}>
             <Stat label="Área total (Lavoura)" value={`${summary.lavoura.totalHectares.toLocaleString('pt-BR')} ha`} colors={colors} />
             <Stat label="Cabeças de corte" value={String(summary.corte.totalHeadCount)} colors={colors} />
-            <Stat label="Matrizes de cria" value={String(summary.cria.totalCows)} colors={colors} />
             <Stat label="Funcionários" value={String(summary.funcionarios.totalCount)} colors={colors} />
           </View>
         </Card>
@@ -132,7 +123,7 @@ export default function BankReportScreen() {
           <Text style={[styles.resultValue, { color: consolidatedResult >= 0 ? colors.success : colors.danger }]}>
             {currency(consolidatedResult)}
           </Text>
-          <Text style={styles.resultHint}>Lavoura + Corte (projetado) − custos lançados na Lavoura, Corte e Cria.</Text>
+          <Text style={styles.resultHint}>Lavoura + Corte (projetado) − custos lançados na Lavoura e no Corte.</Text>
         </Card>
 
         {done ? (

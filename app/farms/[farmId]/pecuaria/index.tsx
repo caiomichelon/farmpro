@@ -35,14 +35,6 @@ export default function PecuariaHomeScreen() {
             styles={styles}
           />
         </FadeSlideIn>
-        <FadeSlideIn delay={70}>
-          <AreaCard
-            title={t('pecuariaHome.criaTitle')}
-            description={t('pecuariaHome.criaDescription')}
-            onPress={() => router.push(`/farms/${farmId}/pecuaria/cria`)}
-            styles={styles}
-          />
-        </FadeSlideIn>
         <FadeSlideIn delay={140}>
           <AreaCard
             title={t('pecuariaHome.estoqueTitle')}
@@ -87,18 +79,6 @@ export default function PecuariaHomeScreen() {
             styles={styles}
           />
           <MoreRow
-            title="Modo carro"
-            subtitle="Painel com boletim automático e comando de voz"
-            onPress={() => router.push(`/farms/${farmId}/modo-carro`)}
-            styles={styles}
-          />
-          <MoreRow
-            title="Boletim da fazenda"
-            subtitle="Resumo falado do que importa hoje"
-            onPress={() => router.push(`/farms/${farmId}/boletim`)}
-            styles={styles}
-          />
-          <MoreRow
             title={t('farmHome.export')}
             subtitle={t('farmHome.exportSubtitle')}
             onPress={() => router.push(`/farms/${farmId}/exportar`)}
@@ -108,24 +88,6 @@ export default function PecuariaHomeScreen() {
             title="Maquinário"
             subtitle="Tratores e implementos — manutenção em dia"
             onPress={() => router.push(`/farms/${farmId}/equipamentos`)}
-            styles={styles}
-          />
-          <MoreRow
-            title="Clima"
-            subtitle="Alertas de geada, chuva, calor e vento"
-            onPress={() => router.push(`/farms/${farmId}/clima`)}
-            styles={styles}
-          />
-          <MoreRow
-            title="Fechamento do dia"
-            subtitle="Ponto, coletas e alertas antes de encerrar"
-            onPress={() => router.push(`/farms/${farmId}/fechamento`)}
-            styles={styles}
-          />
-          <MoreRow
-            title="Ei FarmPro"
-            subtitle="Pergunte por voz sobre clima, lotes e mais"
-            onPress={() => router.push(`/farms/${farmId}/comando-de-voz`)}
             styles={styles}
           />
         </View>

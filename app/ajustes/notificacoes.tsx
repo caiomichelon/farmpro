@@ -36,16 +36,6 @@ function buildItems(t: TFunction): { key: AlertPreferenceKey; title: string; des
       description: t('settings.notifications.vaccineDescription'),
     },
     {
-      key: 'parto_previsto',
-      title: t('settings.notifications.calving'),
-      description: t('settings.notifications.calvingDescription'),
-    },
-    {
-      key: 'clima',
-      title: t('settings.notifications.weather'),
-      description: t('settings.notifications.weatherDescription'),
-    },
-    {
       key: 'abigeato',
       title: t('settings.notifications.theft'),
       description: t('settings.notifications.theftDescription'),
@@ -54,16 +44,6 @@ function buildItems(t: TFunction): { key: AlertPreferenceKey; title: string; des
       key: 'cocho_baixo',
       title: t('settings.notifications.trough'),
       description: t('settings.notifications.troughDescription'),
-    },
-    {
-      key: 'boletim_diario',
-      title: t('settings.notifications.briefing'),
-      description: t('settings.notifications.briefingDescription'),
-    },
-    {
-      key: 'fechamento_diario',
-      title: t('settings.notifications.closing'),
-      description: t('settings.notifications.closingDescription'),
     },
     {
       key: 'foto_diaria',
