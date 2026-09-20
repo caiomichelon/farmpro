@@ -328,6 +328,7 @@ export type CattleLot = {
   /** Rendimento de carcaça estimado (%) — usado só pra projeção financeira
    * antes do abate de verdade (que tem seu próprio rendimento real). */
   estimated_carcass_yield_pct: number;
+  notes: string | null;
   created_at: string;
 };
 
@@ -1230,7 +1231,13 @@ export interface Database {
         }[];
       };
       create_lot_from_stamped_animals: {
-        Args: { p_farm_id: string; p_idvs: number[]; p_lot_name: string; p_entry_date?: string | null };
+        Args: {
+          p_farm_id: string;
+          p_idvs: number[];
+          p_lot_name: string;
+          p_entry_date?: string | null;
+          p_notes?: string | null;
+        };
         Returns: {
           lot_id: string;
           matched_count: number;

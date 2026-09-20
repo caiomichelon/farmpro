@@ -79,6 +79,12 @@ export default function LotDetailScreen() {
       />
 
       <ScrollView contentContainerStyle={styles.content}>
+        {lot.notes ? (
+          <View style={styles.notesBox}>
+            <Text style={styles.notesText}>{lot.notes}</Text>
+          </View>
+        ) : null}
+
         <View style={[styles.readinessBadge, { backgroundColor: readinessColor + '22', borderColor: readinessColor }]}>
           <Text style={[styles.readinessText, { color: readinessColor }]}>
             {CATTLE_LOT_READINESS_LABELS[lot.readiness]}
@@ -413,6 +419,15 @@ function createStyles(colors: Colors) {
       paddingHorizontal: spacing.xl,
       paddingBottom: spacing.xxxl,
       gap: spacing.xxl,
+    },
+    notesBox: {
+      backgroundColor: colors.surfaceAlt,
+      borderRadius: radius.md,
+      padding: spacing.md,
+    },
+    notesText: {
+      ...typography.caption,
+      color: colors.textSecondary,
     },
     readinessBadge: {
       borderWidth: 1,
