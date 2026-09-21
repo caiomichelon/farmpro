@@ -76,7 +76,7 @@ export default function AllAnimalsSpreadsheetScreen() {
       ) : animals.length === 0 ? (
         <EmptyState text="Nenhum animal individual cadastrado ainda. Cadastre animais dentro de um lote." />
       ) : (
-        <ScrollView contentContainerStyle={styles.content}>
+        <ScrollView style={styles.list} contentContainerStyle={styles.content}>
           <View style={styles.searchRow}>
             <TextField label="Buscar por brinco ou nº oficial" value={search} onChangeText={setSearch} placeholder="Digite o brinco ou o SISBOV/SIAP" />
           </View>
@@ -108,6 +108,13 @@ function createStyles(colors: Colors) {
     },
     loading: {
       marginTop: spacing.xxl,
+    },
+    // Sem isso, o aviso de erro (sibling logo abaixo) pode sumir no iOS com
+    // New Architecture — bug conhecido de FlatList/ScrollView sem
+    // style={flex:1} escondendo conteúdo irmão renderizado depois dele
+    // (facebook/react-native#44683).
+    list: {
+      flex: 1,
     },
     content: {
       paddingHorizontal: spacing.xl,
