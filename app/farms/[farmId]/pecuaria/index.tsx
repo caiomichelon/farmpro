@@ -55,12 +55,6 @@ export default function PecuariaHomeScreen() {
             styles={styles}
           />
           <MoreRow
-            title="Diaristas"
-            subtitle="Mão de obra avulsa, sem cadastro fixo"
-            onPress={() => router.push(`/farms/${farmId}/diaristas`)}
-            styles={styles}
-          />
-          <MoreRow
             title="Tarefas do dia"
             subtitle="Crie, atribua e acompanhe o que precisa ser feito"
             onPress={() => router.push(`/farms/${farmId}/tarefas`)}

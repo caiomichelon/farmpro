@@ -182,21 +182,6 @@ export type PesticideApplication = {
   created_at: string;
 };
 
-/** Diarista avulso — registro rápido de um dia de trabalho de alguém sem
- * vínculo fixo de funcionário. */
-export type CasualLaborer = {
-  id: string;
-  farm_id: string;
-  worker_name: string;
-  work_date: string;
-  sector: 'geral' | 'lavoura' | 'corte' | 'cria';
-  task_description: string | null;
-  amount_paid: number;
-  notes: string | null;
-  created_by: string | null;
-  created_at: string;
-};
-
 /** Registro geral de animais "carimbados" — o histórico de compra do gado
  * (identificado pelo IDV), importado da planilha do produtor. É o "pool"
  * de onde a ferramenta de busca em lote monta um grupo pro semi-confinamento
@@ -795,15 +780,6 @@ export interface Database {
           area_hectares: number;
         };
         Update: Partial<PesticideApplication>;
-        Relationships: [];
-      };
-      casual_laborers: {
-        Row: CasualLaborer;
-        Insert: Partial<CasualLaborer> & {
-          farm_id: string;
-          worker_name: string;
-        };
-        Update: Partial<CasualLaborer>;
         Relationships: [];
       };
       suppliers: {

@@ -148,12 +148,6 @@ export default function LavouraHomeScreen() {
                     styles={styles}
                   />
                   <MoreRow
-                    title="Diaristas"
-                    subtitle="Mão de obra avulsa, sem cadastro fixo"
-                    onPress={() => router.push(`/farms/${farmId}/diaristas`)}
-                    styles={styles}
-                  />
-                  <MoreRow
                     title="Maquinário"
                     subtitle="Tratores e implementos — manutenção em dia"
                     onPress={() => router.push(`/farms/${farmId}/equipamentos`)}

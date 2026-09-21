@@ -686,27 +686,6 @@ export const pt = {
   'suppliers.contactsTitle': 'Contatos',
   'suppliers.empty': 'Nenhum fornecedor cadastrado ainda.',
   'suppliers.delete': 'Excluir',
-
-  // Diaristas
-  'casualLaborers.title': 'Diaristas',
-  'casualLaborers.subtitle': '{{count}} registro(s) · {{total}} pagos',
-  'casualLaborers.newRecordTitle': 'Novo registro',
-  'casualLaborers.workerNameLabel': 'Nome do diarista',
-  'casualLaborers.workerNamePlaceholder': 'Ex.: João da Silva',
-  'casualLaborers.sectorLabel': 'Setor',
-  'casualLaborers.sectorGeral': 'Geral',
-  'casualLaborers.sectorLavoura': 'Lavoura',
-  'casualLaborers.sectorCorte': 'Corte',
-  'casualLaborers.sectorCria': 'Cria',
-  'casualLaborers.taskLabel': 'O que fez (opcional)',
-  'casualLaborers.taskPlaceholder': 'Ex.: ajudou na colheita',
-  'casualLaborers.amountLabel': 'Valor pago (R$)',
-  'casualLaborers.amountPlaceholder': 'Ex.: 120',
-  'casualLaborers.saving': 'Salvando...',
-  'casualLaborers.save': 'Salvar',
-  'casualLaborers.historyTitle': 'Histórico',
-  'casualLaborers.empty': 'Nenhum diarista registrado ainda.',
-  'casualLaborers.delete': 'Excluir',
 } as const;
 
 export type TranslationKey = keyof typeof pt;
@@ -1368,27 +1347,6 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'suppliers.contactsTitle': 'Contacts',
   'suppliers.empty': 'No suppliers registered yet.',
   'suppliers.delete': 'Delete',
-
-  // Casual laborers
-  'casualLaborers.title': 'Day laborers',
-  'casualLaborers.subtitle': '{{count}} record(s) · {{total}} paid',
-  'casualLaborers.newRecordTitle': 'New record',
-  'casualLaborers.workerNameLabel': "Worker's name",
-  'casualLaborers.workerNamePlaceholder': 'E.g.: John Smith',
-  'casualLaborers.sectorLabel': 'Sector',
-  'casualLaborers.sectorGeral': 'General',
-  'casualLaborers.sectorLavoura': 'Crops',
-  'casualLaborers.sectorCorte': 'Beef cattle',
-  'casualLaborers.sectorCria': 'Breeding',
-  'casualLaborers.taskLabel': 'What they did (optional)',
-  'casualLaborers.taskPlaceholder': 'E.g.: helped with the harvest',
-  'casualLaborers.amountLabel': 'Amount paid',
-  'casualLaborers.amountPlaceholder': 'E.g.: 120',
-  'casualLaborers.saving': 'Saving...',
-  'casualLaborers.save': 'Save',
-  'casualLaborers.historyTitle': 'History',
-  'casualLaborers.empty': 'No day laborers recorded yet.',
-  'casualLaborers.delete': 'Delete',
 };
 
 export const es: Partial<Record<TranslationKey, string>> = {
@@ -2047,25 +2005,4 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'suppliers.contactsTitle': 'Contactos',
   'suppliers.empty': 'Todavía no hay proveedores registrados.',
   'suppliers.delete': 'Eliminar',
-
-  // Jornaleros
-  'casualLaborers.title': 'Jornaleros',
-  'casualLaborers.subtitle': '{{count}} registro(s) · {{total}} pagados',
-  'casualLaborers.newRecordTitle': 'Nuevo registro',
-  'casualLaborers.workerNameLabel': 'Nombre del jornalero',
-  'casualLaborers.workerNamePlaceholder': 'Ej.: Juan Pérez',
-  'casualLaborers.sectorLabel': 'Sector',
-  'casualLaborers.sectorGeral': 'General',
-  'casualLaborers.sectorLavoura': 'Agricultura',
-  'casualLaborers.sectorCorte': 'Ganado de carne',
-  'casualLaborers.sectorCria': 'Cría',
-  'casualLaborers.taskLabel': 'Qué hizo (opcional)',
-  'casualLaborers.taskPlaceholder': 'Ej.: ayudó con la cosecha',
-  'casualLaborers.amountLabel': 'Monto pagado',
-  'casualLaborers.amountPlaceholder': 'Ej.: 120',
-  'casualLaborers.saving': 'Guardando...',
-  'casualLaborers.save': 'Guardar',
-  'casualLaborers.historyTitle': 'Historial',
-  'casualLaborers.empty': 'Todavía no hay jornaleros registrados.',
-  'casualLaborers.delete': 'Eliminar',
 };
