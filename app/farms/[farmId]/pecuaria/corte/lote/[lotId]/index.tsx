@@ -19,11 +19,15 @@ import {
 import { useCattleFieldCollections } from '../../../../../../../src/hooks/useCattleFieldCollections';
 import { calculateBreakEven } from '../../../../../../../src/lib/breakEven';
 import { CATTLE_LOT_READINESS_LABELS, useCattleLot, type CattleLotReadiness } from '../../../../../../../src/hooks/useCattleLots';
+import { useCattleLotCosts } from '../../../../../../../src/hooks/useCattleLotCosts';
 import { useCattleLotWeighings } from '../../../../../../../src/hooks/useCattleLotWeighings';
 import { useCattleMortalityEvents } from '../../../../../../../src/hooks/useCattleMortality';
 import { useCattleSlaughters } from '../../../../../../../src/hooks/useCattleSlaughters';
+import { useFarm } from '../../../../../../../src/hooks/useFarms';
 import { useLotFeedConversion } from '../../../../../../../src/hooks/useLotFeedConversion';
 import { useT } from '../../../../../../../src/i18n';
+import { buildLotReportHtml } from '../../../../../../../src/lib/lotReport';
+import { generatePdfReport } from '../../../../../../../src/lib/pdfReport';
 import { radius, spacing, typography, useColors, type Colors } from '../../../../../../../src/theme';
 
 const READINESS_COLOR_KEY: Record<CattleLotReadiness, 'success' | 'pecuaria' | 'textMuted'> = {
@@ -36,16 +40,42 @@ export default function LotDetailScreen() {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId, lotId } = useLocalSearchParams<{ farmId: string; lotId: string }>();
+  const { farm } = useFarm(farmId);
   const { lot, isLoading, reload: reloadLot, updateTarget } = useCattleLot(lotId);
   const { weighings, reload: reloadWeighings } = useCattleLotWeighings(lotId);
   const { events: mortalityEvents, totalDeaths, reload: reloadMortality } = useCattleMortalityEvents(lotId);
   const { slaughters, reload: reloadSlaughters } = useCattleSlaughters(lotId);
   const { collections, reload: reloadCollections } = useCattleFieldCollections(lotId);
+  const { costs: lotCosts, reload: reloadCosts } = useCattleLotCosts(lotId);
   const kgGanho = lot ? Math.max(0, lot.latestWeightKg - Number(lot.entry_avg_weight_kg)) * lot.currentHeadCount : 0;
   const { data: feedConversion, reload: reloadFeedConversion } = useLotFeedConversion(farmId, lotId, kgGanho);
   const [isEditingTarget, setIsEditingTarget] = useState(false);
   const [targetMarginPct, setTargetMarginPct] = useState('20');
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [reportError, setReportError] = useState<string | null>(null);
   const t = useT();
+
+  async function handleGenerateReport() {
+    if (!lot || !farm) return;
+    setIsGeneratingReport(true);
+    setReportError(null);
+    try {
+      const html = buildLotReportHtml({
+        farmName: farm.name,
+        city: farm.city,
+        state: farm.state,
+        generatedAt: new Date(),
+        lot,
+        costs: lotCosts,
+        slaughters,
+      });
+      await generatePdfReport(html, `Relatório do lote ${lot.name} — FarmPro`);
+    } catch (err) {
+      setReportError(err instanceof Error ? err.message : t('lotDetail.generateReportError'));
+    } finally {
+      setIsGeneratingReport(false);
+    }
+  }
 
   // Pesagem, mortalidade, abate e coleta de campo são cadastrados em rotas
   // separadas — refaz tudo ao voltar pra esta tela, senão fica com dado
@@ -58,7 +88,8 @@ export default function LotDetailScreen() {
       reloadSlaughters();
       reloadCollections();
       reloadFeedConversion();
-    }, [reloadLot, reloadWeighings, reloadMortality, reloadSlaughters, reloadCollections, reloadFeedConversion])
+      reloadCosts();
+    }, [reloadLot, reloadWeighings, reloadMortality, reloadSlaughters, reloadCollections, reloadFeedConversion, reloadCosts])
   );
 
   if (isLoading || !lot) {
@@ -157,6 +188,13 @@ export default function LotDetailScreen() {
             variant="ghost"
             onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${lotId}/simulador`)}
           />
+          <Button
+            label={t('lotDetail.generateReport')}
+            variant="ghost"
+            loading={isGeneratingReport}
+            onPress={handleGenerateReport}
+          />
+          {reportError ? <Text style={styles.error}>{reportError}</Text> : null}
         </Section>
 
         <Section title={t('lotDetail.feedConversionTitle')} subtitle={t('lotDetail.feedConversionSubtitle')} styles={styles}>

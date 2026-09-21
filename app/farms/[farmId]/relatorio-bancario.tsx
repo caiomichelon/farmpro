@@ -12,7 +12,8 @@ import { useEmployees } from '../../../src/hooks/useEmployees';
 import { useFarm } from '../../../src/hooks/useFarms';
 import { useGrainRevenue } from '../../../src/hooks/useGrainRevenue';
 import { useSeasonsByFarm } from '../../../src/hooks/usePlotSeasons';
-import { buildBankReportHtml, generateBankReportPdf } from '../../../src/lib/bankReport';
+import { buildBankReportHtml } from '../../../src/lib/bankReport';
+import { generatePdfReport } from '../../../src/lib/pdfReport';
 import type { EmployeeSector } from '../../../src/types/database';
 import { spacing, typography, useColors, type Colors } from '../../../src/theme';
 
@@ -87,7 +88,7 @@ export default function BankReportScreen() {
         generatedAt: new Date(),
         ...summary,
       });
-      await generateBankReportPdf(html);
+      await generatePdfReport(html, 'Relatório para banco — FarmPro');
       setDone(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível gerar o relatório.');
