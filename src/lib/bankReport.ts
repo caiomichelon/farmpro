@@ -2,6 +2,14 @@ function currency(value: number): string {
   return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
+function currencyUSD(value: number): string {
+  return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+}
+
+function formatPrice(value: number, currencyCode: 'BRL' | 'USD'): string {
+  return currencyCode === 'USD' ? currencyUSD(value) : currency(value);
+}
+
 function number(value: number, digits = 0): string {
   return value.toLocaleString('pt-BR', { minimumFractionDigits: digits, maximumFractionDigits: digits });
 }
@@ -28,6 +36,9 @@ export interface BankReportInput {
     totalCost: number;
     projectedRevenue: number;
     projectedMargin: number;
+    /** BRL (B3, boi gordo/arroba) ou USD (novillo, mercado paraguaio/kg) —
+     * a fazenda toda usa uma cotação só, conforme farms.country. */
+    currency: 'BRL' | 'USD';
   };
 
   funcionarios: {
@@ -49,6 +60,14 @@ export function buildBankReportHtml(input: BankReportInput): string {
   const consolidatedRevenue = lavoura.totalRevenue + corte.projectedRevenue;
   const consolidatedCost = lavoura.totalCost + corte.totalCost;
   const consolidatedResult = consolidatedRevenue - consolidatedCost;
+  // A Lavoura é sempre BRL (venda de grão nacional). Só dá pra consolidar
+  // com o Corte em USD (Paraguai) sem misturar moeda quando a Lavoura não
+  // tem nada lançado (fazenda só de pecuária) — nesse caso o consolidado é,
+  // na prática, só o Corte, e mostra na moeda certa. Se a fazenda tiver as
+  // duas coisas ao mesmo tempo (Lavoura real + Corte em USD), o valor seria
+  // uma mistura sem sentido — caso que hoje não existe em nenhuma fazenda.
+  const hasLavouraData = lavoura.totalCost > 0 || lavoura.totalRevenue > 0;
+  const consolidatedCurrency: 'BRL' | 'USD' = hasLavouraData ? 'BRL' : corte.currency;
 
   return `<!doctype html>
 <html lang="pt-BR">
@@ -113,8 +132,8 @@ export function buildBankReportHtml(input: BankReportInput): string {
     <tr><th>Cabeças em engorda</th><td>${corte.totalHeadCount}</td></tr>
     <tr><th>GMD médio</th><td>${corte.avgGmdKgPerDay !== null ? `${number(corte.avgGmdKgPerDay, 2)} kg/dia` : '—'}</td></tr>
     <tr><th>Custo lançado</th><td>${currency(corte.totalCost)}</td></tr>
-    <tr><th>Receita projetada (peso atual)</th><td>${currency(corte.projectedRevenue)}</td></tr>
-    <tr><th>Margem projetada</th><td class="${corte.projectedMargin >= 0 ? 'result-positive' : 'result-negative'}">${currency(corte.projectedMargin)}</td></tr>
+    <tr><th>Receita projetada (peso atual)</th><td>${formatPrice(corte.projectedRevenue, corte.currency)}</td></tr>
+    <tr><th>Margem projetada</th><td class="${corte.projectedMargin >= 0 ? 'result-positive' : 'result-negative'}">${formatPrice(corte.projectedMargin, corte.currency)}</td></tr>
   </table>
 
   <h2>Funcionários</h2>
@@ -127,16 +146,19 @@ export function buildBankReportHtml(input: BankReportInput): string {
   <h2>Resumo financeiro consolidado</h2>
   <div class="summary-box">
     <table>
-      <tr><th>Receita consolidada (Lavoura + Corte projetado)</th><td>${currency(consolidatedRevenue)}</td></tr>
+      <tr><th>Receita consolidada (Lavoura + Corte projetado)</th><td>${formatPrice(consolidatedRevenue, consolidatedCurrency)}</td></tr>
       <tr><th>Custo consolidado (Lavoura + Corte)</th><td>${currency(consolidatedCost)}</td></tr>
-      <tr><th>Resultado consolidado</th><td class="${consolidatedResult >= 0 ? 'result-positive' : 'result-negative'}">${currency(consolidatedResult)}</td></tr>
+      <tr><th>Resultado consolidado</th><td class="${consolidatedResult >= 0 ? 'result-positive' : 'result-negative'}">${formatPrice(consolidatedResult, consolidatedCurrency)}</td></tr>
     </table>
   </div>
 
   <footer>
     Relatório gerado automaticamente pelo FarmPro a partir dos lançamentos registrados no aplicativo.
-    Valores de receita da Pecuária — Corte são projeções com base no peso atual dos lotes e na cotação
-    vigente da arroba, não valores de venda já realizados.
+    ${
+      corte.currency === 'USD'
+        ? 'Valores de receita da Pecuária — Corte são projeções com base no peso atual dos lotes e na cotação vigente do novillo (Paraguai, USD/kg), não valores de venda já realizados.'
+        : 'Valores de receita da Pecuária — Corte são projeções com base no peso atual dos lotes e na cotação vigente da arroba, não valores de venda já realizados.'
+    }
   </footer>
 </body>
 </html>`;

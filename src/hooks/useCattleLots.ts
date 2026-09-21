@@ -43,6 +43,11 @@ export interface CattleLotSummary extends CattleLot {
   priceCurrency: 'BRL' | 'USD';
   priceUnit: '@' | 'kg';
   pricePerUnit: number;
+  /** Custo lançado dividido pela mesma unidade de pricePerUnit — dá pra
+   * comparar direto os dois (ex.: recomendação de venda), diferente de
+   * costPerArroba, que é sempre em @. Null nas mesmas condições de
+   * costPerArroba (sem @/kg estimado ainda). */
+  costPerUnit: number | null;
   projectedRevenue: number;
   projectedMargin: number;
 }
@@ -129,8 +134,14 @@ async function withSummary(lots: CattleLot[]): Promise<CattleLotSummary[]> {
     const priceCurrency: 'BRL' | 'USD' = isParaguay ? 'USD' : 'BRL';
     const priceUnit: '@' | 'kg' = isParaguay ? 'kg' : '@';
     const pricePerUnit = isParaguay ? novilloPricePerKgUsd : boiGordoPricePerArroba;
-    const projectedRevenue = isParaguay ? latestWeightKg * currentHeadCount * pricePerUnit : estimatedArrobas * pricePerUnit;
+    const totalLiveKg = latestWeightKg * currentHeadCount;
+    const projectedRevenue = isParaguay ? totalLiveKg * pricePerUnit : estimatedArrobas * pricePerUnit;
     const projectedMargin = projectedRevenue - totalCost;
+    // Custo no MESMO unidade da cotação usada (kg pro Paraguai, @ pro
+    // Brasil) — é o que dá pra comparar direto com pricePerUnit (ex.: na
+    // recomendação de venda), diferente de costPerArroba, que é sempre em
+    // @ não importa o país.
+    const costPerUnit = isParaguay ? (totalLiveKg > 0 ? totalCost / totalLiveKg : null) : costPerArroba;
 
     const estimatedExitDate =
       kgToTarget !== null && kgToTarget > 0 && gmdKgPerDay !== null && gmdKgPerDay > 0
@@ -155,6 +166,7 @@ async function withSummary(lots: CattleLot[]): Promise<CattleLotSummary[]> {
       priceCurrency,
       priceUnit,
       pricePerUnit,
+      costPerUnit,
       projectedRevenue,
       projectedMargin,
     };

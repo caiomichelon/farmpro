@@ -29,7 +29,10 @@ function buildColumns(): DataTableColumn<CattleLotSummary>[] {
       key: 'margin',
       label: 'Margem projetada',
       width: 160,
-      render: (l) => l.projectedMargin.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+      render: (l) =>
+        l.priceCurrency === 'USD'
+          ? l.projectedMargin.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+          : l.projectedMargin.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
     },
     { key: 'head', label: 'Cabeças', width: 90, render: (l) => String(l.currentHeadCount) },
   ];

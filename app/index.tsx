@@ -1,6 +1,6 @@
 import { Redirect } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import { Animated, StyleSheet, View } from 'react-native';
 
 import { BrandMark } from '../src/components/BrandMark';
 import { FarmScene } from '../src/components/FarmScene';

@@ -21,6 +21,10 @@ function currency(value: number): string {
   return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
+function formatPrice(value: number, currencyCode: 'BRL' | 'USD'): string {
+  return currencyCode === 'USD' ? value.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) : currency(value);
+}
+
 export default function BankReportScreen() {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -62,6 +66,7 @@ export default function BankReportScreen() {
       totalCost: activeLots.reduce((sum, l) => sum + l.totalCost, 0),
       projectedRevenue: activeLots.reduce((sum, l) => sum + l.projectedRevenue, 0),
       projectedMargin: activeLots.reduce((sum, l) => sum + l.projectedMargin, 0),
+      currency: activeLots[0]?.priceCurrency ?? 'BRL',
     },
     funcionarios: {
       totalCount: employees.length,
@@ -74,6 +79,8 @@ export default function BankReportScreen() {
     summary.lavoura.totalRevenue +
     summary.corte.projectedRevenue -
     (summary.lavoura.totalCost + summary.corte.totalCost);
+  const hasLavouraData = summary.lavoura.totalCost > 0 || summary.lavoura.totalRevenue > 0;
+  const consolidatedCurrency: 'BRL' | 'USD' = hasLavouraData ? 'BRL' : summary.corte.currency;
 
   async function handleGenerate() {
     if (!farm) return;
@@ -122,7 +129,7 @@ export default function BankReportScreen() {
         <Card style={styles.card}>
           <Text style={styles.cardTitle}>Resultado consolidado</Text>
           <Text style={[styles.resultValue, { color: consolidatedResult >= 0 ? colors.success : colors.danger }]}>
-            {currency(consolidatedResult)}
+            {formatPrice(consolidatedResult, consolidatedCurrency)}
           </Text>
           <Text style={styles.resultHint}>Lavoura + Corte (projetado) − custos lançados na Lavoura e no Corte.</Text>
         </Card>

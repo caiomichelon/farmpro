@@ -3,7 +3,6 @@ import { useCallback, useMemo } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Button } from '../../../../../../../src/components/Button';
 import { Card } from '../../../../../../../src/components/Card';
 import { EmptyState } from '../../../../../../../src/components/EmptyState';
 import { ScreenHeader } from '../../../../../../../src/components/ScreenHeader';

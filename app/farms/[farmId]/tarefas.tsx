@@ -16,7 +16,7 @@ import { radius, spacing, typography, useColors, type Colors } from '../../../sr
 const GENERAL_OPTION = '__geral__';
 
 function formatDateBR(iso: string): string {
-  const [year, month, day] = iso.split('-');
+  const [, month, day] = iso.split('-');
   return `${day}/${month}`;
 }
 

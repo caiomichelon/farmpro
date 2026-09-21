@@ -14,15 +14,21 @@ function formatBRL(value: number) {
   return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-function buildColumns(): DataTableColumn<CattleLotSummary>[] {
+function formatPrice(value: number, currency: 'BRL' | 'USD') {
+  return currency === 'USD' ? value.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) : formatBRL(value);
+}
+
+function buildColumns(isParaguay: boolean): DataTableColumn<CattleLotSummary>[] {
   return [
     { key: 'name', label: 'Lote', width: 150, render: (l) => l.name },
     { key: 'head', label: 'Cabeças', width: 90, render: (l) => String(l.currentHeadCount) },
     { key: 'cost', label: 'Custo total', width: 130, render: (l) => formatBRL(l.totalCost) },
     { key: 'costPerHead', label: 'Custo/cabeça', width: 130, render: (l) => formatBRL(l.costPerHead) },
-    { key: 'arrobas', label: '@ estimadas', width: 110, render: (l) => l.estimatedArrobas.toFixed(1) },
-    { key: 'revenue', label: 'Receita projetada', width: 150, render: (l) => formatBRL(l.projectedRevenue) },
-    { key: 'margin', label: 'Margem projetada', width: 150, render: (l) => formatBRL(l.projectedMargin) },
+    isParaguay
+      ? { key: 'kg', label: 'Kg vivos estimados', width: 130, render: (l) => (l.latestWeightKg * l.currentHeadCount).toFixed(0) }
+      : { key: 'arrobas', label: '@ estimadas', width: 110, render: (l) => l.estimatedArrobas.toFixed(1) },
+    { key: 'revenue', label: 'Receita projetada', width: 150, render: (l) => formatPrice(l.projectedRevenue, l.priceCurrency) },
+    { key: 'margin', label: 'Margem projetada', width: 150, render: (l) => formatPrice(l.projectedMargin, l.priceCurrency) },
   ];
 }
 
@@ -44,7 +50,9 @@ export default function CattleFinancialSpreadsheetScreen() {
   const activeLots = lots.filter((l) => l.status === 'ativo');
   const totalCost = activeLots.reduce((sum, l) => sum + l.totalCost, 0);
   const totalRevenue = activeLots.reduce((sum, l) => sum + l.projectedRevenue, 0);
-  const columns = buildColumns();
+  const isParaguay = activeLots[0]?.priceUnit === 'kg';
+  const revenueCurrency = activeLots[0]?.priceCurrency ?? 'BRL';
+  const columns = buildColumns(isParaguay);
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -56,9 +64,16 @@ export default function CattleFinancialSpreadsheetScreen() {
         <EmptyState text="Nenhum lote ativo ainda." />
       ) : (
         <ScrollView contentContainerStyle={styles.content}>
-          <FinancialSummary cost={totalCost} revenue={totalRevenue} margin={totalRevenue - totalCost} />
+          <FinancialSummary
+            cost={totalCost}
+            revenue={totalRevenue}
+            margin={totalRevenue - totalCost}
+            revenueCurrency={revenueCurrency}
+          />
           <Text style={styles.note}>
-            Receita projetada na cotação atual do boi gordo — vira valor real só depois do abate de cada lote.
+            {isParaguay
+              ? 'Receita projetada na cotação atual do novillo (Paraguai) — vira valor real só depois da venda de cada lote.'
+              : 'Receita projetada na cotação atual do boi gordo — vira valor real só depois do abate de cada lote.'}
           </Text>
           <DataTable
             title="Financeiro por lote"

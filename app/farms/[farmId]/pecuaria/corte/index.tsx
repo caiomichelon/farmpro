@@ -1,5 +1,5 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -11,7 +11,6 @@ import { FinancialSummary } from '../../../../../src/components/FinancialSummary
 import { ScreenHeader } from '../../../../../src/components/ScreenHeader';
 import { StatGrid } from '../../../../../src/components/StatGrid';
 import { CATTLE_LOT_STATUS_LABELS } from '../../../../../src/data/cattleOptions';
-import { getCommodityQuotes } from '../../../../../src/data/commodities';
 import {
   CATTLE_LOT_READINESS_LABELS,
   useCattleLots,
@@ -21,6 +20,12 @@ import {
 import { useT, type TFunction } from '../../../../../src/i18n';
 import { buildSellRecommendations } from '../../../../../src/lib/sellRecommendation';
 import { radius, spacing, typography, useColors, type Colors } from '../../../../../src/theme';
+
+function formatPrice(value: number, currency: 'BRL' | 'USD'): string {
+  return currency === 'USD'
+    ? value.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+    : value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
 
 const READINESS_COLOR_KEY: Record<CattleLotReadiness, 'success' | 'pecuaria' | 'textMuted'> = {
   pronto: 'success',
@@ -33,7 +38,6 @@ export default function CorteHomeScreen() {
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
   const { lots, isLoading, error, reload } = useCattleLots(farmId);
-  const [boiGordoPrice, setBoiGordoPrice] = useState(0);
   const t = useT();
 
   // "Novo lote" é uma rota separada — refaz a busca ao voltar pra cá.
@@ -42,12 +46,6 @@ export default function CorteHomeScreen() {
       reload();
     }, [reload])
   );
-
-  useEffect(() => {
-    getCommodityQuotes().then((quotes) => {
-      setBoiGordoPrice(quotes.find((q) => q.id === 'boi-gordo')?.price ?? 0);
-    });
-  }, []);
 
   const activeLots = lots.filter((l) => l.status === 'ativo');
   const totalHead = activeLots.reduce((sum, l) => sum + l.currentHeadCount, 0);
@@ -58,7 +56,8 @@ export default function CorteHomeScreen() {
   const readyLots = activeLots.filter((l) => l.readiness === 'pronto');
   const totalCost = activeLots.reduce((sum, l) => sum + l.totalCost, 0);
   const totalRevenue = activeLots.reduce((sum, l) => sum + l.projectedRevenue, 0);
-  const sellRecommendations = buildSellRecommendations(activeLots, boiGordoPrice);
+  const revenueCurrency = activeLots[0]?.priceCurrency ?? 'BRL';
+  const sellRecommendations = buildSellRecommendations(activeLots);
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -120,11 +119,11 @@ export default function CorteHomeScreen() {
                       onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${rec.lotId}`)}
                     >
                       <Text style={styles.sellBannerRowText}>
-                        {t('corteHome.sellBannerRow', {
+                        {t(rec.priceUnit === 'kg' ? 'corteHome.sellBannerRowKg' : 'corteHome.sellBannerRow', {
                           name: rec.lotName,
                           margin: rec.marginPct.toFixed(0),
-                          cost: rec.costPerArroba.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
-                          price: rec.currentPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+                          cost: formatPrice(rec.costPerUnit, rec.priceCurrency),
+                          price: formatPrice(rec.currentPrice, rec.priceCurrency),
                         })}
                       </Text>
                     </Pressable>
@@ -132,7 +131,12 @@ export default function CorteHomeScreen() {
                 </View>
               ) : null}
 
-              <FinancialSummary cost={totalCost} revenue={totalRevenue} margin={totalRevenue - totalCost} />
+              <FinancialSummary
+                cost={totalCost}
+                revenue={totalRevenue}
+                margin={totalRevenue - totalCost}
+                revenueCurrency={revenueCurrency}
+              />
 
               <View style={styles.linksRow}>
                 <Pressable onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/planilha`)} hitSlop={8}>

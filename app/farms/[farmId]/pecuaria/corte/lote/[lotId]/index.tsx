@@ -17,7 +17,6 @@ import {
   CATTLE_LOT_STATUS_LABELS,
 } from '../../../../../../../src/data/cattleOptions';
 import { useCattleFieldCollections } from '../../../../../../../src/hooks/useCattleFieldCollections';
-import { calculateBreakEven } from '../../../../../../../src/lib/breakEven';
 import { CATTLE_LOT_READINESS_LABELS, useCattleLot, type CattleLotReadiness } from '../../../../../../../src/hooks/useCattleLots';
 import { useCattleLotWeighings } from '../../../../../../../src/hooks/useCattleLotWeighings';
 import { useCattleMortalityEvents } from '../../../../../../../src/hooks/useCattleMortality';

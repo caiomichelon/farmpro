@@ -12,7 +12,7 @@ import {
   type ImportResult,
   type ParsedSheet,
 } from '../lib/spreadsheetImport';
-import { radius, spacing, typography, useColors, type Colors } from '../theme';
+import { spacing, typography, useColors, type Colors } from '../theme';
 import { Button } from './Button';
 import { Card } from './Card';
 import { ChipSelect } from './ChipSelect';

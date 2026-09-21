@@ -9,7 +9,7 @@ import { TextField } from '../../src/components/TextField';
 import { useFarms } from '../../src/hooks/useFarms';
 import { useT, type TranslationKey } from '../../src/i18n';
 import type { FarmSectorType } from '../../src/types/database';
-import { radius, spacing, typography, useColors, type Colors } from '../../src/theme';
+import { spacing, typography, useColors, type Colors } from '../../src/theme';
 
 const TYPE_KEY: Record<FarmSectorType, TranslationKey> = {
   lavoura: 'farms.sectorTypeLavoura',

@@ -31,7 +31,10 @@ function buildColumns(): DataTableColumn<CattleLotSummary>[] {
       key: 'revenue',
       label: 'Receita projetada',
       width: 150,
-      render: (l) => l.projectedRevenue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+      render: (l) =>
+        l.priceCurrency === 'USD'
+          ? l.projectedRevenue.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+          : l.projectedRevenue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
     },
     { key: 'days', label: 'Dias no lote', width: 110, render: (l) => String(l.daysInLot) },
   ];

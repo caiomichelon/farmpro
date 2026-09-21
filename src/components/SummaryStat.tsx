@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { spacing, typography, useColors, type Colors } from '../theme';
+import { typography, useColors, type Colors } from '../theme';
 
 export function SummaryStat({ label, value }: { label: string; value: string }) {
   const colors = useColors();

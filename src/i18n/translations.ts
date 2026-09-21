@@ -79,7 +79,6 @@ export const pt = {
   'farms.eyebrow': 'FarmPro',
   'farms.title': 'Suas fazendas',
   'farms.settings': 'Ajustes',
-  'farms.empty': 'Você ainda não cadastrou nenhuma fazenda. Toque em "+ Nova fazenda" pra começar.',
   'farms.newFarm': '+ Nova fazenda',
   'farms.joinWithCode': 'Entrar com código',
   'farms.newFarmName': 'Nome da fazenda',
@@ -285,6 +284,7 @@ export const pt = {
   'corteHome.readyBannerSuffix': 'pra abate agora',
   'corteHome.sellBannerTitle': 'Hoje é um bom dia pra vender',
   'corteHome.sellBannerRow': 'Lote {{name}}: margem de {{margin}}% na arroba (custo {{cost}} × cotação {{price}})',
+  'corteHome.sellBannerRowKg': 'Lote {{name}}: margem de {{margin}}% no quilo (custo {{cost}} × cotação {{price}})',
   'corteHome.linkLotSheet': 'Planilha de lotes',
   'corteHome.linkSlaughterSheet': 'Planilha de abates',
   'corteHome.linkFinancialByLot': 'Financeiro por lote',
@@ -479,7 +479,6 @@ export const pt = {
   'pastures.limitFormHelp': 'A lotação ideal varia com forragem, região e manejo — não tem número universal. Deixe em branco se não sabe.',
   'pastures.save': 'Salvar',
   'pastures.cancel': 'Cancelar',
-  'pastures.clearLimit': 'Remover limite',
   'newPasture.title': 'Novo pasto',
   'newPasture.subtitle': 'Dados do pasto/piquete',
   'newPasture.sectionTitle': 'Dados do pasto',
@@ -521,17 +520,6 @@ export const pt = {
   // Painel de indicadores reprodutivos (Cria)
 
   // Alerta de vaca vazia / repasse (Cria)
-  'repasse.title': 'Vazias e repasse',
-  'repasse.subtitleCount': '{{recent}} pra repasse · {{attention}} vazia há muito tempo',
-  'repasse.sectionRecentTitle': 'Repasse recomendado',
-  'repasse.sectionRecentSubtitle': 'Vazias recentemente — considere reinseminar já',
-  'repasse.sectionAttentionTitle': 'Vazia há muito tempo (>90 dias)',
-  'repasse.sectionAttentionSubtitle': 'Sem prenhez há tempo demais — considere repasse urgente ou descarte',
-  'repasse.emptyAll': 'Nenhuma matriz vazia agora — tudo em dia.',
-  'repasse.colId': 'Identificação',
-  'repasse.colDays': 'Dias vazia',
-  'repasse.colCalves': 'Bezerros',
-  'repasse.colLastInsem': 'Última inseminação',
 
   // Colheita e Vendas (Lavoura) — separados, com dados de transporte
   'harvest.title': 'Colheita',
@@ -544,7 +532,6 @@ export const pt = {
   'harvest.notesLabel': 'Observação',
   'harvest.notesPlaceholder': 'Opcional',
   'harvest.cancel': 'Cancelar',
-  'harvest.save': 'Salvar',
   'harvest.validationError': 'Informe uma quantidade válida em sacas.',
   'harvest.salesRowTitle': 'Vendas',
   'harvest.salesRowSubtitle': '{{sacas}} sc vendidas · {{value}}',
@@ -762,7 +749,6 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'farms.eyebrow': 'FarmPro',
   'farms.title': 'Your farms',
   'farms.settings': 'Settings',
-  'farms.empty': 'You haven’t added a farm yet. Tap "+ New farm" to get started.',
   'farms.newFarm': '+ New farm',
   'farms.joinWithCode': 'Join with code',
   'farms.newFarmName': 'Farm name',
@@ -961,6 +947,7 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'corteHome.readyBannerSuffix': 'for slaughter now',
   'corteHome.sellBannerTitle': 'Today is a good day to sell',
   'corteHome.sellBannerRow': 'Lot {{name}}: {{margin}}% margin per arroba (cost {{cost}} × price {{price}})',
+  'corteHome.sellBannerRowKg': 'Lot {{name}}: {{margin}}% margin per kilo (cost {{cost}} × price {{price}})',
   'corteHome.linkLotSheet': 'Lot sheet',
   'corteHome.linkSlaughterSheet': 'Slaughter sheet',
   'corteHome.linkFinancialByLot': 'Financials by lot',
@@ -1143,7 +1130,6 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'pastures.limitFormHelp': "Ideal stocking rate depends on forage, region and management — there's no universal number. Leave blank if unsure.",
   'pastures.save': 'Save',
   'pastures.cancel': 'Cancel',
-  'pastures.clearLimit': 'Remove limit',
   'newPasture.title': 'New pasture',
   'newPasture.subtitle': 'Pasture/paddock data',
   'newPasture.sectionTitle': 'Pasture data',
@@ -1185,17 +1171,6 @@ export const en: Partial<Record<TranslationKey, string>> = {
   // Reproductive indicators panel (Cria)
 
   // Empty cow / rebreeding alert (Cria)
-  'repasse.title': 'Empty cows and rebreeding',
-  'repasse.subtitleCount': '{{recent}} for rebreeding · {{attention}} empty for too long',
-  'repasse.sectionRecentTitle': 'Rebreeding recommended',
-  'repasse.sectionRecentSubtitle': 'Recently empty — consider rebreeding now',
-  'repasse.sectionAttentionTitle': 'Empty for too long (>90 days)',
-  'repasse.sectionAttentionSubtitle': 'No pregnancy for too long — consider urgent rebreeding or culling',
-  'repasse.emptyAll': 'No empty cows right now — all caught up.',
-  'repasse.colId': 'Tag',
-  'repasse.colDays': 'Days empty',
-  'repasse.colCalves': 'Calves',
-  'repasse.colLastInsem': 'Last insemination',
 
   // Harvest and Sales (Lavoura) — split, with transport data
   'harvest.title': 'Harvest',
@@ -1208,7 +1183,6 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'harvest.notesLabel': 'Note',
   'harvest.notesPlaceholder': 'Optional',
   'harvest.cancel': 'Cancel',
-  'harvest.save': 'Save',
   'harvest.validationError': 'Enter a valid quantity in bags.',
   'harvest.salesRowTitle': 'Sales',
   'harvest.salesRowSubtitle': '{{sacas}} bags sold · {{value}}',
@@ -1423,7 +1397,6 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'farms.eyebrow': 'FarmPro',
   'farms.title': 'Tus fincas',
   'farms.settings': 'Ajustes',
-  'farms.empty': 'Todavía no registraste ninguna finca. Toca "+ Nueva finca" para empezar.',
   'farms.newFarm': '+ Nueva finca',
   'farms.joinWithCode': 'Entrar con código',
   'farms.newFarmName': 'Nombre de la finca',
@@ -1622,6 +1595,7 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'corteHome.readyBannerSuffix': 'para faena ahora',
   'corteHome.sellBannerTitle': 'Hoy es un buen día para vender',
   'corteHome.sellBannerRow': 'Lote {{name}}: margen de {{margin}}% en la arroba (costo {{cost}} × cotización {{price}})',
+  'corteHome.sellBannerRowKg': 'Lote {{name}}: margen de {{margin}}% en el kilo (costo {{cost}} × cotización {{price}})',
   'corteHome.linkLotSheet': 'Planilla de lotes',
   'corteHome.linkSlaughterSheet': 'Planilla de faenas',
   'corteHome.linkFinancialByLot': 'Financiero por lote',
@@ -1804,7 +1778,6 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'pastures.limitFormHelp': 'La carga ideal varía con la forrajera, la región y el manejo — no hay un número universal. Dejalo en blanco si no lo sabés.',
   'pastures.save': 'Guardar',
   'pastures.cancel': 'Cancelar',
-  'pastures.clearLimit': 'Quitar límite',
   'newPasture.title': 'Nuevo pasto',
   'newPasture.subtitle': 'Datos del pasto/potrero',
   'newPasture.sectionTitle': 'Datos del pasto',
@@ -1846,17 +1819,6 @@ export const es: Partial<Record<TranslationKey, string>> = {
   // Panel de indicadores reproductivos (Cria)
 
   // Alerta de vaca vacía / repaso (Cria)
-  'repasse.title': 'Vacías y repaso',
-  'repasse.subtitleCount': '{{recent}} para repaso · {{attention}} vacía hace mucho tiempo',
-  'repasse.sectionRecentTitle': 'Repaso recomendado',
-  'repasse.sectionRecentSubtitle': 'Vacías hace poco — considerá reinseminar ya',
-  'repasse.sectionAttentionTitle': 'Vacía hace mucho tiempo (>90 días)',
-  'repasse.sectionAttentionSubtitle': 'Sin preñez hace demasiado tiempo — considerá repaso urgente o descarte',
-  'repasse.emptyAll': 'Ninguna matriz vacía ahora — todo al día.',
-  'repasse.colId': 'Identificación',
-  'repasse.colDays': 'Días vacía',
-  'repasse.colCalves': 'Terneros',
-  'repasse.colLastInsem': 'Última inseminación',
 
   // Cosecha y Ventas (Lavoura) — separadas, con datos de transporte
   'harvest.title': 'Cosecha',
@@ -1869,7 +1831,6 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'harvest.notesLabel': 'Observación',
   'harvest.notesPlaceholder': 'Opcional',
   'harvest.cancel': 'Cancelar',
-  'harvest.save': 'Guardar',
   'harvest.validationError': 'Indicá una cantidad válida en bolsas.',
   'harvest.salesRowTitle': 'Ventas',
   'harvest.salesRowSubtitle': '{{sacas}} bolsas vendidas · {{value}}',
