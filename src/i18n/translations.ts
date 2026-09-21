@@ -380,8 +380,7 @@ export const pt = {
   'lotDetail.financialNote': 'Receita estimada: {{arrobas}} @ (peso atual × {{yield}}% de rendimento ÷ 15 kg) — vira valor real só depois do abate.',
   'lotDetail.logCost': '+ Lançar custo',
   'lotDetail.simulate': '️ Simular cenários',
-  'lotDetail.generateReport': ' Gerar relatório do lote',
-  'lotDetail.generateReportError': 'Não foi possível gerar o relatório.',
+  'lotDetail.generateReport': 'Ver relatório do lote',
   'lotDetail.animalsTitle': 'Animais individuais',
   'lotDetail.animalsSubtitle': 'Ficha com brinco, pesagens, saúde e movimentação por animal',
   'lotDetail.feedConversionTitle': 'Conversão alimentar',
@@ -419,6 +418,9 @@ export const pt = {
   'lotDetail.yieldLabel': 'Rendimento de carcaça estimado (%)',
   'lotDetail.cancel': 'Cancelar',
   'lotDetail.save': 'Salvar',
+  'lotReport.title': 'Relatório do lote',
+  'lotReport.share': 'Compartilhar / Exportar PDF',
+  'lotReport.shareError': 'Não foi possível gerar o PDF.',
 
   // Detalhe da matriz (Cria)
 
@@ -1046,8 +1048,7 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'lotDetail.financialNote': 'Estimated revenue: {{arrobas}} @ (current weight × {{yield}}% yield ÷ 15 kg) — becomes real only after slaughter.',
   'lotDetail.logCost': '+ Log cost',
   'lotDetail.simulate': '️ Simulate scenarios',
-  'lotDetail.generateReport': ' Generate lot report',
-  'lotDetail.generateReportError': 'Could not generate the report.',
+  'lotDetail.generateReport': 'View lot report',
   'lotDetail.animalsTitle': 'Individual animals',
   'lotDetail.animalsSubtitle': 'Tag, weighings, health and movement per animal',
   'lotDetail.feedConversionTitle': 'Feed conversion',
@@ -1085,6 +1086,9 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'lotDetail.yieldLabel': 'Estimated carcass yield (%)',
   'lotDetail.cancel': 'Cancel',
   'lotDetail.save': 'Save',
+  'lotReport.title': 'Lot report',
+  'lotReport.share': 'Share / Export PDF',
+  'lotReport.shareError': 'Could not generate the PDF.',
 
 
   'breakEven.title': 'Break-even price',
@@ -1704,8 +1708,7 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'lotDetail.financialNote': 'Ingreso estimado: {{arrobas}} @ (peso actual × {{yield}}% de rendimiento ÷ 15 kg) — se vuelve valor real recién después de la faena.',
   'lotDetail.logCost': '+ Registrar costo',
   'lotDetail.simulate': '️ Simular escenarios',
-  'lotDetail.generateReport': ' Generar informe del lote',
-  'lotDetail.generateReportError': 'No fue posible generar el informe.',
+  'lotDetail.generateReport': 'Ver informe del lote',
   'lotDetail.animalsTitle': 'Animales individuales',
   'lotDetail.animalsSubtitle': 'Ficha con caravana, pesajes, salud y movimiento por animal',
   'lotDetail.feedConversionTitle': 'Conversión alimenticia',
@@ -1743,6 +1746,9 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'lotDetail.yieldLabel': 'Rendimiento de res estimado (%)',
   'lotDetail.cancel': 'Cancelar',
   'lotDetail.save': 'Guardar',
+  'lotReport.title': 'Informe del lote',
+  'lotReport.share': 'Compartir / Exportar PDF',
+  'lotReport.shareError': 'No fue posible generar el PDF.',
 
 
   'breakEven.title': 'Precio mínimo (break-even)',
