@@ -32,9 +32,17 @@ export interface CattleLotSummary extends CattleLot {
   costPerHead: number;
   /** Custo lançado dividido pelas @ estimadas no peso atual — quanto mais
    * baixo, mais barato está saindo a arroba produzida deste lote. Null se
-   * ainda não há @ estimadas (ex.: peso zerado). */
+   * ainda não há @ estimadas (ex.: peso zerado). Sempre em @ (conversão de
+   * peso), mesmo pra lotes do Paraguai — só a receita/preço abaixo é que
+   * troca de unidade conforme o país da fazenda. */
   costPerArroba: number | null;
   estimatedArrobas: number;
+  /** Moeda/unidade usadas em projectedRevenue — BRL/@ (B3, boi gordo) pra
+   * fazendas do Brasil, USD/kg (novillo, mercado paraguaio a frigorífico)
+   * pra fazendas do Paraguai. O Paraguai não cota em arroba. */
+  priceCurrency: 'BRL' | 'USD';
+  priceUnit: '@' | 'kg';
+  pricePerUnit: number;
   projectedRevenue: number;
   projectedMargin: number;
 }
@@ -54,10 +62,13 @@ async function withSummary(lots: CattleLot[]): Promise<CattleLotSummary[]> {
   const lotIds = lots.map((l) => l.id);
   const today = new Date().toISOString().slice(0, 10);
 
+  const farmIds = [...new Set(lots.map((l) => l.farm_id))];
+
   const [
     { data: weighings, error: weighingsError },
     { data: mortality, error: mortalityError },
     { data: costs, error: costsError },
+    { data: farms, error: farmsError },
     quotes,
   ] = await Promise.all([
     supabase
@@ -67,14 +78,18 @@ async function withSummary(lots: CattleLot[]): Promise<CattleLotSummary[]> {
       .order('weighed_at', { ascending: true }),
     supabase.from('cattle_mortality_events').select('lot_id, head_count').in('lot_id', lotIds),
     supabase.from('cattle_lot_costs').select('lot_id, amount').in('lot_id', lotIds),
+    supabase.from('farms').select('id, country').in('id', farmIds),
     getCommodityQuotes(),
   ]);
 
   if (weighingsError) throw weighingsError;
   if (mortalityError) throw mortalityError;
   if (costsError) throw costsError;
+  if (farmsError) throw farmsError;
 
+  const countryByFarmId = new Map((farms ?? []).map((f) => [f.id, f.country as 'BR' | 'PY']));
   const boiGordoPricePerArroba = quotes.find((q) => q.id === 'boi-gordo')?.price ?? 0;
+  const novilloPricePerKgUsd = quotes.find((q) => q.id === 'novillo-py')?.price ?? 0;
 
   return lots.map((lot) => {
     const lotWeighings = (weighings ?? []).filter((w) => w.lot_id === lot.id);
@@ -105,9 +120,17 @@ async function withSummary(lots: CattleLot[]): Promise<CattleLotSummary[]> {
 
     const estimatedArrobas =
       (latestWeightKg * currentHeadCount * (Number(lot.estimated_carcass_yield_pct) / 100)) / KG_PER_ARROBA;
-    const projectedRevenue = estimatedArrobas * boiGordoPricePerArroba;
-    const projectedMargin = projectedRevenue - totalCost;
     const costPerArroba = estimatedArrobas > 0 ? totalCost / estimatedArrobas : null;
+
+    // Paraguai não cota gado em arroba (isso é unidade só brasileira) — o
+    // mercado de lá (novillo a frigorífico) é em USD por quilo vivo. Cada
+    // fazenda usa a cotação real do próprio país, não uma conversão forçada.
+    const isParaguay = countryByFarmId.get(lot.farm_id) === 'PY';
+    const priceCurrency: 'BRL' | 'USD' = isParaguay ? 'USD' : 'BRL';
+    const priceUnit: '@' | 'kg' = isParaguay ? 'kg' : '@';
+    const pricePerUnit = isParaguay ? novilloPricePerKgUsd : boiGordoPricePerArroba;
+    const projectedRevenue = isParaguay ? latestWeightKg * currentHeadCount * pricePerUnit : estimatedArrobas * pricePerUnit;
+    const projectedMargin = projectedRevenue - totalCost;
 
     const estimatedExitDate =
       kgToTarget !== null && kgToTarget > 0 && gmdKgPerDay !== null && gmdKgPerDay > 0
@@ -129,6 +152,9 @@ async function withSummary(lots: CattleLot[]): Promise<CattleLotSummary[]> {
       costPerHead: currentHeadCount > 0 ? totalCost / currentHeadCount : 0,
       costPerArroba,
       estimatedArrobas,
+      priceCurrency,
+      priceUnit,
+      pricePerUnit,
       projectedRevenue,
       projectedMargin,
     };

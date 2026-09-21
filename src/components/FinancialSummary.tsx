@@ -4,15 +4,29 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useT } from '../i18n';
 import { radius, spacing, typography, useColors, type Colors } from '../theme';
 
-function formatBRL(value: number): string {
-  return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+function formatCurrency(value: number, currency: 'BRL' | 'USD'): string {
+  return currency === 'USD'
+    ? value.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })
+    : value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
 }
 
 /** Resultado financeiro (custo x receita x margem) — pensado pra ser o
  * ponto que mais diferencia o FarmPro de planilha solta: em vez de só
  * contar registros, mostra se aquilo tá dando lucro ou prejuízo, de
- * cara, sem precisar abrir relatório nenhum. */
-export function FinancialSummary({ cost, revenue, margin }: { cost: number; revenue: number; margin: number }) {
+ * cara, sem precisar abrir relatório nenhum. `revenueCurrency` só existe
+ * porque o gado do Paraguai é cotado em USD (o custo, sem moeda registrada
+ * no app, continua mostrado em BRL — ver nota no relatório do lote). */
+export function FinancialSummary({
+  cost,
+  revenue,
+  margin,
+  revenueCurrency = 'BRL',
+}: {
+  cost: number;
+  revenue: number;
+  margin: number;
+  revenueCurrency?: 'BRL' | 'USD';
+}) {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const t = useT();
@@ -23,19 +37,19 @@ export function FinancialSummary({ cost, revenue, margin }: { cost: number; reve
       <View style={styles.row}>
         <View style={styles.cell}>
           <Text style={styles.cellLabel}>{t('financialSummary.cost')}</Text>
-          <Text style={[styles.cellValue, { color: colors.danger }]}>{formatBRL(cost)}</Text>
+          <Text style={[styles.cellValue, { color: colors.danger }]}>{formatCurrency(cost, 'BRL')}</Text>
         </View>
         <View style={styles.divider} />
         <View style={styles.cell}>
           <Text style={styles.cellLabel}>{t('financialSummary.revenue')}</Text>
-          <Text style={[styles.cellValue, { color: colors.success }]}>{formatBRL(revenue)}</Text>
+          <Text style={[styles.cellValue, { color: colors.success }]}>{formatCurrency(revenue, revenueCurrency)}</Text>
         </View>
         <View style={styles.divider} />
         <View style={styles.cell}>
           <Text style={styles.cellLabel}>{t('financialSummary.margin')}</Text>
           <Text style={[styles.cellValue, { color: isPositive ? colors.success : colors.danger }]}>
             {isPositive ? '+' : ''}
-            {formatBRL(margin)}
+            {formatCurrency(margin, revenueCurrency)}
           </Text>
         </View>
       </View>

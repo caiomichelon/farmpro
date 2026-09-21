@@ -12,22 +12,26 @@ interface BreakEvenCardProps {
   unitLabel: string;
   targetMarginPct: string;
   onChangeTargetMarginPct: (value: string) => void;
+  currencyCode?: 'BRL' | 'USD';
 }
 
-function currency(value: number): string {
-  return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+function currency(value: number, currencyCode: 'BRL' | 'USD' = 'BRL'): string {
+  return currencyCode === 'USD'
+    ? value.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+    : value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
 /** Preço mínimo (break-even) e preço pra bater uma margem alvo — usado no
- * lote (Corte, por @), na safra (Lavoura, por saca) e na matriz (Cria, por
- * bezerro desmamado). Sempre calculado a partir do custo já lançado, nunca
- * de preço de mercado inventado. */
+ * lote (Corte, por @ ou por kg pro Paraguai), na safra (Lavoura, por saca) e
+ * na matriz (Cria, por bezerro desmamado). Sempre calculado a partir do
+ * custo já lançado, nunca de preço de mercado inventado. */
 export function BreakEvenCard({
   totalCost,
   quantity,
   unitLabel,
   targetMarginPct,
   onChangeTargetMarginPct,
+  currencyCode = 'BRL',
 }: BreakEvenCardProps) {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -44,7 +48,7 @@ export function BreakEvenCard({
           <View style={styles.row}>
             <Text style={styles.label}>{t('breakEven.breakEvenLabel')}</Text>
             <Text style={styles.value}>
-              {currency(result.breakEvenPrice)}/{unitLabel}
+              {currency(result.breakEvenPrice, currencyCode)}/{unitLabel}
             </Text>
           </View>
           <View style={styles.marginRow}>
@@ -60,7 +64,7 @@ export function BreakEvenCard({
             <View style={{ flex: 1 }}>
               <Text style={styles.label}>{t('breakEven.targetPriceLabel')}</Text>
               <Text style={[styles.value, styles.highlight]}>
-                {currency(result.targetPrice)}/{unitLabel}
+                {currency(result.targetPrice, currencyCode)}/{unitLabel}
               </Text>
             </View>
           </View>

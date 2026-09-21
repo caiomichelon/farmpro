@@ -5,13 +5,19 @@
  * public.commodity_quotes. Não é tempo real: a B3 não oferece cotação
  * intradiária gratuita pra terceiros, só o fechamento do pregão.
  *
+ * Também tem o novillo do Paraguai ('novillo-py', preço do gado a
+ * frigorífico em USD por quilo vivo — o Paraguai não cota em arroba, é uma
+ * unidade só brasileira), sincronizado semanalmente da Valor Agro
+ * (supabase/functions/sync-py-cattle-quotes) — usado pelas fazendas
+ * marcadas com country = 'PY'.
+ *
  * Algodão não entra aqui porque a B3 não tem contrato futuro ativo dessa
  * commodity hoje — não dá pra fabricar esse dado, então fica de fora até
  * surgir uma fonte real.
  */
 import { supabase } from '../lib/supabase';
 
-export type CommodityUnit = '@' | 'saca 60kg';
+export type CommodityUnit = '@' | 'saca 60kg' | 'kg';
 export type CommodityCurrency = 'BRL' | 'USD';
 
 export interface CommodityQuote {

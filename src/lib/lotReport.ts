@@ -10,6 +10,17 @@ function currency(value: number): string {
   return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
+function currencyUSD(value: number): string {
+  return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+}
+
+/** Formata um valor no formato/símbolo de moeda certo pra cada mercado —
+ * BRL pro boi gordo brasileiro (B3, por @), USD pro novillo paraguaio
+ * (mercado local cota em dólar por quilo vivo, não em arroba). */
+function formatPrice(value: number, currencyCode: 'BRL' | 'USD'): string {
+  return currencyCode === 'USD' ? currencyUSD(value) : currency(value);
+}
+
 function number(value: number, digits = 0): string {
   return value.toLocaleString('pt-BR', { minimumFractionDigits: digits, maximumFractionDigits: digits });
 }
@@ -98,9 +109,18 @@ export function buildLotReportHtml(input: LotReportInput): string {
 
   const exitWeightKg = realized ? realized.avgExitWeightKg : lot.latestWeightKg;
   const headCount = realized ? realized.totalHeadCount : lot.currentHeadCount;
-  const arrobas = realized ? realized.totalArrobas : lot.estimatedArrobas;
-  const pricePerArroba = realized ? realized.avgPricePerArroba : arrobas > 0 ? lot.projectedRevenue / arrobas : 0;
   const exitDateLabel = realized ? formatDate(realized.lastSlaughterDate) : lot.estimatedExitDate ? formatDate(lot.estimatedExitDate) : '—';
+
+  // O abate (cattle_slaughters) só tem campo de preço por arroba — por isso
+  // o resultado "realizado" sempre sai em @ e em reais, mesmo pra lotes do
+  // Paraguai; a cotação por quilo em dólar (novillo paraguaio) só entra
+  // enquanto o lote ainda está "ativo" (projeção), lida direto da fazenda.
+  const revenueCurrency: 'BRL' | 'USD' = realized ? 'BRL' : lot.priceCurrency;
+  const revenueUnitLabel = realized ? '@' : lot.priceUnit;
+  const quantityLabel = realized ? 'Arrobas produzidas' : lot.priceUnit === 'kg' ? 'Quilos vivos estimados' : 'Arrobas estimadas';
+  const quantityValue = realized ? realized.totalArrobas : lot.priceUnit === 'kg' ? lot.latestWeightKg * lot.currentHeadCount : lot.estimatedArrobas;
+  const priceLabel = realized ? 'Preço médio da arroba' : lot.priceUnit === 'kg' ? 'Preço médio do quilo' : 'Preço médio da arroba';
+  const pricePerUnit = realized ? realized.avgPricePerArroba : lot.pricePerUnit;
 
   return `<!doctype html>
 <html lang="pt-BR">
@@ -181,15 +201,15 @@ export function buildLotReportHtml(input: LotReportInput): string {
 
   <h2>${isRealized ? 'Receita realizada' : 'Receita projetada'}</h2>
   <table>
-    <tr><th>Arrobas ${isRealized ? 'produzidas' : 'estimadas'}</th><td class="num">${number(arrobas, 1)} @</td></tr>
-    <tr><th>Preço médio da arroba</th><td class="num">${currency(pricePerArroba)}</td></tr>
-    <tr><th>Receita ${isRealized ? 'realizada' : 'projetada'}</th><td class="num">${currency(totalRevenue)}</td></tr>
+    <tr><th>${quantityLabel}</th><td class="num">${number(quantityValue, 1)} ${revenueUnitLabel}</td></tr>
+    <tr><th>${priceLabel}</th><td class="num">${formatPrice(pricePerUnit, revenueCurrency)}</td></tr>
+    <tr><th>Receita ${isRealized ? 'realizada' : 'projetada'}</th><td class="num">${formatPrice(totalRevenue, revenueCurrency)}</td></tr>
   </table>
 
   <div class="profit-card ${result >= 0 ? 'positive' : 'negative'}">
     <div>
       <div class="label">${isRealized ? 'Resultado final do lote' : 'Margem projetada do lote'}</div>
-      <div class="value ${result >= 0 ? 'result-positive' : 'result-negative'}">${currency(result)}</div>
+      <div class="value ${result >= 0 ? 'result-positive' : 'result-negative'}">${formatPrice(result, revenueCurrency)}</div>
     </div>
     <div>
       <div class="pct ${result >= 0 ? 'result-positive' : 'result-negative'}">${result >= 0 ? '+' : ''}${number(resultPct, 1)}%</div>
@@ -202,7 +222,9 @@ export function buildLotReportHtml(input: LotReportInput): string {
     ${
       isRealized
         ? 'Valores de receita e retorno com base nos registros de abate deste lote.'
-        : 'Valores de receita e retorno são projeções com base no peso atual do lote e na cotação vigente da arroba — não são valores de venda já realizados.'
+        : lot.priceUnit === 'kg'
+          ? 'Valores de receita e retorno são projeções com base no peso atual do lote e na cotação vigente do novillo (Paraguai) — não são valores de venda já realizados. Os custos lançados podem estar em outra moeda (o app não registra a moeda de cada custo).'
+          : 'Valores de receita e retorno são projeções com base no peso atual do lote e na cotação vigente da arroba — não são valores de venda já realizados.'
     }
   </footer>
 </body>

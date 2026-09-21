@@ -133,17 +133,25 @@ export default function LotDetailScreen() {
         </View>
 
         <Section title={t('lotDetail.financialTitle')} subtitle={t('lotDetail.financialSubtitle')} styles={styles}>
-          <FinancialSummary cost={lot.totalCost} revenue={lot.projectedRevenue} margin={lot.projectedMargin} />
+          <FinancialSummary
+            cost={lot.totalCost}
+            revenue={lot.projectedRevenue}
+            margin={lot.projectedMargin}
+            revenueCurrency={lot.priceCurrency}
+          />
           <Text style={styles.financialNote}>
-            {t('lotDetail.financialNote', {
-              arrobas: lot.estimatedArrobas.toFixed(1),
-              yield: Number(lot.estimated_carcass_yield_pct).toFixed(0),
-            })}
+            {lot.priceUnit === 'kg'
+              ? t('lotDetail.financialNotePy')
+              : t('lotDetail.financialNote', {
+                  arrobas: lot.estimatedArrobas.toFixed(1),
+                  yield: Number(lot.estimated_carcass_yield_pct).toFixed(0),
+                })}
           </Text>
           <BreakEvenCard
             totalCost={lot.totalCost}
-            quantity={lot.estimatedArrobas}
-            unitLabel="@"
+            quantity={lot.priceUnit === 'kg' ? lot.latestWeightKg * lot.currentHeadCount : lot.estimatedArrobas}
+            unitLabel={lot.priceUnit}
+            currencyCode={lot.priceCurrency}
             targetMarginPct={targetMarginPct}
             onChangeTargetMarginPct={setTargetMarginPct}
           />

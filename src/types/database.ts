@@ -85,6 +85,10 @@ export type Farm = {
   sector_type: FarmSectorType;
   city: string | null;
   state: string | null;
+  /** País da fazenda — define qual cotação de gado é usada nos cálculos e
+   * relatórios (B3/arroba/BRL pro Brasil, novillo/quilo/USD pro Paraguai).
+   * 'BR' por padrão pras fazendas já existentes. */
+  country: 'BR' | 'PY';
   /** Localização usada pros alertas de clima proativos — nulo até o usuário
    * capturar a posição atual em Clima → "Ativar alertas de clima". */
   latitude: number | null;
