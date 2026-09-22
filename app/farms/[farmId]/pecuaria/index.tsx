@@ -59,7 +59,7 @@ export default function PecuariaHomeScreen() {
           <MoreRow
             title={t('farmHome.employees')}
             subtitle={t('farmHome.employeesSubtitle')}
-            onPress={() => router.push(`/farms/${farmId}/funcionarios`)}
+            onPress={() => router.push(`/farms/${farmId}/funcionarios?area=pecuaria`)}
             styles={styles}
           />
           <MoreRow

@@ -9,6 +9,26 @@ export const EMPLOYEE_SECTOR_LABELS: Record<EmployeeSector, string> = {
 
 export const EMPLOYEE_SECTOR_OPTIONS: EmployeeSector[] = ['lavoura', 'corte', 'cria', 'escritorio'];
 
+export type EmployeeArea = 'lavoura' | 'pecuaria';
+
+const AREA_SECTORS: Record<EmployeeArea, EmployeeSector[]> = {
+  lavoura: ['lavoura'],
+  pecuaria: ['corte', 'cria'],
+};
+
+/** Setores que fazem sentido pra quem entrou pela Lavoura ou pela Pecuária —
+ * "Escritório" fica disponível nos dois porque não é uma área de produção.
+ * Sem filtro (`area` nulo, ex.: telas de importação/planilha que veem a
+ * fazenda inteira), volta a lista completa. */
+export function getSectorOptionsForArea(area: EmployeeArea | null | undefined): EmployeeSector[] {
+  if (!area) return EMPLOYEE_SECTOR_OPTIONS;
+  return [...AREA_SECTORS[area], 'escritorio'];
+}
+
+export function isEmployeeArea(value: unknown): value is EmployeeArea {
+  return value === 'lavoura' || value === 'pecuaria';
+}
+
 export const EMPLOYEE_COST_TYPE_LABELS: Record<EmployeeCostType, string> = {
   mensalista: 'Mensalista',
   diarista: 'Diarista',

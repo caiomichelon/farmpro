@@ -9,7 +9,7 @@ import { ChipSelect } from '../../../../src/components/ChipSelect';
 import { EmptyState } from '../../../../src/components/EmptyState';
 import { FadeSlideIn } from '../../../../src/components/FadeSlideIn';
 import { ScreenHeader } from '../../../../src/components/ScreenHeader';
-import { EMPLOYEE_SECTOR_LABELS, EMPLOYEE_SECTOR_OPTIONS } from '../../../../src/data/employeeOptions';
+import { EMPLOYEE_SECTOR_LABELS, getSectorOptionsForArea, isEmployeeArea } from '../../../../src/data/employeeOptions';
 import { useEmployees, type EmployeeSummary } from '../../../../src/hooks/useEmployees';
 import { useT, type TFunction } from '../../../../src/i18n';
 import type { EmployeeSector } from '../../../../src/types/database';
@@ -18,7 +18,9 @@ import { radius, spacing, typography, useColors, type Colors } from '../../../..
 export default function EmployeesHomeScreen() {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const { farmId } = useLocalSearchParams<{ farmId: string }>();
+  const { farmId, area: areaParam } = useLocalSearchParams<{ farmId: string; area?: string }>();
+  const area = isEmployeeArea(areaParam) ? areaParam : null;
+  const sectorOptions = useMemo(() => getSectorOptionsForArea(area), [area]);
   const [sectorFilter, setSectorFilter] = useState<EmployeeSector | null>(null);
   const { employees, isLoading, error, reload } = useEmployees(farmId, sectorFilter ?? undefined);
   const t = useT();
@@ -61,7 +63,7 @@ export default function EmployeesHomeScreen() {
           label={t('employeesHome.sectorFilter')}
           options={[
             { value: '__all__', label: t('employeesHome.allSectors') },
-            ...EMPLOYEE_SECTOR_OPTIONS.map((s) => ({ value: s, label: EMPLOYEE_SECTOR_LABELS[s] })),
+            ...sectorOptions.map((s) => ({ value: s, label: EMPLOYEE_SECTOR_LABELS[s] })),
           ]}
           value={sectorFilter ?? '__all__'}
           onChange={(v) => setSectorFilter(v === '__all__' ? null : (v as EmployeeSector))}
@@ -96,7 +98,9 @@ export default function EmployeesHomeScreen() {
       <View style={styles.footer}>
         <Button
           label={t('employeesHome.newEmployee')}
-          onPress={() => router.push(`/farms/${farmId}/funcionarios/novo-funcionario`)}
+          onPress={() =>
+            router.push(`/farms/${farmId}/funcionarios/novo-funcionario${area ? `?area=${area}` : ''}`)
+          }
         />
       </View>
     </SafeAreaView>

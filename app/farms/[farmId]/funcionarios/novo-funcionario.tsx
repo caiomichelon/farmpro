@@ -12,7 +12,8 @@ import { TextField } from '../../../../src/components/TextField';
 import {
   EMPLOYEE_COST_TYPE_LABELS,
   EMPLOYEE_SECTOR_LABELS,
-  EMPLOYEE_SECTOR_OPTIONS,
+  getSectorOptionsForArea,
+  isEmployeeArea,
 } from '../../../../src/data/employeeOptions';
 import { useEmployees } from '../../../../src/hooks/useEmployees';
 import { useT } from '../../../../src/i18n';
@@ -27,7 +28,9 @@ const COST_TYPE_OPTIONS = Object.entries(EMPLOYEE_COST_TYPE_LABELS).map(([value,
 export default function NewEmployeeScreen() {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const { farmId } = useLocalSearchParams<{ farmId: string }>();
+  const { farmId, area: areaParam } = useLocalSearchParams<{ farmId: string; area?: string }>();
+  const area = isEmployeeArea(areaParam) ? areaParam : null;
+  const sectorOptions = useMemo(() => getSectorOptionsForArea(area), [area]);
   const { createEmployee } = useEmployees(farmId);
   const t = useT();
 
@@ -94,7 +97,7 @@ export default function NewEmployeeScreen() {
             <Section title={t('newEmployee.sectionWork')} styles={styles}>
               <ChipSelect
                 label={t('newEmployee.sector')}
-                options={EMPLOYEE_SECTOR_OPTIONS.map((s) => ({ value: s, label: EMPLOYEE_SECTOR_LABELS[s] }))}
+                options={sectorOptions.map((s) => ({ value: s, label: EMPLOYEE_SECTOR_LABELS[s] }))}
                 value={sector}
                 onChange={setSector}
                 accentColor={colors.funcionarios}
