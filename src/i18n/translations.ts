@@ -282,6 +282,7 @@ export const pt = {
   'corteHome.readyLotSingular': 'lote pronto',
   'corteHome.readyLotPlural': 'lotes prontos',
   'corteHome.readyBannerSuffix': 'pra abate agora',
+  'corteHome.slaughteredBanner': '{{count}} lote(s) já abatido(s) — ver histórico',
   'corteHome.sellBannerTitle': 'Hoje é um bom dia pra vender',
   'corteHome.sellBannerRow': 'Lote {{name}}: margem de {{margin}}% na arroba (custo {{cost}} × cotação {{price}})',
   'corteHome.sellBannerRowKg': 'Lote {{name}}: margem de {{margin}}% no quilo (custo {{cost}} × cotação {{price}})',
@@ -429,8 +430,9 @@ export const pt = {
   'lotReport.priceLabel': 'Preço por {{unit}}',
   'lotReport.priceSave': 'Salvar',
   'lotReport.priceCancel': 'Cancelar',
-
-  // Detalhe da matriz (Cria)
+  'slaughteredLots.title': 'Lotes abatidos',
+  'slaughteredLots.subtitle': '{{count}} lote(s) já abatido(s)',
+  'slaughteredLots.empty': 'Nenhum lote abatido ainda.',
 
   // Componente compartilhado: BreakEvenCard
   'breakEven.title': 'Preço mínimo (break-even)',
@@ -952,6 +954,7 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'corteHome.readyLotSingular': 'lot ready',
   'corteHome.readyLotPlural': 'lots ready',
   'corteHome.readyBannerSuffix': 'for slaughter now',
+  'corteHome.slaughteredBanner': '{{count}} lot(s) already slaughtered — view history',
   'corteHome.sellBannerTitle': 'Today is a good day to sell',
   'corteHome.sellBannerRow': 'Lot {{name}}: {{margin}}% margin per arroba (cost {{cost}} × price {{price}})',
   'corteHome.sellBannerRowKg': 'Lot {{name}}: {{margin}}% margin per kilo (cost {{cost}} × price {{price}})',
@@ -1092,6 +1095,9 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'lotReport.priceLabel': 'Price per {{unit}}',
   'lotReport.priceSave': 'Save',
   'lotReport.priceCancel': 'Cancel',
+  'slaughteredLots.title': 'Slaughtered lots',
+  'slaughteredLots.subtitle': '{{count}} lot(s) already slaughtered',
+  'slaughteredLots.empty': 'No slaughtered lots yet.',
 
 
   'breakEven.title': 'Break-even price',
@@ -1607,6 +1613,7 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'corteHome.readyLotSingular': 'lote listo',
   'corteHome.readyLotPlural': 'lotes listos',
   'corteHome.readyBannerSuffix': 'para faena ahora',
+  'corteHome.slaughteredBanner': '{{count}} lote(s) ya faenado(s) — ver historial',
   'corteHome.sellBannerTitle': 'Hoy es un buen día para vender',
   'corteHome.sellBannerRow': 'Lote {{name}}: margen de {{margin}}% en la arroba (costo {{cost}} × cotización {{price}})',
   'corteHome.sellBannerRowKg': 'Lote {{name}}: margen de {{margin}}% en el kilo (costo {{cost}} × cotización {{price}})',
@@ -1747,6 +1754,9 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'lotReport.priceLabel': 'Precio por {{unit}}',
   'lotReport.priceSave': 'Guardar',
   'lotReport.priceCancel': 'Cancelar',
+  'slaughteredLots.title': 'Lotes faenados',
+  'slaughteredLots.subtitle': '{{count}} lote(s) ya faenado(s)',
+  'slaughteredLots.empty': 'Ningún lote faenado todavía.',
 
 
   'breakEven.title': 'Precio mínimo (break-even)',

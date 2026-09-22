@@ -4,20 +4,14 @@ import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from '
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../../../src/components/Button';
-import { Card } from '../../../../../src/components/Card';
+import { CattleLotCard } from '../../../../../src/components/CattleLotCard';
 import { EmptyState } from '../../../../../src/components/EmptyState';
 import { FadeSlideIn } from '../../../../../src/components/FadeSlideIn';
 import { FinancialSummary } from '../../../../../src/components/FinancialSummary';
 import { ScreenHeader } from '../../../../../src/components/ScreenHeader';
 import { StatGrid } from '../../../../../src/components/StatGrid';
-import { CATTLE_LOT_STATUS_LABELS } from '../../../../../src/data/cattleOptions';
-import {
-  CATTLE_LOT_READINESS_LABELS,
-  useCattleLots,
-  type CattleLotReadiness,
-  type CattleLotSummary,
-} from '../../../../../src/hooks/useCattleLots';
-import { useT, type TFunction } from '../../../../../src/i18n';
+import { useCattleLots } from '../../../../../src/hooks/useCattleLots';
+import { useT } from '../../../../../src/i18n';
 import { buildSellRecommendations } from '../../../../../src/lib/sellRecommendation';
 import { radius, spacing, typography, useColors, type Colors } from '../../../../../src/theme';
 
@@ -26,12 +20,6 @@ function formatPrice(value: number, currency: 'BRL' | 'USD'): string {
     ? value.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
     : value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
-
-const READINESS_COLOR_KEY: Record<CattleLotReadiness, 'success' | 'pecuaria' | 'textMuted'> = {
-  pronto: 'success',
-  engordando: 'pecuaria',
-  recem_chegado: 'textMuted',
-};
 
 export default function CorteHomeScreen() {
   const colors = useColors();
@@ -48,6 +36,8 @@ export default function CorteHomeScreen() {
   );
 
   const activeLots = lots.filter((l) => l.status === 'ativo');
+  const slaughteredLots = lots.filter((l) => l.status === 'abatido');
+  const visibleLots = lots.filter((l) => l.status !== 'abatido');
   const totalHead = activeLots.reduce((sum, l) => sum + l.currentHeadCount, 0);
   const gmdValues = activeLots.map((l) => l.gmdKgPerDay).filter((v): v is number => v !== null);
   const avgGmd = gmdValues.length > 0 ? gmdValues.reduce((sum, v) => sum + v, 0) / gmdValues.length : null;
@@ -81,7 +71,7 @@ export default function CorteHomeScreen() {
       ) : (
         <FlatList
           style={styles.list}
-          data={lots}
+          data={visibleLots}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           ListHeaderComponent={
@@ -106,6 +96,18 @@ export default function CorteHomeScreen() {
                     {t('corteHome.readyBannerSuffix')}
                   </Text>
                   <Text style={styles.readyBannerChevron}>→</Text>
+                </Pressable>
+              ) : null}
+
+              {slaughteredLots.length > 0 ? (
+                <Pressable
+                  style={({ pressed }) => [styles.slaughteredBanner, pressed && styles.rowPressed]}
+                  onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/abatidos`)}
+                >
+                  <Text style={styles.slaughteredBannerText}>
+                    {t('corteHome.slaughteredBanner', { count: slaughteredLots.length })}
+                  </Text>
+                  <Text style={styles.slaughteredBannerChevron}>→</Text>
                 </Pressable>
               ) : null}
 
@@ -203,7 +205,7 @@ export default function CorteHomeScreen() {
           ListEmptyComponent={<EmptyState text={t('corteHome.empty')} />}
           renderItem={({ item, index }) => (
             <FadeSlideIn delay={Math.min(index, 6) * 50}>
-              <LotCard lot={item} styles={styles} colors={colors} t={t} onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${item.id}`)} />
+              <CattleLotCard lot={item} t={t} onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/lote/${item.id}`)} />
             </FadeSlideIn>
           )}
         />
@@ -215,50 +217,6 @@ export default function CorteHomeScreen() {
         <Button label={t('corteHome.newLot')} onPress={() => router.push(`/farms/${farmId}/pecuaria/corte/novo-lote`)} />
       </View>
     </SafeAreaView>
-  );
-}
-
-function LotCard({
-  lot,
-  onPress,
-  styles,
-  colors,
-  t,
-}: {
-  lot: CattleLotSummary;
-  onPress: () => void;
-  styles: ReturnType<typeof createStyles>;
-  colors: Colors;
-  t: TFunction;
-}) {
-  const readinessColor = colors[READINESS_COLOR_KEY[lot.readiness]];
-  return (
-    <Card onPress={onPress} style={styles.card}>
-      <View style={styles.cardTopRow}>
-        <Text style={styles.cardTitle}>{lot.name}</Text>
-        <View style={styles.statusBadge}>
-          <Text style={styles.statusBadgeText}>{CATTLE_LOT_STATUS_LABELS[lot.status]}</Text>
-        </View>
-      </View>
-      {lot.status === 'ativo' ? (
-        <View style={[styles.readinessBadge, { backgroundColor: readinessColor + '22' }]}>
-          <Text style={[styles.readinessBadgeText, { color: readinessColor }]}>
-            {CATTLE_LOT_READINESS_LABELS[lot.readiness]}
-          </Text>
-        </View>
-      ) : null}
-      <View style={styles.cardStatsRow}>
-        <Text style={styles.cardStat}>{lot.currentHeadCount} {t('corteHome.headsSuffix')}</Text>
-        <Text style={styles.cardStatDivider}>·</Text>
-        <Text style={styles.cardStat}>{lot.latestWeightKg.toFixed(0)} {t('corteHome.avgWeightSuffix')}</Text>
-        {lot.gmdKgPerDay !== null ? (
-          <>
-            <Text style={styles.cardStatDivider}>·</Text>
-            <Text style={styles.cardStat}>GMD {lot.gmdKgPerDay.toFixed(2)} kg/dia</Text>
-          </>
-        ) : null}
-      </View>
-    </Card>
   );
 }
 
@@ -313,6 +271,25 @@ function createStyles(colors: Colors) {
       ...typography.heading,
       color: colors.success,
     },
+    slaughteredBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: colors.surfaceAlt,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.md,
+      padding: spacing.md,
+    },
+    slaughteredBannerText: {
+      ...typography.bodyMedium,
+      color: colors.textSecondary,
+      flex: 1,
+    },
+    slaughteredBannerChevron: {
+      ...typography.heading,
+      color: colors.textSecondary,
+    },
     sellBanner: {
       backgroundColor: colors.accent + '1A',
       borderWidth: 1,
@@ -342,51 +319,6 @@ function createStyles(colors: Colors) {
       color: colors.pecuaria,
     },
     linkDivider: {
-      color: colors.textMuted,
-    },
-    card: {
-      marginBottom: spacing.md,
-      gap: spacing.xs,
-    },
-    cardTopRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-    },
-    cardTitle: {
-      ...typography.subheading,
-      color: colors.textPrimary,
-    },
-    statusBadge: {
-      backgroundColor: colors.pecuariaLight,
-      borderRadius: radius.sm,
-      paddingHorizontal: spacing.sm,
-      paddingVertical: 2,
-    },
-    statusBadgeText: {
-      ...typography.captionMedium,
-      color: colors.pecuaria,
-    },
-    readinessBadge: {
-      alignSelf: 'flex-start',
-      borderRadius: radius.sm,
-      paddingHorizontal: spacing.sm,
-      paddingVertical: 2,
-    },
-    readinessBadgeText: {
-      ...typography.captionMedium,
-    },
-    cardStatsRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      alignItems: 'center',
-      gap: spacing.xs,
-    },
-    cardStat: {
-      ...typography.captionMedium,
-      color: colors.pecuaria,
-    },
-    cardStatDivider: {
       color: colors.textMuted,
     },
     errorText: {
