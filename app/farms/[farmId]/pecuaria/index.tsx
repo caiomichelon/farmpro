@@ -35,6 +35,14 @@ export default function PecuariaHomeScreen() {
             styles={styles}
           />
         </FadeSlideIn>
+        <FadeSlideIn delay={90}>
+          <AreaCard
+            title={t('pecuariaHome.sectorsTitle')}
+            description={t('pecuariaHome.sectorsDescription')}
+            onPress={() => router.push(`/farms/${farmId}/pecuaria/setores`)}
+            styles={styles}
+          />
+        </FadeSlideIn>
         <FadeSlideIn delay={140}>
           <AreaCard
             title={t('pecuariaHome.estoqueTitle')}

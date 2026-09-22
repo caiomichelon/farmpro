@@ -207,6 +207,20 @@ export type StampedAnimal = {
   created_at: string;
 };
 
+/** "Setor" leve de gado — grupo de animais organizado por atividade (pasto,
+ * suplementação proteica etc.), separado do Corte/semi-confinamento, que já
+ * tem seu próprio controle completo. Nome livre (sector_name), sem lista
+ * fixa — pra poder criar um setor novo na hora, sem precisar programar. */
+export type CattleActivityGroup = {
+  id: string;
+  farm_id: string;
+  sector_name: string;
+  head_count: number;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 /** Fornecedor / contato útil da fazenda (loja agropecuária, veterinário,
  * mecânico, transportadora, comprador etc.). */
 export type Supplier = {
@@ -733,6 +747,12 @@ export interface Database {
         Row: StampedAnimal;
         Insert: Partial<StampedAnimal> & { farm_id: string; idv: number };
         Update: Partial<StampedAnimal>;
+        Relationships: [];
+      };
+      cattle_activity_groups: {
+        Row: CattleActivityGroup;
+        Insert: Partial<CattleActivityGroup> & { farm_id: string; sector_name: string };
+        Update: Partial<CattleActivityGroup>;
         Relationships: [];
       };
       farm_members: {
