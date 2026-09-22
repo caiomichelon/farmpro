@@ -20,7 +20,11 @@ function formatDateShort(iso: string): string {
 /** Ponto único pra ver e trocar animais entre todas as "áreas" do gado —
  * o semi-confinamento (que já tem seu módulo completo, Corte) e qualquer
  * outro setor leve criado na hora (pasto, suplementação proteica etc.).
- * Pensado pra ser fácil de navegar mesmo por quem usa o app pouco. */
+ *
+ * Layout pensado pra quem usa o app pouco e tem dificuldade com telas
+ * cheias de informação: cada setor é um card grande, com o número de
+ * cabeças bem destacado (a informação que mais importa de bater o olho),
+ * poucos elementos por tela, e um toque só pra entrar em cada área. */
 export default function CattleSectorsScreen() {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -38,6 +42,7 @@ export default function CattleSectorsScreen() {
 
   const isLoading = lotsLoading || groupsLoading;
   const semiHeadCount = lots.filter((l) => l.status === 'ativo').reduce((sum, l) => sum + l.currentHeadCount, 0);
+  const totalHead = semiHeadCount + groups.reduce((sum, g) => sum + g.head_count, 0);
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -48,15 +53,36 @@ export default function CattleSectorsScreen() {
       ) : (
         <ScrollView style={styles.list} contentContainerStyle={styles.content}>
           <FadeSlideIn>
+            <View style={styles.totalBanner}>
+              <Text style={styles.totalNumber}>{totalHead}</Text>
+              <Text style={styles.totalLabel}>{t('cattleSectors.totalLabel')}</Text>
+            </View>
+          </FadeSlideIn>
+
+          <FadeSlideIn delay={30}>
             <Pressable
-              style={({ pressed }) => [styles.sectorRow, styles.semiRow, pressed && styles.rowPressed]}
+              style={({ pressed }) => [styles.reportBanner, pressed && styles.rowPressed]}
+              onPress={() => router.push(`/farms/${farmId}/pecuaria/setores/relatorio`)}
+            >
+              <Text style={styles.reportBannerText}>{t('cattleSectors.viewReport')}</Text>
+              <Text style={styles.chevron}>→</Text>
+            </Pressable>
+          </FadeSlideIn>
+
+          <FadeSlideIn delay={60}>
+            <Pressable
+              style={({ pressed }) => [styles.sectorCard, styles.semiCard, pressed && styles.rowPressed]}
               onPress={() => router.push(`/farms/${farmId}/pecuaria/corte`)}
             >
-              <View style={{ flex: 1 }}>
-                <Text style={styles.sectorTitle}>{t('cattleSectors.semiTitle')}</Text>
-                <Text style={styles.sectorSubtitle}>{t('cattleSectors.semiSubtitle', { count: semiHeadCount })}</Text>
+              <View style={styles.sectorCardTopRow}>
+                <Text style={styles.sectorCardTitle}>{t('cattleSectors.semiTitle')}</Text>
+                <Text style={styles.chevron}>→</Text>
               </View>
-              <Text style={styles.chevron}>→</Text>
+              <View style={styles.sectorCardNumberRow}>
+                <Text style={styles.sectorCardNumber}>{semiHeadCount}</Text>
+                <Text style={styles.sectorCardNumberLabel}>{t('cattleSectors.headsLabel')}</Text>
+              </View>
+              <Text style={styles.sectorCardCaption}>{t('cattleSectors.semiCaption')}</Text>
             </Pressable>
           </FadeSlideIn>
 
@@ -64,18 +90,22 @@ export default function CattleSectorsScreen() {
             <EmptyState text={t('cattleSectors.empty')} />
           ) : (
             groups.map((group, index) => (
-              <FadeSlideIn key={group.id} delay={Math.min(index, 6) * 50}>
+              <FadeSlideIn key={group.id} delay={90 + Math.min(index, 6) * 40}>
                 <Pressable
-                  style={({ pressed }) => [styles.sectorRow, pressed && styles.rowPressed]}
+                  style={({ pressed }) => [styles.sectorCard, pressed && styles.rowPressed]}
                   onPress={() => router.push(`/farms/${farmId}/pecuaria/setores/${group.id}`)}
                 >
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.sectorTitle}>{group.sector_name}</Text>
-                    <Text style={styles.sectorSubtitle}>
-                      {t('cattleSectors.rowSubtitle', { count: group.head_count, date: formatDateShort(group.updated_at) })}
-                    </Text>
+                  <View style={styles.sectorCardTopRow}>
+                    <Text style={styles.sectorCardTitle}>{group.sector_name}</Text>
+                    <Text style={styles.chevron}>→</Text>
                   </View>
-                  <Text style={styles.chevron}>→</Text>
+                  <View style={styles.sectorCardNumberRow}>
+                    <Text style={styles.sectorCardNumber}>{group.head_count}</Text>
+                    <Text style={styles.sectorCardNumberLabel}>{t('cattleSectors.headsLabel')}</Text>
+                  </View>
+                  <Text style={styles.sectorCardCaption}>
+                    {t('cattleSectors.updatedCaption', { date: formatDateShort(group.updated_at) })}
+                  </Text>
                 </Pressable>
               </FadeSlideIn>
             ))
@@ -113,31 +143,79 @@ function createStyles(colors: Colors) {
       paddingBottom: spacing.xxxl,
       gap: spacing.md,
     },
-    sectorRow: {
+    totalBanner: {
+      alignItems: 'center',
+      backgroundColor: colors.pecuariaLight,
+      borderRadius: radius.lg,
+      paddingVertical: spacing.lg,
+    },
+    totalNumber: {
+      ...typography.displayLg,
+      fontSize: 44,
+      lineHeight: 50,
+      color: colors.pecuaria,
+    },
+    totalLabel: {
+      ...typography.subheading,
+      color: colors.pecuaria,
+      marginTop: spacing.xs,
+    },
+    reportBanner: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: spacing.md,
-      padding: spacing.lg,
+      justifyContent: 'space-between',
       backgroundColor: colors.surface,
       borderWidth: 1,
       borderColor: colors.border,
       borderRadius: radius.md,
+      padding: spacing.lg,
     },
-    semiRow: {
-      backgroundColor: colors.pecuariaLight,
-      borderColor: colors.pecuaria,
+    reportBannerText: {
+      ...typography.bodyMedium,
+      color: colors.textPrimary,
+      flex: 1,
     },
     rowPressed: {
       opacity: 0.8,
     },
-    sectorTitle: {
-      ...typography.subheading,
-      color: colors.textPrimary,
+    sectorCard: {
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.lg,
+      padding: spacing.lg,
+      gap: spacing.xs,
     },
-    sectorSubtitle: {
-      ...typography.caption,
+    semiCard: {
+      backgroundColor: colors.pecuariaLight,
+      borderColor: colors.pecuaria,
+    },
+    sectorCardTopRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    sectorCardTitle: {
+      ...typography.heading,
+      color: colors.textPrimary,
+      flex: 1,
+    },
+    sectorCardNumberRow: {
+      flexDirection: 'row',
+      alignItems: 'baseline',
+      gap: spacing.sm,
+    },
+    sectorCardNumber: {
+      ...typography.displayLg,
+      color: colors.pecuaria,
+    },
+    sectorCardNumberLabel: {
+      ...typography.subheading,
       color: colors.textSecondary,
-      marginTop: 2,
+    },
+    sectorCardCaption: {
+      ...typography.caption,
+      color: colors.textMuted,
     },
     chevron: {
       ...typography.heading,

@@ -1,6 +1,6 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../../../src/components/Button';
@@ -9,7 +9,7 @@ import { ScreenHeader } from '../../../../../src/components/ScreenHeader';
 import { TextField } from '../../../../../src/components/TextField';
 import { useCattleActivityGroups } from '../../../../../src/hooks/useCattleActivityGroups';
 import { useT } from '../../../../../src/i18n';
-import { spacing, typography, useColors, type Colors } from '../../../../../src/theme';
+import { radius, spacing, typography, useColors, type Colors } from '../../../../../src/theme';
 
 export default function CattleSectorDetailScreen() {
   const colors = useColors();
@@ -125,21 +125,15 @@ export default function CattleSectorDetailScreen() {
       <ScreenHeader title={group.sector_name} subtitle={t('cattleSectorDetail.subtitle', { count: group.head_count })} />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <Card style={styles.card}>
-            <Text style={styles.cardTitle}>{t('cattleSectorDetail.editTitle')}</Text>
-            <TextField label={t('cattleSectorDetail.nameLabel')} value={sectorName} onChangeText={setSectorName} />
-            <TextField
-              label={t('cattleSectorDetail.headCountLabel')}
-              value={headCount}
-              onChangeText={setHeadCount}
-              keyboardType="number-pad"
-            />
-            <TextField label={t('cattleSectorDetail.notesLabel')} value={notes} onChangeText={setNotes} />
-            {error ? <Text style={styles.error}>{error}</Text> : null}
-            <Button label={t('cattleSectorDetail.save')} onPress={handleSave} loading={isSaving} />
-          </Card>
+          <View style={styles.bigNumberBanner}>
+            <Text style={styles.bigNumber}>{group.head_count}</Text>
+            <Text style={styles.bigNumberLabel}>{t('cattleSectors.headsLabel')}</Text>
+          </View>
 
-          <Card style={styles.card}>
+          {/* Transferir vem primeiro porque, no dia a dia do campo, mover
+              animais de um setor pra outro é bem mais comum do que só
+              renomear ou corrigir o setor. */}
+          <Card style={[styles.card, styles.transferCard]}>
             <Text style={styles.cardTitle}>{t('cattleSectorDetail.transferTitle')}</Text>
             <Text style={styles.transferHint}>{t('cattleSectorDetail.transferHint')}</Text>
             <TextField
@@ -156,7 +150,21 @@ export default function CattleSectorDetailScreen() {
               placeholder={t('cattleSectorDetail.transferToPlaceholder')}
             />
             {transferError ? <Text style={styles.error}>{transferError}</Text> : null}
-            <Button label={t('cattleSectorDetail.transferSubmit')} variant="secondary" onPress={handleTransfer} loading={isTransferring} />
+            <Button label={t('cattleSectorDetail.transferSubmit')} onPress={handleTransfer} loading={isTransferring} />
+          </Card>
+
+          <Card style={styles.card}>
+            <Text style={styles.cardTitle}>{t('cattleSectorDetail.editTitle')}</Text>
+            <TextField label={t('cattleSectorDetail.nameLabel')} value={sectorName} onChangeText={setSectorName} />
+            <TextField
+              label={t('cattleSectorDetail.headCountLabel')}
+              value={headCount}
+              onChangeText={setHeadCount}
+              keyboardType="number-pad"
+            />
+            <TextField label={t('cattleSectorDetail.notesLabel')} value={notes} onChangeText={setNotes} />
+            {error ? <Text style={styles.error}>{error}</Text> : null}
+            <Button label={t('cattleSectorDetail.save')} variant="secondary" onPress={handleSave} loading={isSaving} />
           </Card>
 
           <Button label={t('cattleSectorDetail.delete')} variant="ghost" onPress={handleDelete} />
@@ -172,9 +180,31 @@ function createStyles(colors: Colors) {
     flex: { flex: 1 },
     loading: { marginTop: spacing.xxl },
     content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxxl, gap: spacing.lg },
+    bigNumberBanner: {
+      alignItems: 'center',
+      backgroundColor: colors.pecuariaLight,
+      borderRadius: radius.lg,
+      paddingVertical: spacing.lg,
+    },
+    bigNumber: {
+      ...typography.displayLg,
+      fontSize: 44,
+      lineHeight: 50,
+      color: colors.pecuaria,
+    },
+    bigNumberLabel: {
+      ...typography.subheading,
+      color: colors.pecuaria,
+      marginTop: spacing.xs,
+    },
     card: {
       gap: spacing.md,
       backgroundColor: colors.surface,
+    },
+    transferCard: {
+      backgroundColor: colors.surface,
+      borderWidth: 2,
+      borderColor: colors.pecuaria,
     },
     cardTitle: {
       ...typography.subheading,

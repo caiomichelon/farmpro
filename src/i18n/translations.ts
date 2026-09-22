@@ -692,8 +692,11 @@ export const pt = {
   'cattleSectors.title': 'Setores do gado',
   'cattleSectors.subtitle': 'Onde cada grupo de animais está agora',
   'cattleSectors.semiTitle': 'Semi-confinamento',
-  'cattleSectors.semiSubtitle': '{{count}} cabeça(s) · lotes ativos do Corte',
-  'cattleSectors.rowSubtitle': '{{count}} cabeça(s) · atualizado em {{date}}',
+  'cattleSectors.headsLabel': 'cabeças',
+  'cattleSectors.totalLabel': 'cabeças na fazenda (total)',
+  'cattleSectors.viewReport': 'Ver relatório de todos os setores',
+  'cattleSectors.semiCaption': 'Lotes ativos do Corte',
+  'cattleSectors.updatedCaption': 'Atualizado em {{date}}',
   'cattleSectors.empty': 'Nenhum outro setor criado ainda. Toque em “+ Novo setor” pra criar (ex.: Pasto, Proteico).',
   'cattleSectors.newSector': '+ Novo setor',
   'newCattleSector.title': 'Novo setor',
@@ -729,6 +732,8 @@ export const pt = {
   'cattleSectorDetail.deleteConfirmMessage': 'Isso remove o setor e a contagem de animais dele. Não afeta lotes do Corte.',
   'cattleSectorDetail.deleteCancel': 'Cancelar',
   'cattleSectorDetail.deleteConfirm': 'Excluir',
+  'cattleSectorsReport.title': 'Relatório de setores',
+  'cattleSectorsReport.subtitle': 'Visão geral de onde está cada grupo de gado',
 } as const;
 
 export type TranslationKey = keyof typeof pt;
@@ -1398,8 +1403,11 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'cattleSectors.title': 'Cattle sectors',
   'cattleSectors.subtitle': 'Where each group of animals is right now',
   'cattleSectors.semiTitle': 'Feedlot',
-  'cattleSectors.semiSubtitle': '{{count}} head · active Corte lots',
-  'cattleSectors.rowSubtitle': '{{count}} head · updated on {{date}}',
+  'cattleSectors.headsLabel': 'head',
+  'cattleSectors.totalLabel': 'head on the farm (total)',
+  'cattleSectors.viewReport': 'View report for all sectors',
+  'cattleSectors.semiCaption': 'Active Corte lots',
+  'cattleSectors.updatedCaption': 'Updated on {{date}}',
   'cattleSectors.empty': 'No other sector created yet. Tap "+ New sector" to create one (e.g. Pasture, Protein).',
   'cattleSectors.newSector': '+ New sector',
   'newCattleSector.title': 'New sector',
@@ -1435,6 +1443,8 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'cattleSectorDetail.deleteConfirmMessage': "This removes the sector and its animal count. It doesn't affect Corte lots.",
   'cattleSectorDetail.deleteCancel': 'Cancel',
   'cattleSectorDetail.deleteConfirm': 'Delete',
+  'cattleSectorsReport.title': 'Sectors report',
+  'cattleSectorsReport.subtitle': 'Overview of where each cattle group is',
 };
 
 export const es: Partial<Record<TranslationKey, string>> = {
@@ -2101,8 +2111,11 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'cattleSectors.title': 'Sectores del ganado',
   'cattleSectors.subtitle': 'Dónde está cada grupo de animales ahora',
   'cattleSectors.semiTitle': 'Confinamiento',
-  'cattleSectors.semiSubtitle': '{{count}} cabeza(s) · lotes activos de Corte',
-  'cattleSectors.rowSubtitle': '{{count}} cabeza(s) · actualizado el {{date}}',
+  'cattleSectors.headsLabel': 'cabezas',
+  'cattleSectors.totalLabel': 'cabezas en la finca (total)',
+  'cattleSectors.viewReport': 'Ver informe de todos los sectores',
+  'cattleSectors.semiCaption': 'Lotes activos de Corte',
+  'cattleSectors.updatedCaption': 'Actualizado el {{date}}',
   'cattleSectors.empty': 'Todavía no hay otro sector creado. Tocá "+ Nuevo sector" para crear uno (ej.: Pastoreo, Proteico).',
   'cattleSectors.newSector': '+ Nuevo sector',
   'newCattleSector.title': 'Nuevo sector',
@@ -2138,4 +2151,6 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'cattleSectorDetail.deleteConfirmMessage': 'Esto elimina el sector y su cantidad de animales. No afecta los lotes de Corte.',
   'cattleSectorDetail.deleteCancel': 'Cancelar',
   'cattleSectorDetail.deleteConfirm': 'Eliminar',
+  'cattleSectorsReport.title': 'Informe de sectores',
+  'cattleSectorsReport.subtitle': 'Visión general de dónde está cada grupo de ganado',
 };
