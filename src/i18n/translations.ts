@@ -422,6 +422,13 @@ export const pt = {
   'lotReport.title': 'Relatório do lote',
   'lotReport.share': 'Compartilhar / Exportar PDF',
   'lotReport.shareError': 'Não foi possível gerar o PDF.',
+  'lotReport.priceCurrent': 'Preço usado: {{price}}/{{unit}}',
+  'lotReport.priceEdited': 'editado',
+  'lotReport.priceEdit': 'Editar',
+  'lotReport.priceReset': 'Usar cotação automática',
+  'lotReport.priceLabel': 'Preço por {{unit}}',
+  'lotReport.priceSave': 'Salvar',
+  'lotReport.priceCancel': 'Cancelar',
 
   // Detalhe da matriz (Cria)
 
@@ -1078,6 +1085,13 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'lotReport.title': 'Lot report',
   'lotReport.share': 'Share / Export PDF',
   'lotReport.shareError': 'Could not generate the PDF.',
+  'lotReport.priceCurrent': 'Price used: {{price}}/{{unit}}',
+  'lotReport.priceEdited': 'edited',
+  'lotReport.priceEdit': 'Edit',
+  'lotReport.priceReset': 'Use automatic quote',
+  'lotReport.priceLabel': 'Price per {{unit}}',
+  'lotReport.priceSave': 'Save',
+  'lotReport.priceCancel': 'Cancel',
 
 
   'breakEven.title': 'Break-even price',
@@ -1726,6 +1740,13 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'lotReport.title': 'Informe del lote',
   'lotReport.share': 'Compartir / Exportar PDF',
   'lotReport.shareError': 'No fue posible generar el PDF.',
+  'lotReport.priceCurrent': 'Precio usado: {{price}}/{{unit}}',
+  'lotReport.priceEdited': 'editado',
+  'lotReport.priceEdit': 'Editar',
+  'lotReport.priceReset': 'Usar cotización automática',
+  'lotReport.priceLabel': 'Precio por {{unit}}',
+  'lotReport.priceSave': 'Guardar',
+  'lotReport.priceCancel': 'Cancelar',
 
 
   'breakEven.title': 'Precio mínimo (break-even)',

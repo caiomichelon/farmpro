@@ -38,6 +38,11 @@ export interface LotReportInput {
   lot: CattleLotSummary;
   costs: CattleLotCost[];
   slaughters: CattleSlaughterWithHouse[];
+  /** Preço por unidade (mesma unidade de lot.priceUnit) digitado à mão pelo
+   * usuário, pra simular com um valor diferente da cotação automática — só
+   * vale enquanto o lote está "ativo" (projeção); depois de abatido, o
+   * relatório usa sempre o preço real já registrado no abate. */
+  priceOverride?: number | null;
 }
 
 interface RealizedResult {
@@ -84,17 +89,20 @@ function computeRealizedResult(slaughters: CattleSlaughterWithHouse[], fallbackY
  * o lote é "abatido" ele vira resultado realizado, com os números de verdade
  * dos registros de abate — nunca mistura os dois rótulos. */
 export function buildLotReportHtml(input: LotReportInput): string {
-  const { farmName, city, state, generatedAt, lot, costs, slaughters } = input;
+  const { farmName, city, state, generatedAt, lot, costs, slaughters, priceOverride } = input;
   const location = [city, state].filter(Boolean).join(' / ') || '—';
   const dateStr = generatedAt.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
   const isRealized = lot.status === 'abatido' && slaughters.length > 0;
 
   const realized = isRealized ? computeRealizedResult(slaughters, Number(lot.estimated_carcass_yield_pct)) : null;
 
+  // Preço editado à mão substitui a cotação automática só na projeção — o
+  // abate já registrado usa o preço real de venda, não faz sentido simular
+  // em cima de um resultado que já aconteceu de verdade.
+  const isPriceOverridden = !isRealized && priceOverride != null && priceOverride > 0;
+  const effectivePricePerUnit = isPriceOverridden ? (priceOverride as number) : lot.pricePerUnit;
+
   const totalCost = lot.totalCost;
-  const totalRevenue = realized ? realized.totalRevenue : lot.projectedRevenue;
-  const result = totalRevenue - totalCost;
-  const resultPct = totalCost > 0 ? (result / totalCost) * 100 : 0;
 
   const costsByCategory = new Map<CattleLotCostCategory, number>();
   for (const cost of costs) {
@@ -120,7 +128,10 @@ export function buildLotReportHtml(input: LotReportInput): string {
   const quantityLabel = realized ? 'Arrobas produzidas' : lot.priceUnit === 'kg' ? 'Quilos vivos estimados' : 'Arrobas estimadas';
   const quantityValue = realized ? realized.totalArrobas : lot.priceUnit === 'kg' ? lot.latestWeightKg * lot.currentHeadCount : lot.estimatedArrobas;
   const priceLabel = realized ? 'Preço médio da arroba' : lot.priceUnit === 'kg' ? 'Preço médio do quilo' : 'Preço médio da arroba';
-  const pricePerUnit = realized ? realized.avgPricePerArroba : lot.pricePerUnit;
+  const pricePerUnit = realized ? realized.avgPricePerArroba : effectivePricePerUnit;
+  const totalRevenue = realized ? realized.totalRevenue : quantityValue * effectivePricePerUnit;
+  const result = totalRevenue - totalCost;
+  const resultPct = totalCost > 0 ? (result / totalCost) * 100 : 0;
 
   return `<!doctype html>
 <html lang="pt-BR">
@@ -202,9 +213,10 @@ export function buildLotReportHtml(input: LotReportInput): string {
   <h2>${isRealized ? 'Receita realizada' : 'Receita projetada'}</h2>
   <table>
     <tr><th>${quantityLabel}</th><td class="num">${number(quantityValue, 1)} ${revenueUnitLabel}</td></tr>
-    <tr><th>${priceLabel}</th><td class="num">${formatPrice(pricePerUnit, revenueCurrency)}</td></tr>
+    <tr><th>${priceLabel}${isPriceOverridden ? ' (editado)' : ''}</th><td class="num">${formatPrice(pricePerUnit, revenueCurrency)}</td></tr>
     <tr><th>Receita ${isRealized ? 'realizada' : 'projetada'}</th><td class="num">${formatPrice(totalRevenue, revenueCurrency)}</td></tr>
   </table>
+  ${isPriceOverridden ? `<p style="font-size:11px;color:#8A5A1F;margin-top:4px;">⚠ Preço editado manualmente pelo usuário (cotação automática: ${formatPrice(lot.pricePerUnit, lot.priceCurrency)}) — só vale pra esta simulação.</p>` : ''}
 
   <div class="profit-card ${result >= 0 ? 'positive' : 'negative'}">
     <div>
