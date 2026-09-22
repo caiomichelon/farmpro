@@ -595,6 +595,7 @@ export type Equipment = {
   id: string;
   farm_id: string;
   name: string;
+  type: string | null;
   notes: string | null;
   created_at: string;
 };

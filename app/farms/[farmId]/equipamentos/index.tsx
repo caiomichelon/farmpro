@@ -32,7 +32,15 @@ export default function EquipmentListScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <ScreenHeader title={t('equipment.title')} subtitle={t('equipment.subtitle')} />
+      <ScreenHeader
+        title={t('equipment.title')}
+        subtitle={t('equipment.subtitle')}
+        right={
+          <Pressable onPress={() => router.push(`/farms/${farmId}/equipamentos/relatorio`)} hitSlop={12}>
+            <Text style={styles.headerLink}>{t('equipment.viewReport')}</Text>
+          </Pressable>
+        }
+      />
       <ScrollView
         style={styles.list}
         contentContainerStyle={styles.content}>
@@ -76,6 +84,9 @@ function EquipmentRow({
               <Text style={[styles.badgeText, { color: badgeColor }]}>{DOCUMENT_ALERT_LABELS[item.nextDueStatus]}</Text>
             </View>
           ) : null}
+        </View>
+        <View style={styles.typeBadge}>
+          <Text style={styles.typeBadgeText}>{item.type ?? t('equipment.typeFallback')}</Text>
         </View>
         {item.lastMaintenance ? (
           <Text style={styles.cardSubtitle}>
@@ -137,6 +148,21 @@ function createStyles(colors: Colors) {
     },
     badgeText: {
       ...typography.captionMedium,
+    },
+    typeBadge: {
+      alignSelf: 'flex-start',
+      backgroundColor: colors.primaryLight,
+      borderRadius: radius.sm,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: 2,
+    },
+    typeBadgeText: {
+      ...typography.captionMedium,
+      color: colors.primary,
+    },
+    headerLink: {
+      ...typography.captionMedium,
+      color: colors.primary,
     },
     footer: {
       paddingHorizontal: spacing.xl,

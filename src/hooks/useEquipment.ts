@@ -64,13 +64,14 @@ export function useEquipment(farmId: string | undefined) {
   }, [reload]);
 
   const createEquipment = useCallback(
-    async (input: { name: string; notes?: string }) => {
+    async (input: { name: string; type?: string; notes?: string }) => {
       if (!farmId) return { error: 'Fazenda não encontrada.' };
       if (!input.name.trim()) return { error: 'Informe o nome do equipamento.' };
 
       const { error: insertError } = await supabase.from('equipment').insert({
         farm_id: farmId,
         name: input.name.trim(),
+        type: input.type?.trim() || null,
         notes: input.notes?.trim() || null,
       });
 

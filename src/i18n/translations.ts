@@ -664,6 +664,14 @@ export const pt = {
   'equipment.addMaintenanceButton': '+ Nova manutenção',
   'equipment.nextDuePrefix': 'Próxima prevista: {{date}}',
   'equipment.costPrefix': 'Custo: {{value}}',
+  'equipment.typeSuggestionsLabel': 'Tipo de equipamento',
+  'equipment.typeLabel': 'Tipo',
+  'equipment.typePlaceholder': 'Ex.: Trator, Plantadeira, Roçadeira',
+  'equipment.errorType': 'Escolha ou digite o tipo do equipamento.',
+  'equipment.typeFallback': 'Outro / não informado',
+  'equipment.viewReport': 'Ver relatório',
+  'equipmentReport.title': 'Relatório de maquinário',
+  'equipmentReport.subtitle': 'Quantidade de cada tipo de equipamento',
 
   // Fornecedores
   'suppliers.title': 'Fornecedores',
@@ -1375,6 +1383,14 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'equipment.addMaintenanceButton': '+ New maintenance',
   'equipment.nextDuePrefix': 'Next due: {{date}}',
   'equipment.costPrefix': 'Cost: {{value}}',
+  'equipment.typeSuggestionsLabel': 'Equipment type',
+  'equipment.typeLabel': 'Type',
+  'equipment.typePlaceholder': 'E.g.: Tractor, Planter, Mower',
+  'equipment.errorType': 'Choose or type the equipment type.',
+  'equipment.typeFallback': 'Other / not set',
+  'equipment.viewReport': 'View report',
+  'equipmentReport.title': 'Machinery report',
+  'equipmentReport.subtitle': 'Count of each equipment type',
 
   // Suppliers
   'suppliers.title': 'Suppliers',
@@ -2083,6 +2099,14 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'equipment.addMaintenanceButton': '+ Nuevo mantenimiento',
   'equipment.nextDuePrefix': 'Próximo previsto: {{date}}',
   'equipment.costPrefix': 'Costo: {{value}}',
+  'equipment.typeSuggestionsLabel': 'Tipo de equipo',
+  'equipment.typeLabel': 'Tipo',
+  'equipment.typePlaceholder': 'Ej.: Tractor, Sembradora, Desmalezadora',
+  'equipment.errorType': 'Elegí o escribí el tipo de equipo.',
+  'equipment.typeFallback': 'Otro / no informado',
+  'equipment.viewReport': 'Ver informe',
+  'equipmentReport.title': 'Informe de maquinaria',
+  'equipmentReport.subtitle': 'Cantidad de cada tipo de equipo',
 
   // Proveedores
   'suppliers.title': 'Proveedores',
