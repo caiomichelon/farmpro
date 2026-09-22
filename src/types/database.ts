@@ -377,6 +377,12 @@ export type CattleSlaughter = {
   next_slaughter_date: string | null;
   notes: string | null;
   photo_url: string | null;
+  /** Frete pra levar o lote até o frigorífico — placa, motorista e valor
+   * pago. O valor também vira um custo lançado no lote (cattle_lot_costs,
+   * categoria 'frete') pra entrar nos cálculos de custo/margem do lote. */
+  truck_plate: string | null;
+  driver_name: string | null;
+  freight_cost: number | null;
   created_at: string;
 };
 

@@ -33,6 +33,9 @@ export default function SlaughterScreen() {
   const [feedConversion, setFeedConversion] = useState('');
   const [nextSlaughterDate, setNextSlaughterDate] = useState('');
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [truckPlate, setTruckPlate] = useState('');
+  const [driverName, setDriverName] = useState('');
+  const [freightCost, setFreightCost] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -67,6 +70,9 @@ export default function SlaughterScreen() {
       feed_conversion_ratio: feedConversion ? Number(feedConversion.replace(',', '.')) : undefined,
       next_slaughter_date: parseDate(nextSlaughterDate) ?? undefined,
       photo_url: photoUrl ?? undefined,
+      truck_plate: truckPlate.trim() || undefined,
+      driver_name: driverName.trim() || undefined,
+      freight_cost: freightCost ? Number(freightCost.replace(',', '.')) : undefined,
     });
     setIsSubmitting(false);
 
@@ -135,6 +141,18 @@ export default function SlaughterScreen() {
             </Card>
           </FadeSlideIn>
 
+          <FadeSlideIn delay={120}>
+            <Card style={styles.dataCard}>
+              <Text style={styles.dataCardTitle}>Frete pro frigorífico</Text>
+              <Text style={styles.freightSubtitle}>
+                Opcional — o valor do frete entra automaticamente no custo total do lote.
+              </Text>
+              <TextField label="Valor do frete" value={freightCost} onChangeText={setFreightCost} keyboardType="decimal-pad" placeholder="R$" />
+              <TextField label="Nome do motorista" value={driverName} onChangeText={setDriverName} placeholder="Opcional" />
+              <TextField label="Placa do caminhão" value={truckPlate} onChangeText={setTruckPlate} placeholder="Opcional" autoCapitalize="characters" />
+            </Card>
+          </FadeSlideIn>
+
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <Button
             label="Salvar abate"
@@ -176,6 +194,11 @@ function createStyles(colors: Colors) {
     dataCardTitle: {
       ...typography.subheading,
       color: colors.textPrimary,
+    },
+    freightSubtitle: {
+      ...typography.caption,
+      color: colors.textSecondary,
+      marginTop: -spacing.sm,
     },
     inlineRow: {
       flexDirection: 'row',

@@ -52,8 +52,13 @@ export function useCattleSlaughters(lotId: string | undefined) {
       next_slaughter_date?: string;
       notes?: string;
       photo_url?: string;
+      truck_plate?: string;
+      driver_name?: string;
+      freight_cost?: number;
     }) => {
       if (!lotId) return { error: 'Lote não encontrado.' };
+
+      const slaughterDate = input.slaughter_date || new Date().toISOString().slice(0, 10);
 
       const { error: insertError } = await supabase.from('cattle_slaughters').insert({
         lot_id: lotId,
@@ -64,16 +69,38 @@ export function useCattleSlaughters(lotId: string | undefined) {
         carcass_yield_pct: input.carcass_yield_pct ?? null,
         fat_finish_score: input.fat_finish_score ?? null,
         feed_conversion_ratio: input.feed_conversion_ratio ?? null,
-        slaughter_date: input.slaughter_date || new Date().toISOString().slice(0, 10),
+        slaughter_date: slaughterDate,
         next_slaughter_date: input.next_slaughter_date || null,
         notes: input.notes || null,
         photo_url: input.photo_url || null,
+        truck_plate: input.truck_plate || null,
+        driver_name: input.driver_name || null,
+        freight_cost: input.freight_cost ?? null,
       });
 
       if (insertError) return { error: insertError.message };
 
       // Marca o lote como abatido.
       await supabase.from('cattle_lots').update({ status: 'abatido' }).eq('id', lotId);
+
+      // Frete também vira um custo lançado no lote — senão não entraria no
+      // custo total/margem do lote, só ficaria guardado como referência no
+      // registro do abate.
+      if (input.freight_cost && input.freight_cost > 0) {
+        const who = [
+          input.driver_name ? `motorista ${input.driver_name}` : null,
+          input.truck_plate ? `placa ${input.truck_plate}` : null,
+        ]
+          .filter(Boolean)
+          .join(', ');
+        await supabase.from('cattle_lot_costs').insert({
+          lot_id: lotId,
+          category: 'frete',
+          description: who ? `Frete pro frigorífico (${who})` : 'Frete pro frigorífico',
+          amount: input.freight_cost,
+          applied_at: slaughterDate,
+        });
+      }
 
       await reload();
       return { error: null };
