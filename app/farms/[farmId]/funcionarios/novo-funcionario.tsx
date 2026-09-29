@@ -14,8 +14,10 @@ import {
   EMPLOYEE_SECTOR_LABELS,
   getSectorOptionsForArea,
   isEmployeeArea,
+  resolveEmployeeArea,
 } from '../../../../src/data/employeeOptions';
 import { useEmployees } from '../../../../src/hooks/useEmployees';
+import { useFarm } from '../../../../src/hooks/useFarms';
 import { useT } from '../../../../src/i18n';
 import type { EmployeeCostType, EmployeeSector } from '../../../../src/types/database';
 import { radius, spacing, typography, useColors, type Colors } from '../../../../src/theme';
@@ -29,7 +31,8 @@ export default function NewEmployeeScreen() {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId, area: areaParam } = useLocalSearchParams<{ farmId: string; area?: string }>();
-  const area = isEmployeeArea(areaParam) ? areaParam : null;
+  const { farm } = useFarm(farmId);
+  const area = resolveEmployeeArea(farm?.sector_type, isEmployeeArea(areaParam) ? areaParam : null);
   const sectorOptions = useMemo(() => getSectorOptionsForArea(area), [area]);
   const { createEmployee } = useEmployees(farmId);
   const t = useT();

@@ -1,4 +1,4 @@
-import type { EmployeeCostType, EmployeeSector, TimeEntryType } from '../types/database';
+import type { EmployeeCostType, EmployeeSector, FarmSectorType, TimeEntryType } from '../types/database';
 
 export const EMPLOYEE_SECTOR_LABELS: Record<EmployeeSector, string> = {
   lavoura: 'Lavoura',
@@ -27,6 +27,20 @@ export function getSectorOptionsForArea(area: EmployeeArea | null | undefined): 
 
 export function isEmployeeArea(value: unknown): value is EmployeeArea {
   return value === 'lavoura' || value === 'pecuaria';
+}
+
+/** Decide qual área usar pra filtrar o setor do funcionário. Se a fazenda só
+ * tem um dos dois módulos (`sector_type` lavoura/pecuária), essa é sempre a
+ * área certa — não importa por onde a pessoa entrou (banner de alerta,
+ * busca, link direto etc.), já que o outro módulo nem existe pra essa
+ * fazenda. Só quando a fazenda é "ambos" é que faz sentido usar o `area` do
+ * link de entrada (pecuária x lavoura) pra saber a intenção de quem clicou. */
+export function resolveEmployeeArea(
+  farmSectorType: FarmSectorType | undefined,
+  areaFromEntryPoint: EmployeeArea | null
+): EmployeeArea | null {
+  if (farmSectorType === 'lavoura' || farmSectorType === 'pecuaria') return farmSectorType;
+  return areaFromEntryPoint;
 }
 
 export const EMPLOYEE_COST_TYPE_LABELS: Record<EmployeeCostType, string> = {

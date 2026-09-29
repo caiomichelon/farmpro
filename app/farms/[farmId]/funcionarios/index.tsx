@@ -9,8 +9,14 @@ import { ChipSelect } from '../../../../src/components/ChipSelect';
 import { EmptyState } from '../../../../src/components/EmptyState';
 import { FadeSlideIn } from '../../../../src/components/FadeSlideIn';
 import { ScreenHeader } from '../../../../src/components/ScreenHeader';
-import { EMPLOYEE_SECTOR_LABELS, getSectorOptionsForArea, isEmployeeArea } from '../../../../src/data/employeeOptions';
+import {
+  EMPLOYEE_SECTOR_LABELS,
+  getSectorOptionsForArea,
+  isEmployeeArea,
+  resolveEmployeeArea,
+} from '../../../../src/data/employeeOptions';
 import { useEmployees, type EmployeeSummary } from '../../../../src/hooks/useEmployees';
+import { useFarm } from '../../../../src/hooks/useFarms';
 import { useT, type TFunction } from '../../../../src/i18n';
 import type { EmployeeSector } from '../../../../src/types/database';
 import { radius, spacing, typography, useColors, type Colors } from '../../../../src/theme';
@@ -19,7 +25,8 @@ export default function EmployeesHomeScreen() {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { farmId, area: areaParam } = useLocalSearchParams<{ farmId: string; area?: string }>();
-  const area = isEmployeeArea(areaParam) ? areaParam : null;
+  const { farm } = useFarm(farmId);
+  const area = resolveEmployeeArea(farm?.sector_type, isEmployeeArea(areaParam) ? areaParam : null);
   const sectorOptions = useMemo(() => getSectorOptionsForArea(area), [area]);
   const [sectorFilter, setSectorFilter] = useState<EmployeeSector | null>(null);
   const { employees, isLoading, error, reload } = useEmployees(farmId, sectorFilter ?? undefined);
