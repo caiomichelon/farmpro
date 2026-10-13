@@ -120,7 +120,7 @@ export const pt = {
   'sector.title': 'O que você quer ver?',
   'sector.subtitle': 'Escolhe o setor primeiro — só aparecem as fazendas que trabalham com ele',
   'sector.lavouraSubtitle': 'Talhões, safras e colheita',
-  'sector.pecuariaSubtitle': 'Corte e cria/reprodução',
+  'sector.pecuariaSubtitle': 'Lotes, pesagem e abate',
   'sector.lavouraCredit': 'Foto: United Soybean Board (CC BY 2.0)',
   'sector.pecuariaCredit': 'Foto: Benchill (CC BY-SA 3.0)',
   'sector.viewAllFarms': 'Ver todas as fazendas, sem filtrar',
@@ -132,7 +132,7 @@ export const pt = {
   'farmHome.lavoura': 'Lavoura',
   'farmHome.pecuaria': 'Pecuária',
   'farmHome.lavouraSubtitle': 'Talhões, safras e custos',
-  'farmHome.pecuariaSubtitle': 'Corte e cria',
+  'farmHome.pecuariaSubtitle': 'Lotes, pesagem e abate',
   'farmHome.alerts': 'Alertas',
   'farmHome.employees': 'Funcionários',
   'farmHome.employeesSubtitle': 'Ficha, ponto digital e produtividade',
@@ -218,7 +218,7 @@ export const pt = {
 
   // Pecuária (hub)
   'pecuariaHome.title': 'Pecuária',
-  'pecuariaHome.subtitle': 'Corte e Cria/Reprodução',
+  'pecuariaHome.subtitle': 'Lotes de corte e engorda',
   'pecuariaHome.corteTitle': 'Corte',
   'pecuariaHome.corteDescription': 'Lotes, indicadores zootécnicos, frigoríficos e registro de abate.',
   'pecuariaHome.sectorsTitle': 'Setores do gado',
@@ -306,8 +306,6 @@ export const pt = {
   'corteHome.newLot': '+ Novo lote',
   'corteHome.avgWeightSuffix': 'kg méd.',
 
-  // Cria (hub)
-
   // Componente compartilhado: FinancialSummary
   'financialSummary.title': 'Resultado financeiro',
   'financialSummary.cost': 'Custo',
@@ -338,8 +336,6 @@ export const pt = {
   'newPlot.areaPlaceholder': 'Ex.: 42.5',
   'newPlot.save': 'Salvar talhão',
   'newPlot.validationError': 'Preencha o nome e uma área válida em hectares.',
-
-  // Nova matriz (Cria)
 
   // Novo funcionário
   'newEmployee.title': 'Novo funcionário',
@@ -527,10 +523,6 @@ export const pt = {
   'fertilizerCalc.totalP2O5': 'Total de P2O5 entregue',
   'fertilizerCalc.totalK2O': 'Total de K2O entregue',
   'fertilizerCalc.hint': 'Preencha a área e a dose acima pra ver o resultado.',
-
-  // Painel de indicadores reprodutivos (Cria)
-
-  // Alerta de vaca vazia / repasse (Cria)
 
   // Colheita e Vendas (Lavoura) — separados, com dados de transporte
   'harvest.title': 'Colheita',
@@ -856,7 +848,7 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'sector.title': 'What do you want to see?',
   'sector.subtitle': 'Pick a sector first — only farms that work with it show up',
   'sector.lavouraSubtitle': 'Plots, seasons and harvest',
-  'sector.pecuariaSubtitle': 'Beef and breeding',
+  'sector.pecuariaSubtitle': 'Lots, weighing and slaughter',
   'sector.lavouraCredit': 'Photo: United Soybean Board (CC BY 2.0)',
   'sector.pecuariaCredit': 'Photo: Benchill (CC BY-SA 3.0)',
   'sector.viewAllFarms': 'View all farms, unfiltered',
@@ -867,7 +859,7 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'farmHome.lavoura': 'Crops',
   'farmHome.pecuaria': 'Livestock',
   'farmHome.lavouraSubtitle': 'Plots, seasons and costs',
-  'farmHome.pecuariaSubtitle': 'Beef and breeding',
+  'farmHome.pecuariaSubtitle': 'Lots, weighing and slaughter',
   'farmHome.alerts': 'Alerts',
   'farmHome.employees': 'Employees',
   'farmHome.employeesSubtitle': 'Records, time clock and productivity',
@@ -950,7 +942,7 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'members.fallbackName': 'Member',
 
   'pecuariaHome.title': 'Livestock',
-  'pecuariaHome.subtitle': 'Beef and Breeding/Reproduction',
+  'pecuariaHome.subtitle': 'Feedlot and fattening',
   'pecuariaHome.corteTitle': 'Beef',
   'pecuariaHome.corteDescription': 'Lots, zootechnical indicators, packing plants and slaughter records.',
   'pecuariaHome.sectorsTitle': 'Cattle sectors',
@@ -1246,10 +1238,6 @@ export const en: Partial<Record<TranslationKey, string>> = {
   'fertilizerCalc.totalP2O5': 'Total P2O5 delivered',
   'fertilizerCalc.totalK2O': 'Total K2O delivered',
   'fertilizerCalc.hint': 'Fill in the area and dose above to see the result.',
-
-  // Reproductive indicators panel (Cria)
-
-  // Empty cow / rebreeding alert (Cria)
 
   // Harvest and Sales (Lavoura) — split, with transport data
   'harvest.title': 'Harvest',
@@ -1572,7 +1560,7 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'sector.title': '¿Qué querés ver?',
   'sector.subtitle': 'Elegí el sector primero — solo aparecen las fincas que trabajan con él',
   'sector.lavouraSubtitle': 'Parcelas, cosechas y cosecha',
-  'sector.pecuariaSubtitle': 'Engorde y cría',
+  'sector.pecuariaSubtitle': 'Lotes, pesaje y faena',
   'sector.lavouraCredit': 'Foto: United Soybean Board (CC BY 2.0)',
   'sector.pecuariaCredit': 'Foto: Benchill (CC BY-SA 3.0)',
   'sector.viewAllFarms': 'Ver todas las fincas, sin filtrar',
@@ -1583,7 +1571,7 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'farmHome.lavoura': 'Agricultura',
   'farmHome.pecuaria': 'Ganadería',
   'farmHome.lavouraSubtitle': 'Parcelas, cosechas y costos',
-  'farmHome.pecuariaSubtitle': 'Engorde y cría',
+  'farmHome.pecuariaSubtitle': 'Lotes, pesaje y faena',
   'farmHome.alerts': 'Alertas',
   'farmHome.employees': 'Empleados',
   'farmHome.employeesSubtitle': 'Ficha, reloj de asistencia y productividad',
@@ -1666,7 +1654,7 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'members.fallbackName': 'Miembro',
 
   'pecuariaHome.title': 'Ganadería',
-  'pecuariaHome.subtitle': 'Corte y Cría/Reproducción',
+  'pecuariaHome.subtitle': 'Lotes de engorde',
   'pecuariaHome.corteTitle': 'Corte',
   'pecuariaHome.corteDescription': 'Lotes, indicadores zootécnicos, frigoríficos y registro de faena.',
   'pecuariaHome.sectorsTitle': 'Sectores del ganado',
@@ -1962,10 +1950,6 @@ export const es: Partial<Record<TranslationKey, string>> = {
   'fertilizerCalc.totalP2O5': 'Total de P2O5 entregado',
   'fertilizerCalc.totalK2O': 'Total de K2O entregado',
   'fertilizerCalc.hint': 'Completá el área y la dosis arriba para ver el resultado.',
-
-  // Panel de indicadores reproductivos (Cria)
-
-  // Alerta de vaca vacía / repaso (Cria)
 
   // Cosecha y Ventas (Lavoura) — separadas, con datos de transporte
   'harvest.title': 'Cosecha',

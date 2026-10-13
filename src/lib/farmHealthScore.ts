@@ -37,14 +37,13 @@ function levelFor(score: number): HealthLevel {
  *
  * 1. Alertas abertos (useFarmAlerts) — cada alerta de perigo pesa mais que
  *    um de atenção.
- * 2. O mesmo resultado financeiro consolidado (receita − custo de Lavoura,
- *    Corte e Cria) já usado no relatório pra banco e no cofrinho da meta —
- *    ver useConsolidatedResult.
+ * 2. O mesmo resultado financeiro consolidado (receita − custo de Lavoura
+ *    e Corte) já usado no relatório pra banco e no cofrinho da meta — ver
+ *    useConsolidatedResult.
  *
- * Enquanto não existe nenhuma venda lançada (Lavoura ou Corte — a Cria só
- * entra pelo lado do custo), o componente financeiro fica `null` — a nota
- * nesse caso é só o componente de alertas, em vez de mostrar uma nota
- * financeira chutada.
+ * Enquanto não existe nenhuma venda lançada (Lavoura ou Corte), o
+ * componente financeiro fica `null` — a nota nesse caso é só o componente
+ * de alertas, em vez de mostrar uma nota financeira chutada.
  */
 export function computeFarmHealthScore(params: {
   alerts: FarmAlert[];

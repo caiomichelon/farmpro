@@ -22,9 +22,9 @@ function currency(value: number, currencyCode: 'BRL' | 'USD' = 'BRL'): string {
 }
 
 /** Preço mínimo (break-even) e preço pra bater uma margem alvo — usado no
- * lote (Corte, por @ ou por kg pro Paraguai), na safra (Lavoura, por saca) e
- * na matriz (Cria, por bezerro desmamado). Sempre calculado a partir do
- * custo já lançado, nunca de preço de mercado inventado. */
+ * lote (Corte, por @ ou por kg pro Paraguai) e na safra (Lavoura, por saca).
+ * Sempre calculado a partir do custo já lançado, nunca de preço de mercado
+ * inventado. */
 export function BreakEvenCard({
   totalCost,
   quantity,

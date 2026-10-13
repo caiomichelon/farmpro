@@ -189,7 +189,7 @@ export function useFarmAlerts(farmId: string | undefined) {
         }
       }
 
-      // ── Pecuária — vacinas pendentes e partos previstos ─────────────────
+      // ── Pecuária — vacinas pendentes ────────────────────────────────────
       const today = new Date().toISOString().slice(0, 10);
       const in7Days = new Date();
       in7Days.setDate(in7Days.getDate() + 7);

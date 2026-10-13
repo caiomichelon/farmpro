@@ -46,8 +46,7 @@ export default function ExportFarmDataScreen() {
           <Text style={styles.infoText}>
             Um arquivo Excel (.xlsx) com uma aba pra cada tipo de dado: talhões, safras, custos, colheitas, vendas
             e compradores de grão (Lavoura); lotes, animais, pesagens, saúde, movimentação, mortalidade, abates e
-            frigoríficos (Corte); matrizes, inseminações e partos (Cria); e funcionários, documentos, ponto e
-            produtividade.
+            frigoríficos (Corte); e funcionários, documentos, ponto e produtividade.
           </Text>
         </Card>
 

@@ -31,7 +31,7 @@ function formatDate(isoDate: string) {
 }
 
 /** Planilha com todos os funcionários da fazenda de uma vez — mesmo padrão
- * das planilhas de Lavoura/Corte/Cria, com exportar e gráfico de fábrica. */
+ * das planilhas de Lavoura/Corte, com exportar e gráfico de fábrica. */
 export default function EmployeesSpreadsheetScreen() {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);

@@ -21,9 +21,9 @@ const TYPE_LABELS: Record<UniversalSearchResultType, string> = {
 
 export { TYPE_LABELS };
 
-/** Busca simultânea em animais, lotes, matrizes, talhões e funcionários da
- * fazenda — uma lupa só pra achar qualquer coisa, sem precisar saber em
- * qual setor está. Só dispara com 2+ caracteres, com debounce leve. */
+/** Busca simultânea em animais, lotes, talhões e funcionários da fazenda —
+ * uma lupa só pra achar qualquer coisa, sem precisar saber em qual setor
+ * está. Só dispara com 2+ caracteres, com debounce leve. */
 export function useUniversalSearch(farmId: string | undefined, query: string) {
   const [results, setResults] = useState<UniversalSearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);

@@ -8,8 +8,8 @@ export interface Stat {
   value: string;
 }
 
-/** Grade de indicadores em destaque (2 colunas) — usada nas telas principais
- * de Corte e Cria pra mostrar números relevantes assim que a tela abre, sem
+/** Grade de indicadores em destaque (2 colunas) — usada na tela principal
+ * de Corte pra mostrar números relevantes assim que a tela abre, sem
  * precisar entrar em nada. */
 export function StatGrid({ stats }: { stats: Stat[] }) {
   const colors = useColors();

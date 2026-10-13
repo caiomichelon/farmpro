@@ -98,7 +98,7 @@ export default function PecuariaHomeScreen() {
   );
 }
 
-/** Linha compacta pra um item que não é sobre Corte/Cria (funcionários,
+/** Linha compacta pra um item que não é sobre Corte (funcionários,
  * fornecedores, etc.) — mesma cara das linhas "soltas" que a home da
  * fazenda tinha antes de ficar só com Lavoura/Pecuária. */
 function MoreRow({

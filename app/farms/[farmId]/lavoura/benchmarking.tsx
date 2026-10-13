@@ -38,8 +38,8 @@ function buildColumns(): DataTableColumn<SeasonSummaryWithPlot>[] {
 
 /** Ranking dos talhões/safras pelo custo por hectare — do mais barato pro
  * mais caro — pra ver de cara qual talhão está produzindo com mais
- * eficiência, espelhando o benchmarking já existente em Corte e Cria. Só
- * entra quem já tem algum custo lançado (senão não há o que comparar). */
+ * eficiência, espelhando o benchmarking já existente em Corte. Só entra
+ * quem já tem algum custo lançado (senão não há o que comparar). */
 export default function LavouraBenchmarkingScreen() {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
