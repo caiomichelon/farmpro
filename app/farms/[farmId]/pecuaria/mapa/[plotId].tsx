@@ -11,9 +11,12 @@ import { ScreenHeader } from '../../../../../src/components/ScreenHeader';
 import { TextField } from '../../../../../src/components/TextField';
 import { COCHO_PRODUCT_SUGGESTIONS } from '../../../../../src/data/cattleOptions';
 import { usePlot } from '../../../../../src/hooks/usePlots';
+import { usePlotAguadaEvents } from '../../../../../src/hooks/usePlotAguadaEvents';
 import { usePlotCochoEvents } from '../../../../../src/hooks/usePlotCochoEvents';
-import { useT } from '../../../../../src/i18n';
+import { useT, type TFunction } from '../../../../../src/i18n';
+import { computeAguadaFarol, type AguadaFarolStatus } from '../../../../../src/lib/aguadaFarol';
 import { computeCochoFarol, type CochoStatus } from '../../../../../src/lib/cochoFarol';
+import type { PlotAguadaStatus } from '../../../../../src/types/database';
 import { radius, spacing, typography, useColors, type Colors } from '../../../../../src/theme';
 
 function formatDateBR(iso: string): string {
@@ -21,29 +24,44 @@ function formatDateBR(iso: string): string {
   return `${day}/${month}/${year}`;
 }
 
-const STATUS_COLOR_KEY: Record<CochoStatus, 'success' | 'warning' | 'danger' | 'textMuted'> = {
+const COCHO_COLOR_KEY: Record<CochoStatus, 'success' | 'warning' | 'danger' | 'textMuted'> = {
   em_dia: 'success',
   proximo: 'warning',
   atrasado: 'danger',
   sem_registro: 'textMuted',
 };
 
-/** Piquete: farol do cocho (status + histórico) e formulário pra registrar
- * um novo abastecimento — mesmo padrão de "Registrar mortalidade" (chips de
- * sugestão + campo livre, lista do histórico embaixo). */
+const AGUADA_COLOR_KEY: Record<AguadaFarolStatus, 'success' | 'warning' | 'danger' | 'textMuted'> = {
+  boa: 'success',
+  atencao: 'warning',
+  ruim: 'danger',
+  sem_registro: 'textMuted',
+};
+
+const AGUADA_STATUS_OPTIONS: PlotAguadaStatus[] = ['boa', 'atencao', 'ruim'];
+
+/** Piquete: farol do cocho e da aguada (status + histórico de cada um) e
+ * formulário pra registrar novos eventos — mesmo padrão de "Registrar
+ * mortalidade" (chips de sugestão/opção + campo livre, histórico embaixo). */
 export default function PlotDetailScreen() {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const t = useT();
   const { plotId } = useLocalSearchParams<{ farmId: string; plotId: string }>();
   const { plot, isLoading: isLoadingPlot, reload: reloadPlot, updateCochoIntervalDays } = usePlot(plotId);
-  const { events, isLoading: isLoadingEvents, createEvent } = usePlotCochoEvents(plotId);
+  const cocho = usePlotCochoEvents(plotId);
+  const aguada = usePlotAguadaEvents(plotId);
 
-  const [isAdding, setIsAdding] = useState(false);
+  const [isAddingCocho, setIsAddingCocho] = useState(false);
   const [product, setProduct] = useState('');
   const [sacos, setSacos] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
+  const [cochoError, setCochoError] = useState<string | null>(null);
+  const [isSavingCocho, setIsSavingCocho] = useState(false);
+
+  const [isAddingAguada, setIsAddingAguada] = useState(false);
+  const [aguadaStatus, setAguadaStatus] = useState<PlotAguadaStatus | null>(null);
+  const [aguadaError, setAguadaError] = useState<string | null>(null);
+  const [isSavingAguada, setIsSavingAguada] = useState(false);
 
   const [isEditingInterval, setIsEditingInterval] = useState(false);
   const [intervalInput, setIntervalInput] = useState('');
@@ -54,28 +72,46 @@ export default function PlotDetailScreen() {
     }, [reloadPlot])
   );
 
-  const isLoading = isLoadingPlot || isLoadingEvents || !plot;
-  const farol = plot ? computeCochoFarol(events[0]?.refilled_at ?? null, plot.cocho_interval_days) : null;
+  const isLoading = isLoadingPlot || cocho.isLoading || aguada.isLoading || !plot;
+  const cochoFarol = plot ? computeCochoFarol(cocho.events[0]?.refilled_at ?? null, plot.cocho_interval_days) : null;
+  const aguadaFarol = computeAguadaFarol(aguada.events[0]?.status ?? null);
 
-  async function handleSave() {
+  async function handleSaveCocho() {
     if (!product.trim()) {
-      setError(t('cochoForm.validationError'));
+      setCochoError(t('cochoForm.validationError'));
       return;
     }
-    setError(null);
-    setIsSaving(true);
-    const { error: createError } = await createEvent({
+    setCochoError(null);
+    setIsSavingCocho(true);
+    const { error: createError } = await cocho.createEvent({
       product,
       sacos: sacos ? Number(sacos.replace(',', '.')) : undefined,
     });
-    setIsSaving(false);
+    setIsSavingCocho(false);
     if (createError) {
-      setError(createError);
+      setCochoError(createError);
       return;
     }
     setProduct('');
     setSacos('');
-    setIsAdding(false);
+    setIsAddingCocho(false);
+  }
+
+  async function handleSaveAguada() {
+    if (!aguadaStatus) {
+      setAguadaError(t('aguadaForm.validationError'));
+      return;
+    }
+    setAguadaError(null);
+    setIsSavingAguada(true);
+    const { error: createError } = await aguada.createEvent({ status: aguadaStatus });
+    setIsSavingAguada(false);
+    if (createError) {
+      setAguadaError(createError);
+      return;
+    }
+    setAguadaStatus(null);
+    setIsAddingAguada(false);
   }
 
   function handleStartEditInterval() {
@@ -91,7 +127,7 @@ export default function PlotDetailScreen() {
     setIsEditingInterval(false);
   }
 
-  if (isLoading || !farol) {
+  if (isLoading || !cochoFarol) {
     return (
       <SafeAreaView style={styles.container}>
         <ActivityIndicator style={styles.loading} color={colors.pecuaria} />
@@ -99,28 +135,41 @@ export default function PlotDetailScreen() {
     );
   }
 
-  const statusColor = colors[STATUS_COLOR_KEY[farol.status]];
-  const statusLabel =
-    farol.status === 'sem_registro'
+  const cochoStatusColor = colors[COCHO_COLOR_KEY[cochoFarol.status]];
+  const cochoStatusLabel =
+    cochoFarol.status === 'sem_registro'
       ? t('cochoFarol.statusSemRegistro')
-      : farol.status === 'atrasado'
+      : cochoFarol.status === 'atrasado'
         ? t('cochoFarol.statusAtrasado')
-        : farol.status === 'proximo'
+        : cochoFarol.status === 'proximo'
           ? t('cochoFarol.statusProximo')
           : t('cochoFarol.statusEmDia');
+
+  const aguadaStatusColor = colors[AGUADA_COLOR_KEY[aguadaFarol]];
+  const aguadaStatusLabel =
+    aguadaFarol === 'sem_registro'
+      ? t('aguadaFarol.statusSemRegistro')
+      : aguadaFarol === 'ruim'
+        ? t('aguadaFarol.statusRuim')
+        : aguadaFarol === 'atencao'
+          ? t('aguadaFarol.statusAtencao')
+          : t('aguadaFarol.statusBoa');
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <ScreenHeader title={plot.name} subtitle={t('plotDetail.areaSuffix', { area: Number(plot.area_hectares).toFixed(1) })} />
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <View style={[styles.statusBanner, { backgroundColor: statusColor + '22' }]}>
-            <Text style={[styles.statusLabel, { color: statusColor }]}>{statusLabel}</Text>
-            {farol.status === 'sem_registro' ? null : farol.daysUntilDue !== null && farol.daysUntilDue < 0 ? (
-              <Text style={styles.statusDetail}>{t('cochoFarol.overdueDays', { days: Math.abs(farol.daysUntilDue) })}</Text>
+          <Text style={styles.sectionTitle}>{t('plotDetail.cochoSectionTitle')}</Text>
+
+          <View style={[styles.statusBanner, { backgroundColor: cochoStatusColor + '22' }]}>
+            <Text style={[styles.statusLabel, { color: cochoStatusColor }]}>{cochoStatusLabel}</Text>
+            {cochoFarol.status === 'sem_registro' ? null : cochoFarol.daysUntilDue !== null && cochoFarol.daysUntilDue < 0 ? (
+              <Text style={styles.statusDetail}>{t('cochoFarol.overdueDays', { days: Math.abs(cochoFarol.daysUntilDue) })}</Text>
             ) : (
               <Text style={styles.statusDetail}>
-                {t('cochoFarol.daysSince', { days: farol.daysSince ?? 0 })} · {t('cochoFarol.daysUntilDue', { days: farol.daysUntilDue ?? 0 })}
+                {t('cochoFarol.daysSince', { days: cochoFarol.daysSince ?? 0 })} ·{' '}
+                {t('cochoFarol.daysUntilDue', { days: cochoFarol.daysUntilDue ?? 0 })}
               </Text>
             )}
           </View>
@@ -149,7 +198,7 @@ export default function PlotDetailScreen() {
             )}
           </Card>
 
-          {isAdding ? (
+          {isAddingCocho ? (
             <Card style={styles.card}>
               <Text style={styles.cardTitle}>{t('cochoForm.title')}</Text>
               <ChipSelect
@@ -167,21 +216,21 @@ export default function PlotDetailScreen() {
                 keyboardType="decimal-pad"
                 placeholder={t('mortality.optional')}
               />
-              {error ? <Text style={styles.errorText}>{error}</Text> : null}
+              {cochoError ? <Text style={styles.errorText}>{cochoError}</Text> : null}
               <View style={styles.formButtons}>
-                <Button label={t('cochoForm.cancel')} variant="ghost" onPress={() => setIsAdding(false)} style={{ flex: 1 }} />
-                <Button label={t('cochoForm.save')} onPress={handleSave} loading={isSaving} style={{ flex: 1 }} />
+                <Button label={t('cochoForm.cancel')} variant="ghost" onPress={() => setIsAddingCocho(false)} style={{ flex: 1 }} />
+                <Button label={t('cochoForm.save')} onPress={handleSaveCocho} loading={isSavingCocho} style={{ flex: 1 }} />
               </View>
             </Card>
           ) : (
-            <Button label={t('cochoFarol.registerButton')} onPress={() => setIsAdding(true)} />
+            <Button label={t('cochoFarol.registerButton')} onPress={() => setIsAddingCocho(true)} />
           )}
 
           <Text style={styles.historyTitle}>{t('cochoHistory.title')}</Text>
-          {events.length === 0 ? (
+          {cocho.events.length === 0 ? (
             <EmptyState text={t('cochoHistory.empty')} />
           ) : (
-            events.map((e) => (
+            cocho.events.map((e) => (
               <Card key={e.id} style={styles.rowCard}>
                 <View style={styles.rowTopRow}>
                   <Text style={styles.rowTitle}>{e.product ?? t('cochoForm.productPlaceholder')}</Text>
@@ -191,10 +240,59 @@ export default function PlotDetailScreen() {
               </Card>
             ))
           )}
+
+          <Text style={[styles.sectionTitle, styles.sectionTitleSpaced]}>{t('plotDetail.aguadaSectionTitle')}</Text>
+
+          <View style={[styles.statusBanner, { backgroundColor: aguadaStatusColor + '22' }]}>
+            <Text style={[styles.statusLabel, { color: aguadaStatusColor }]}>{aguadaStatusLabel}</Text>
+            {aguada.events[0] ? (
+              <Text style={styles.statusDetail}>{t('aguadaFarol.checkedOn', { date: formatDateBR(aguada.events[0].checked_at) })}</Text>
+            ) : null}
+          </View>
+
+          {isAddingAguada ? (
+            <Card style={styles.card}>
+              <Text style={styles.cardTitle}>{t('aguadaForm.title')}</Text>
+              <ChipSelect
+                label={t('aguadaForm.statusLabel')}
+                options={AGUADA_STATUS_OPTIONS.map((s) => ({ value: s, label: t(aguadaStatusLabelKey(s)) }))}
+                value={aguadaStatus}
+                onChange={setAguadaStatus}
+                accentColor={colors.pecuaria}
+              />
+              {aguadaError ? <Text style={styles.errorText}>{aguadaError}</Text> : null}
+              <View style={styles.formButtons}>
+                <Button label={t('cochoForm.cancel')} variant="ghost" onPress={() => setIsAddingAguada(false)} style={{ flex: 1 }} />
+                <Button label={t('cochoForm.save')} onPress={handleSaveAguada} loading={isSavingAguada} style={{ flex: 1 }} />
+              </View>
+            </Card>
+          ) : (
+            <Button label={t('aguadaFarol.registerButton')} onPress={() => setIsAddingAguada(true)} />
+          )}
+
+          <Text style={styles.historyTitle}>{t('aguadaHistory.title')}</Text>
+          {aguada.events.length === 0 ? (
+            <EmptyState text={t('aguadaHistory.empty')} />
+          ) : (
+            aguada.events.map((e) => (
+              <Card key={e.id} style={styles.rowCard}>
+                <View style={styles.rowTopRow}>
+                  <Text style={styles.rowTitle}>{t(aguadaStatusLabelKey(e.status))}</Text>
+                  <Text style={styles.rowDate}>{formatDateBR(e.checked_at)}</Text>
+                </View>
+              </Card>
+            ))
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
+}
+
+function aguadaStatusLabelKey(status: PlotAguadaStatus): Parameters<TFunction>[0] {
+  if (status === 'boa') return 'aguadaFarol.statusBoa';
+  if (status === 'atencao') return 'aguadaFarol.statusAtencao';
+  return 'aguadaFarol.statusRuim';
 }
 
 function createStyles(colors: Colors) {
@@ -203,6 +301,16 @@ function createStyles(colors: Colors) {
     flex: { flex: 1 },
     loading: { marginTop: spacing.xxl },
     content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xxxl, gap: spacing.lg },
+    sectionTitle: {
+      ...typography.heading,
+      color: colors.textPrimary,
+    },
+    sectionTitleSpaced: {
+      marginTop: spacing.md,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+      paddingTop: spacing.lg,
+    },
     statusBanner: {
       alignItems: 'center',
       borderRadius: radius.lg,

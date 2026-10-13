@@ -159,6 +159,20 @@ export type PlotCochoEvent = {
   created_at: string;
 };
 
+export type PlotAguadaStatus = 'boa' | 'atencao' | 'ruim';
+
+/** Uma checagem de aguada registrada num piquete — diferente do cocho, o
+ * farol aqui é sempre o status reportado na última checagem (não vence por
+ * dias passados). */
+export type PlotAguadaEvent = {
+  id: string;
+  plot_id: string;
+  checked_at: string;
+  status: PlotAguadaStatus;
+  notes: string | null;
+  created_at: string;
+};
+
 /** Uma safra (ciclo de plantio) de um talhão. Ver 0003_lavoura.sql. */
 export type PlotSeason = {
   id: string;
@@ -796,6 +810,12 @@ export interface Database {
         Row: PlotCochoEvent;
         Insert: Partial<PlotCochoEvent> & { plot_id: string };
         Update: Partial<PlotCochoEvent>;
+        Relationships: [];
+      };
+      plot_aguada_events: {
+        Row: PlotAguadaEvent;
+        Insert: Partial<PlotAguadaEvent> & { plot_id: string; status: PlotAguadaStatus };
+        Update: Partial<PlotAguadaEvent>;
         Relationships: [];
       };
       subscriptions: {

@@ -1,14 +1,17 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ChipSelect } from '../../../../../src/components/ChipSelect';
 import { EmptyState } from '../../../../../src/components/EmptyState';
 import { PlotsMap } from '../../../../../src/components/PlotsMap';
 import { ScreenHeader } from '../../../../../src/components/ScreenHeader';
 import { usePlots } from '../../../../../src/hooks/usePlots';
+import { useLatestAguadaEventsByPlot } from '../../../../../src/hooks/usePlotAguadaEvents';
 import { useLatestCochoEventsByPlot } from '../../../../../src/hooks/usePlotCochoEvents';
 import { useT } from '../../../../../src/i18n';
+import { computeAguadaFarol, type AguadaFarolStatus } from '../../../../../src/lib/aguadaFarol';
 import { computeCochoFarol, type CochoStatus } from '../../../../../src/lib/cochoFarol';
 import { radius, spacing, typography, useColors, type Colors } from '../../../../../src/theme';
 
@@ -16,39 +19,70 @@ function number(value: number, digits = 0): string {
   return value.toLocaleString('pt-BR', { minimumFractionDigits: digits, maximumFractionDigits: digits });
 }
 
-const STATUS_COLOR_KEY: Record<CochoStatus, 'success' | 'warning' | 'danger' | 'textMuted'> = {
+type FarolType = 'cocho' | 'aguada';
+
+const COCHO_COLOR_KEY: Record<CochoStatus, 'success' | 'warning' | 'danger' | 'textMuted'> = {
   em_dia: 'success',
   proximo: 'warning',
   atrasado: 'danger',
   sem_registro: 'textMuted',
 };
 
+const AGUADA_COLOR_KEY: Record<AguadaFarolStatus, 'success' | 'warning' | 'danger' | 'textMuted'> = {
+  boa: 'success',
+  atencao: 'warning',
+  ruim: 'danger',
+  sem_registro: 'textMuted',
+};
+
 /** Mapa com o contorno de cada piquete/talhão da pecuária, pintado pelo
- * farol do cocho (verde = em dia, amarelo = precisa abastecer logo,
- * vermelho = atrasado, cinza = nunca abastecido) — toca num piquete da
- * lista pra ver o histórico e registrar um novo abastecimento. */
+ * farol escolhido (Cocho ou Aguada por enquanto, mais tipos entram depois
+ * no mesmo padrão) — toca num piquete da lista pra ver o histórico e
+ * registrar um novo evento. */
 export default function PecuariaMapScreen() {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const t = useT();
   const { farmId } = useLocalSearchParams<{ farmId: string }>();
+  const [farolType, setFarolType] = useState<FarolType>('cocho');
   const { plots, isLoading, reload } = usePlots(farmId, 'pecuaria');
   const mapped = plots.filter((p) => p.boundary && p.boundary.length > 0);
-  const { latestByPlotId, isLoading: isLoadingEvents, reload: reloadEvents } = useLatestCochoEventsByPlot(mapped.map((p) => p.id));
+  const plotIds = mapped.map((p) => p.id);
+  const { latestByPlotId: cochoByPlotId, isLoading: isLoadingCocho, reload: reloadCocho } = useLatestCochoEventsByPlot(plotIds);
+  const { latestByPlotId: aguadaByPlotId, isLoading: isLoadingAguada, reload: reloadAguada } = useLatestAguadaEventsByPlot(plotIds);
 
   useFocusEffect(
     useCallback(() => {
       reload();
-      reloadEvents();
-    }, [reload, reloadEvents])
+      reloadCocho();
+      reloadAguada();
+    }, [reload, reloadCocho, reloadAguada])
   );
 
   const totalArea = mapped.reduce((sum, p) => sum + Number(p.area_hectares), 0);
 
-  const plotsWithFarol = mapped.map((p) => {
-    const farol = computeCochoFarol(latestByPlotId[p.id]?.refilled_at ?? null, p.cocho_interval_days);
-    return { plot: p, farol };
+  const plotsWithColorKey = mapped.map((plot) => {
+    const colorKey =
+      farolType === 'cocho'
+        ? COCHO_COLOR_KEY[computeCochoFarol(cochoByPlotId[plot.id]?.refilled_at ?? null, plot.cocho_interval_days).status]
+        : AGUADA_COLOR_KEY[computeAguadaFarol(aguadaByPlotId[plot.id]?.status ?? null)];
+    return { plot, colorKey };
   });
+
+  const statusLabels =
+    farolType === 'cocho'
+      ? [
+          { key: 'success' as const, label: t('cochoFarol.statusEmDia') },
+          { key: 'warning' as const, label: t('cochoFarol.statusProximo') },
+          { key: 'danger' as const, label: t('cochoFarol.statusAtrasado') },
+          { key: 'textMuted' as const, label: t('cochoFarol.statusSemRegistro') },
+        ]
+      : [
+          { key: 'success' as const, label: t('aguadaFarol.statusBoa') },
+          { key: 'warning' as const, label: t('aguadaFarol.statusAtencao') },
+          { key: 'danger' as const, label: t('aguadaFarol.statusRuim') },
+          { key: 'textMuted' as const, label: t('aguadaFarol.statusSemRegistro') },
+        ];
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -56,7 +90,19 @@ export default function PecuariaMapScreen() {
         title={t('plotsMap.title')}
         subtitle={t('plotsMap.subtitle', { count: mapped.length, area: number(totalArea, 1) })}
       />
-      {isLoading || isLoadingEvents ? (
+      <View style={styles.selectorWrap}>
+        <ChipSelect
+          label={t('plotsMap.farolTypeLabel')}
+          options={[
+            { value: 'cocho', label: t('plotsMap.farolTypeCocho') },
+            { value: 'aguada', label: t('plotsMap.farolTypeAguada') },
+          ]}
+          value={farolType}
+          onChange={setFarolType}
+          accentColor={colors.pecuaria}
+        />
+      </View>
+      {isLoading || isLoadingCocho || isLoadingAguada ? (
         <ActivityIndicator style={styles.loading} color={colors.pecuaria} />
       ) : mapped.length === 0 ? (
         <EmptyState text={t('plotsMap.empty')} />
@@ -64,35 +110,34 @@ export default function PecuariaMapScreen() {
         <>
           <View style={styles.mapWrap}>
             <PlotsMap
-              plots={plotsWithFarol.map(({ plot, farol }) => ({
+              plots={plotsWithColorKey.map(({ plot, colorKey }) => ({
                 id: plot.id,
                 name: plot.name,
                 areaHectares: Number(plot.area_hectares),
                 boundary: plot.boundary ?? [],
-                color: colors[STATUS_COLOR_KEY[farol.status]],
+                color: colors[colorKey],
               }))}
               height={320}
             />
           </View>
 
           <View style={styles.legendRow}>
-            <LegendItem color={colors.success} label={t('cochoFarol.statusEmDia')} styles={styles} />
-            <LegendItem color={colors.warning} label={t('cochoFarol.statusProximo')} styles={styles} />
-            <LegendItem color={colors.danger} label={t('cochoFarol.statusAtrasado')} styles={styles} />
-            <LegendItem color={colors.textMuted} label={t('cochoFarol.statusSemRegistro')} styles={styles} />
+            {statusLabels.map(({ key, label }) => (
+              <LegendItem key={key} color={colors[key]} label={label} styles={styles} />
+            ))}
           </View>
 
           <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
-            {plotsWithFarol
+            {plotsWithColorKey
               .slice()
               .sort((a, b) => a.plot.name.localeCompare(b.plot.name, 'pt-BR', { numeric: true }))
-              .map(({ plot, farol }) => (
+              .map(({ plot, colorKey }) => (
                 <Pressable
                   key={plot.id}
                   style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
                   onPress={() => router.push(`/farms/${farmId}/pecuaria/mapa/${plot.id}`)}
                 >
-                  <View style={[styles.rowDot, { backgroundColor: colors[STATUS_COLOR_KEY[farol.status]] }]} />
+                  <View style={[styles.rowDot, { backgroundColor: colors[colorKey] }]} />
                   <Text style={styles.rowName}>{plot.name}</Text>
                   <Text style={styles.rowArea}>{number(Number(plot.area_hectares), 1)} ha</Text>
                 </Pressable>
@@ -121,6 +166,10 @@ function createStyles(colors: Colors) {
     },
     loading: {
       marginTop: spacing.xxl,
+    },
+    selectorWrap: {
+      paddingHorizontal: spacing.xl,
+      paddingBottom: spacing.sm,
     },
     mapWrap: {
       paddingHorizontal: spacing.xl,
