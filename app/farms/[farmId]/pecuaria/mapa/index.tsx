@@ -9,17 +9,21 @@ import { PlotsMap } from '../../../../../src/components/PlotsMap';
 import { ScreenHeader } from '../../../../../src/components/ScreenHeader';
 import { usePlots } from '../../../../../src/hooks/usePlots';
 import { useLatestAguadaEventsByPlot } from '../../../../../src/hooks/usePlotAguadaEvents';
+import { useLatestCercaEventsByPlot } from '../../../../../src/hooks/usePlotCercaEvents';
 import { useLatestCochoEventsByPlot } from '../../../../../src/hooks/usePlotCochoEvents';
+import { useLatestForageEventsByPlot } from '../../../../../src/hooks/usePlotForageEvents';
 import { useT } from '../../../../../src/i18n';
 import { computeAguadaFarol, type AguadaFarolStatus } from '../../../../../src/lib/aguadaFarol';
+import { computeCercaFarol, type CercaFarolStatus } from '../../../../../src/lib/cercaFarol';
 import { computeCochoFarol, type CochoStatus } from '../../../../../src/lib/cochoFarol';
+import { computeForageFarol, type ForageStatus } from '../../../../../src/lib/forageFarol';
 import { radius, spacing, typography, useColors, type Colors } from '../../../../../src/theme';
 
 function number(value: number, digits = 0): string {
   return value.toLocaleString('pt-BR', { minimumFractionDigits: digits, maximumFractionDigits: digits });
 }
 
-type FarolType = 'cocho' | 'aguada';
+type FarolType = 'cocho' | 'aguada' | 'cerca' | 'forage';
 
 const COCHO_COLOR_KEY: Record<CochoStatus, 'success' | 'warning' | 'danger' | 'textMuted'> = {
   em_dia: 'success',
@@ -32,6 +36,20 @@ const AGUADA_COLOR_KEY: Record<AguadaFarolStatus, 'success' | 'warning' | 'dange
   boa: 'success',
   atencao: 'warning',
   ruim: 'danger',
+  sem_registro: 'textMuted',
+};
+
+const CERCA_COLOR_KEY: Record<CercaFarolStatus, 'success' | 'warning' | 'danger' | 'textMuted'> = {
+  boa: 'success',
+  atencao: 'warning',
+  ruim: 'danger',
+  sem_registro: 'textMuted',
+};
+
+const FORAGE_COLOR_KEY: Record<ForageStatus, 'success' | 'warning' | 'danger' | 'textMuted'> = {
+  em_dia: 'success',
+  proximo: 'warning',
+  atrasado: 'danger',
   sem_registro: 'textMuted',
 };
 
@@ -50,13 +68,17 @@ export default function PecuariaMapScreen() {
   const plotIds = mapped.map((p) => p.id);
   const { latestByPlotId: cochoByPlotId, isLoading: isLoadingCocho, reload: reloadCocho } = useLatestCochoEventsByPlot(plotIds);
   const { latestByPlotId: aguadaByPlotId, isLoading: isLoadingAguada, reload: reloadAguada } = useLatestAguadaEventsByPlot(plotIds);
+  const { latestByPlotId: cercaByPlotId, isLoading: isLoadingCerca, reload: reloadCerca } = useLatestCercaEventsByPlot(plotIds);
+  const { latestByPlotId: forageByPlotId, isLoading: isLoadingForage, reload: reloadForage } = useLatestForageEventsByPlot(plotIds);
 
   useFocusEffect(
     useCallback(() => {
       reload();
       reloadCocho();
       reloadAguada();
-    }, [reload, reloadCocho, reloadAguada])
+      reloadCerca();
+      reloadForage();
+    }, [reload, reloadCocho, reloadAguada, reloadCerca, reloadForage])
   );
 
   const totalArea = mapped.reduce((sum, p) => sum + Number(p.area_hectares), 0);
@@ -65,7 +87,11 @@ export default function PecuariaMapScreen() {
     const colorKey =
       farolType === 'cocho'
         ? COCHO_COLOR_KEY[computeCochoFarol(cochoByPlotId[plot.id]?.refilled_at ?? null, plot.cocho_interval_days).status]
-        : AGUADA_COLOR_KEY[computeAguadaFarol(aguadaByPlotId[plot.id]?.status ?? null)];
+        : farolType === 'aguada'
+          ? AGUADA_COLOR_KEY[computeAguadaFarol(aguadaByPlotId[plot.id]?.status ?? null)]
+          : farolType === 'cerca'
+            ? CERCA_COLOR_KEY[computeCercaFarol(cercaByPlotId[plot.id]?.status ?? null)]
+            : FORAGE_COLOR_KEY[computeForageFarol(forageByPlotId[plot.id]?.height_cm ?? null, plot.forage_min_height_cm).status];
     return { plot, colorKey };
   });
 
@@ -77,12 +103,26 @@ export default function PecuariaMapScreen() {
           { key: 'danger' as const, label: t('cochoFarol.statusAtrasado') },
           { key: 'textMuted' as const, label: t('cochoFarol.statusSemRegistro') },
         ]
-      : [
-          { key: 'success' as const, label: t('aguadaFarol.statusBoa') },
-          { key: 'warning' as const, label: t('aguadaFarol.statusAtencao') },
-          { key: 'danger' as const, label: t('aguadaFarol.statusRuim') },
-          { key: 'textMuted' as const, label: t('aguadaFarol.statusSemRegistro') },
-        ];
+      : farolType === 'aguada'
+        ? [
+            { key: 'success' as const, label: t('aguadaFarol.statusBoa') },
+            { key: 'warning' as const, label: t('aguadaFarol.statusAtencao') },
+            { key: 'danger' as const, label: t('aguadaFarol.statusRuim') },
+            { key: 'textMuted' as const, label: t('aguadaFarol.statusSemRegistro') },
+          ]
+        : farolType === 'cerca'
+          ? [
+              { key: 'success' as const, label: t('cercaFarol.statusBoa') },
+              { key: 'warning' as const, label: t('cercaFarol.statusAtencao') },
+              { key: 'danger' as const, label: t('cercaFarol.statusRuim') },
+              { key: 'textMuted' as const, label: t('cercaFarol.statusSemRegistro') },
+            ]
+          : [
+              { key: 'success' as const, label: t('forageFarol.statusEmDia') },
+              { key: 'warning' as const, label: t('forageFarol.statusProximo') },
+              { key: 'danger' as const, label: t('forageFarol.statusAtrasado') },
+              { key: 'textMuted' as const, label: t('forageFarol.statusSemRegistro') },
+            ];
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -96,13 +136,15 @@ export default function PecuariaMapScreen() {
           options={[
             { value: 'cocho', label: t('plotsMap.farolTypeCocho') },
             { value: 'aguada', label: t('plotsMap.farolTypeAguada') },
+            { value: 'cerca', label: t('plotsMap.farolTypeCerca') },
+            { value: 'forage', label: t('plotsMap.farolTypeForage') },
           ]}
           value={farolType}
           onChange={setFarolType}
           accentColor={colors.pecuaria}
         />
       </View>
-      {isLoading || isLoadingCocho || isLoadingAguada ? (
+      {isLoading || isLoadingCocho || isLoadingAguada || isLoadingCerca || isLoadingForage ? (
         <ActivityIndicator style={styles.loading} color={colors.pecuaria} />
       ) : mapped.length === 0 ? (
         <EmptyState text={t('plotsMap.empty')} />

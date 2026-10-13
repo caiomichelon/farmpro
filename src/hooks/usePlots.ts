@@ -210,5 +210,16 @@ export function usePlot(plotId: string | undefined) {
     [plotId, reload]
   );
 
-  return { plot, isLoading, error, reload, updateCochoIntervalDays };
+  const updateForageMinHeightCm = useCallback(
+    async (cm: number) => {
+      if (!plotId) return { error: 'Talhão não encontrado.' };
+      const { error: updateError } = await supabase.from('plots').update({ forage_min_height_cm: cm }).eq('id', plotId);
+      if (updateError) return { error: updateError.message };
+      await reload();
+      return { error: null };
+    },
+    [plotId, reload]
+  );
+
+  return { plot, isLoading, error, reload, updateCochoIntervalDays, updateForageMinHeightCm };
 }

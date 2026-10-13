@@ -144,6 +144,9 @@ export type Plot = {
   /** De quantos em quantos dias o cocho desse piquete precisa ser
    * reabastecido — usado pra calcular o farol de cor no mapa. */
   cocho_interval_days: number;
+  /** Altura mínima de forragem (cm) esperada nesse piquete — usado pra
+   * calcular o farol de altura de forragem no mapa. */
+  forage_min_height_cm: number;
   created_at: string;
 };
 
@@ -169,6 +172,31 @@ export type PlotAguadaEvent = {
   plot_id: string;
   checked_at: string;
   status: PlotAguadaStatus;
+  notes: string | null;
+  created_at: string;
+};
+
+export type PlotCercaStatus = 'boa' | 'atencao' | 'ruim';
+
+/** Uma checagem de cerca registrada num piquete — mesmo modelo da aguada:
+ * o farol é sempre o status reportado na última checagem. */
+export type PlotCercaEvent = {
+  id: string;
+  plot_id: string;
+  checked_at: string;
+  status: PlotCercaStatus;
+  notes: string | null;
+  created_at: string;
+};
+
+/** Uma medição de altura de forragem registrada num piquete — mesmo
+ * modelo do cocho: o farol compara a altura medida com a altura mínima
+ * configurada no piquete (Plot.forage_min_height_cm). */
+export type PlotForageEvent = {
+  id: string;
+  plot_id: string;
+  measured_at: string;
+  height_cm: number;
   notes: string | null;
   created_at: string;
 };
@@ -816,6 +844,18 @@ export interface Database {
         Row: PlotAguadaEvent;
         Insert: Partial<PlotAguadaEvent> & { plot_id: string; status: PlotAguadaStatus };
         Update: Partial<PlotAguadaEvent>;
+        Relationships: [];
+      };
+      plot_cerca_events: {
+        Row: PlotCercaEvent;
+        Insert: Partial<PlotCercaEvent> & { plot_id: string; status: PlotCercaStatus };
+        Update: Partial<PlotCercaEvent>;
+        Relationships: [];
+      };
+      plot_forage_events: {
+        Row: PlotForageEvent;
+        Insert: Partial<PlotForageEvent> & { plot_id: string; height_cm: number };
+        Update: Partial<PlotForageEvent>;
         Relationships: [];
       };
       subscriptions: {

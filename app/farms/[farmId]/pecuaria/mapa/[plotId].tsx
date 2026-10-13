@@ -12,11 +12,15 @@ import { TextField } from '../../../../../src/components/TextField';
 import { COCHO_PRODUCT_SUGGESTIONS } from '../../../../../src/data/cattleOptions';
 import { usePlot } from '../../../../../src/hooks/usePlots';
 import { usePlotAguadaEvents } from '../../../../../src/hooks/usePlotAguadaEvents';
+import { usePlotCercaEvents } from '../../../../../src/hooks/usePlotCercaEvents';
 import { usePlotCochoEvents } from '../../../../../src/hooks/usePlotCochoEvents';
+import { usePlotForageEvents } from '../../../../../src/hooks/usePlotForageEvents';
 import { useT, type TFunction } from '../../../../../src/i18n';
 import { computeAguadaFarol, type AguadaFarolStatus } from '../../../../../src/lib/aguadaFarol';
+import { computeCercaFarol, type CercaFarolStatus } from '../../../../../src/lib/cercaFarol';
 import { computeCochoFarol, type CochoStatus } from '../../../../../src/lib/cochoFarol';
-import type { PlotAguadaStatus } from '../../../../../src/types/database';
+import { computeForageFarol, type ForageStatus } from '../../../../../src/lib/forageFarol';
+import type { PlotAguadaStatus, PlotCercaStatus } from '../../../../../src/types/database';
 import { radius, spacing, typography, useColors, type Colors } from '../../../../../src/theme';
 
 function formatDateBR(iso: string): string {
@@ -38,7 +42,22 @@ const AGUADA_COLOR_KEY: Record<AguadaFarolStatus, 'success' | 'warning' | 'dange
   sem_registro: 'textMuted',
 };
 
+const CERCA_COLOR_KEY: Record<CercaFarolStatus, 'success' | 'warning' | 'danger' | 'textMuted'> = {
+  boa: 'success',
+  atencao: 'warning',
+  ruim: 'danger',
+  sem_registro: 'textMuted',
+};
+
+const FORAGE_COLOR_KEY: Record<ForageStatus, 'success' | 'warning' | 'danger' | 'textMuted'> = {
+  em_dia: 'success',
+  proximo: 'warning',
+  atrasado: 'danger',
+  sem_registro: 'textMuted',
+};
+
 const AGUADA_STATUS_OPTIONS: PlotAguadaStatus[] = ['boa', 'atencao', 'ruim'];
+const CERCA_STATUS_OPTIONS: PlotCercaStatus[] = ['boa', 'atencao', 'ruim'];
 
 /** Piquete: farol do cocho e da aguada (status + histórico de cada um) e
  * formulário pra registrar novos eventos — mesmo padrão de "Registrar
@@ -48,9 +67,11 @@ export default function PlotDetailScreen() {
   const styles = useMemo(() => createStyles(colors), [colors]);
   const t = useT();
   const { plotId } = useLocalSearchParams<{ farmId: string; plotId: string }>();
-  const { plot, isLoading: isLoadingPlot, reload: reloadPlot, updateCochoIntervalDays } = usePlot(plotId);
+  const { plot, isLoading: isLoadingPlot, reload: reloadPlot, updateCochoIntervalDays, updateForageMinHeightCm } = usePlot(plotId);
   const cocho = usePlotCochoEvents(plotId);
   const aguada = usePlotAguadaEvents(plotId);
+  const cerca = usePlotCercaEvents(plotId);
+  const forage = usePlotForageEvents(plotId);
 
   const [isAddingCocho, setIsAddingCocho] = useState(false);
   const [product, setProduct] = useState('');
@@ -63,8 +84,21 @@ export default function PlotDetailScreen() {
   const [aguadaError, setAguadaError] = useState<string | null>(null);
   const [isSavingAguada, setIsSavingAguada] = useState(false);
 
+  const [isAddingCerca, setIsAddingCerca] = useState(false);
+  const [cercaStatus, setCercaStatus] = useState<PlotCercaStatus | null>(null);
+  const [cercaError, setCercaError] = useState<string | null>(null);
+  const [isSavingCerca, setIsSavingCerca] = useState(false);
+
+  const [isAddingForage, setIsAddingForage] = useState(false);
+  const [heightCm, setHeightCm] = useState('');
+  const [forageError, setForageError] = useState<string | null>(null);
+  const [isSavingForage, setIsSavingForage] = useState(false);
+
   const [isEditingInterval, setIsEditingInterval] = useState(false);
   const [intervalInput, setIntervalInput] = useState('');
+
+  const [isEditingMinHeight, setIsEditingMinHeight] = useState(false);
+  const [minHeightInput, setMinHeightInput] = useState('');
 
   useFocusEffect(
     useCallback(() => {
@@ -72,9 +106,11 @@ export default function PlotDetailScreen() {
     }, [reloadPlot])
   );
 
-  const isLoading = isLoadingPlot || cocho.isLoading || aguada.isLoading || !plot;
+  const isLoading = isLoadingPlot || cocho.isLoading || aguada.isLoading || cerca.isLoading || forage.isLoading || !plot;
   const cochoFarol = plot ? computeCochoFarol(cocho.events[0]?.refilled_at ?? null, plot.cocho_interval_days) : null;
   const aguadaFarol = computeAguadaFarol(aguada.events[0]?.status ?? null);
+  const cercaFarol = computeCercaFarol(cerca.events[0]?.status ?? null);
+  const forageFarol = plot ? computeForageFarol(forage.events[0]?.height_cm ?? null, plot.forage_min_height_cm) : null;
 
   async function handleSaveCocho() {
     if (!product.trim()) {
@@ -114,6 +150,41 @@ export default function PlotDetailScreen() {
     setIsAddingAguada(false);
   }
 
+  async function handleSaveCerca() {
+    if (!cercaStatus) {
+      setCercaError(t('cercaForm.validationError'));
+      return;
+    }
+    setCercaError(null);
+    setIsSavingCerca(true);
+    const { error: createError } = await cerca.createEvent({ status: cercaStatus });
+    setIsSavingCerca(false);
+    if (createError) {
+      setCercaError(createError);
+      return;
+    }
+    setCercaStatus(null);
+    setIsAddingCerca(false);
+  }
+
+  async function handleSaveForage() {
+    const height = Number(heightCm.replace(',', '.'));
+    if (!heightCm || Number.isNaN(height) || height < 0) {
+      setForageError(t('forageForm.validationError'));
+      return;
+    }
+    setForageError(null);
+    setIsSavingForage(true);
+    const { error: createError } = await forage.createEvent({ height_cm: height });
+    setIsSavingForage(false);
+    if (createError) {
+      setForageError(createError);
+      return;
+    }
+    setHeightCm('');
+    setIsAddingForage(false);
+  }
+
   function handleStartEditInterval() {
     if (!plot) return;
     setIntervalInput(String(plot.cocho_interval_days));
@@ -127,7 +198,20 @@ export default function PlotDetailScreen() {
     setIsEditingInterval(false);
   }
 
-  if (isLoading || !cochoFarol) {
+  function handleStartEditMinHeight() {
+    if (!plot) return;
+    setMinHeightInput(String(plot.forage_min_height_cm));
+    setIsEditingMinHeight(true);
+  }
+
+  async function handleSaveMinHeight() {
+    const cm = Number(minHeightInput.replace(',', '.'));
+    if (!cm || cm <= 0) return;
+    await updateForageMinHeightCm(cm);
+    setIsEditingMinHeight(false);
+  }
+
+  if (isLoading || !cochoFarol || !forageFarol) {
     return (
       <SafeAreaView style={styles.container}>
         <ActivityIndicator style={styles.loading} color={colors.pecuaria} />
@@ -154,6 +238,26 @@ export default function PlotDetailScreen() {
         : aguadaFarol === 'atencao'
           ? t('aguadaFarol.statusAtencao')
           : t('aguadaFarol.statusBoa');
+
+  const cercaStatusColor = colors[CERCA_COLOR_KEY[cercaFarol]];
+  const cercaStatusLabel =
+    cercaFarol === 'sem_registro'
+      ? t('cercaFarol.statusSemRegistro')
+      : cercaFarol === 'ruim'
+        ? t('cercaFarol.statusRuim')
+        : cercaFarol === 'atencao'
+          ? t('cercaFarol.statusAtencao')
+          : t('cercaFarol.statusBoa');
+
+  const forageStatusColor = colors[FORAGE_COLOR_KEY[forageFarol.status]];
+  const forageStatusLabel =
+    forageFarol.status === 'sem_registro'
+      ? t('forageFarol.statusSemRegistro')
+      : forageFarol.status === 'atrasado'
+        ? t('forageFarol.statusAtrasado')
+        : forageFarol.status === 'proximo'
+          ? t('forageFarol.statusProximo')
+          : t('forageFarol.statusEmDia');
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -283,6 +387,118 @@ export default function PlotDetailScreen() {
               </Card>
             ))
           )}
+
+          <Text style={[styles.sectionTitle, styles.sectionTitleSpaced]}>{t('plotDetail.cercaSectionTitle')}</Text>
+
+          <View style={[styles.statusBanner, { backgroundColor: cercaStatusColor + '22' }]}>
+            <Text style={[styles.statusLabel, { color: cercaStatusColor }]}>{cercaStatusLabel}</Text>
+            {cerca.events[0] ? (
+              <Text style={styles.statusDetail}>{t('cercaFarol.checkedOn', { date: formatDateBR(cerca.events[0].checked_at) })}</Text>
+            ) : null}
+          </View>
+
+          {isAddingCerca ? (
+            <Card style={styles.card}>
+              <Text style={styles.cardTitle}>{t('cercaForm.title')}</Text>
+              <ChipSelect
+                label={t('cercaForm.statusLabel')}
+                options={CERCA_STATUS_OPTIONS.map((s) => ({ value: s, label: t(cercaStatusLabelKey(s)) }))}
+                value={cercaStatus}
+                onChange={setCercaStatus}
+                accentColor={colors.pecuaria}
+              />
+              {cercaError ? <Text style={styles.errorText}>{cercaError}</Text> : null}
+              <View style={styles.formButtons}>
+                <Button label={t('cochoForm.cancel')} variant="ghost" onPress={() => setIsAddingCerca(false)} style={{ flex: 1 }} />
+                <Button label={t('cochoForm.save')} onPress={handleSaveCerca} loading={isSavingCerca} style={{ flex: 1 }} />
+              </View>
+            </Card>
+          ) : (
+            <Button label={t('cercaFarol.registerButton')} onPress={() => setIsAddingCerca(true)} />
+          )}
+
+          <Text style={styles.historyTitle}>{t('cercaHistory.title')}</Text>
+          {cerca.events.length === 0 ? (
+            <EmptyState text={t('cercaHistory.empty')} />
+          ) : (
+            cerca.events.map((e) => (
+              <Card key={e.id} style={styles.rowCard}>
+                <View style={styles.rowTopRow}>
+                  <Text style={styles.rowTitle}>{t(cercaStatusLabelKey(e.status))}</Text>
+                  <Text style={styles.rowDate}>{formatDateBR(e.checked_at)}</Text>
+                </View>
+              </Card>
+            ))
+          )}
+
+          <Text style={[styles.sectionTitle, styles.sectionTitleSpaced]}>{t('plotDetail.forageSectionTitle')}</Text>
+
+          <View style={[styles.statusBanner, { backgroundColor: forageStatusColor + '22' }]}>
+            <Text style={[styles.statusLabel, { color: forageStatusColor }]}>{forageStatusLabel}</Text>
+            {forageFarol.status === 'sem_registro' ? null : (
+              <Text style={styles.statusDetail}>
+                {t('forageFarol.heightDetail', { height: forageFarol.heightCm ?? 0, min: forageFarol.minHeightCm })}
+              </Text>
+            )}
+          </View>
+
+          <Card style={styles.intervalCard}>
+            {isEditingMinHeight ? (
+              <View style={styles.intervalEditRow}>
+                <View style={{ flex: 1 }}>
+                  <TextField
+                    label={t('forageFarol.minHeightLabel')}
+                    value={minHeightInput}
+                    onChangeText={setMinHeightInput}
+                    keyboardType="decimal-pad"
+                  />
+                </View>
+                <Button label={t('cochoForm.save')} onPress={handleSaveMinHeight} style={styles.intervalButton} />
+                <Button label={t('cochoForm.cancel')} variant="ghost" onPress={() => setIsEditingMinHeight(false)} style={styles.intervalButton} />
+              </View>
+            ) : (
+              <View style={styles.intervalRow}>
+                <Text style={styles.intervalText}>{t('forageFarol.minHeightCurrentLabel', { cm: plot.forage_min_height_cm })}</Text>
+                <Text style={styles.intervalEditLink} onPress={handleStartEditMinHeight}>
+                  ✎ {t('cochoForm.edit')}
+                </Text>
+              </View>
+            )}
+          </Card>
+
+          {isAddingForage ? (
+            <Card style={styles.card}>
+              <Text style={styles.cardTitle}>{t('forageForm.title')}</Text>
+              <TextField
+                label={t('forageForm.heightLabel')}
+                value={heightCm}
+                onChangeText={setHeightCm}
+                keyboardType="decimal-pad"
+                placeholder={t('forageForm.heightPlaceholder')}
+              />
+              {forageError ? <Text style={styles.errorText}>{forageError}</Text> : null}
+              <View style={styles.formButtons}>
+                <Button label={t('cochoForm.cancel')} variant="ghost" onPress={() => setIsAddingForage(false)} style={{ flex: 1 }} />
+                <Button label={t('cochoForm.save')} onPress={handleSaveForage} loading={isSavingForage} style={{ flex: 1 }} />
+              </View>
+            </Card>
+          ) : (
+            <Button label={t('forageFarol.registerButton')} onPress={() => setIsAddingForage(true)} />
+          )}
+
+          <Text style={styles.historyTitle}>{t('forageHistory.title')}</Text>
+          {forage.events.length === 0 ? (
+            <EmptyState text={t('forageHistory.empty')} />
+          ) : (
+            forage.events.map((e) => (
+              <Card key={e.id} style={styles.rowCard}>
+                <View style={styles.rowTopRow}>
+                  <Text style={styles.rowTitle}>{t('forageHistory.heightSuffix', { height: e.height_cm })}</Text>
+                  <Text style={styles.rowDate}>{formatDateBR(e.measured_at)}</Text>
+                </View>
+              </Card>
+            ))
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -293,6 +509,12 @@ function aguadaStatusLabelKey(status: PlotAguadaStatus): Parameters<TFunction>[0
   if (status === 'boa') return 'aguadaFarol.statusBoa';
   if (status === 'atencao') return 'aguadaFarol.statusAtencao';
   return 'aguadaFarol.statusRuim';
+}
+
+function cercaStatusLabelKey(status: PlotCercaStatus): Parameters<TFunction>[0] {
+  if (status === 'boa') return 'cercaFarol.statusBoa';
+  if (status === 'atencao') return 'cercaFarol.statusAtencao';
+  return 'cercaFarol.statusRuim';
 }
 
 function createStyles(colors: Colors) {
