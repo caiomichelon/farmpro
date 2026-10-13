@@ -57,10 +57,18 @@ export const CATTLE_FIELD_COLLECTION_STATUS_COLOR_KEY: Record<
 
 export const CATTLE_INVENTORY_CATEGORY_LABELS: Record<CattleInventoryCategory, string> = {
   racao: 'Ração',
-  nucleo_mineral: 'Núcleo/Sal mineral',
+  sal: 'Sal',
+  proteico: 'Proteico',
+  mineral: 'Mistura mineral',
+  nucleo: 'Núcleo',
   medicamento: 'Medicamento veterinário',
+  vacina: 'Vacina',
   outro: 'Outro',
 };
+
+/** Categorias de estoque usadas na suplementação de cocho — exclui
+ * medicamento/vacina/outro, que não fazem sentido jogar no cocho. */
+export const CATTLE_INVENTORY_SUPPLEMENT_CATEGORIES: CattleInventoryCategory[] = ['racao', 'sal', 'proteico', 'mineral', 'nucleo'];
 
 export const CATTLE_INVENTORY_CATEGORY_OPTIONS = Object.entries(CATTLE_INVENTORY_CATEGORY_LABELS).map(
   ([value, label]) => ({ value: value as CattleInventoryCategory, label })

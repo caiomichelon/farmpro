@@ -35,7 +35,15 @@ export function usePlotCochoEvents(plotId: string | undefined) {
   }, [reload]);
 
   const createEvent = useCallback(
-    async (input: { refilled_at?: string; product?: string; sacos?: number; notes?: string }) => {
+    async (input: {
+      refilled_at?: string;
+      product?: string;
+      sacos?: number;
+      stock_item_id?: string;
+      latitude?: number;
+      longitude?: number;
+      notes?: string;
+    }) => {
       if (!plotId) return { error: 'Piquete não encontrado.' };
 
       const { error: insertError } = await supabase.from('plot_cocho_events').insert({
@@ -43,6 +51,9 @@ export function usePlotCochoEvents(plotId: string | undefined) {
         refilled_at: input.refilled_at || new Date().toISOString().slice(0, 10),
         product: input.product?.trim() || null,
         sacos: input.sacos ?? null,
+        stock_item_id: input.stock_item_id ?? null,
+        latitude: input.latitude ?? null,
+        longitude: input.longitude ?? null,
         notes: input.notes?.trim() || null,
       });
 

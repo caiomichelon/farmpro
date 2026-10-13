@@ -9,6 +9,7 @@ import { ScreenHeader } from '../../../../../../../src/components/ScreenHeader';
 import { CATTLE_INVENTORY_CATEGORY_LABELS, CATTLE_INVENTORY_UNIT_LABELS } from '../../../../../../../src/data/cattleOptions';
 import {
   CATTLE_INVENTORY_STOCK_STATUS_LABELS,
+  computeStockProjection,
   useCattleInventoryItem,
   useCattleInventoryMovements,
   type CattleInventoryStockStatus,
@@ -51,6 +52,7 @@ export default function InventoryItemDetailScreen() {
   const expirationStatus = computeExpirationStatus(item.expiration_date);
   const supplierName = suppliers.find((s) => s.id === item.supplier_id)?.name ?? null;
   const metaParts = [item.location, supplierName ? `Fornecedor: ${supplierName}` : null].filter(Boolean) as string[];
+  const projection = computeStockProjection(movements, item.currentQuantity);
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -85,6 +87,26 @@ export default function InventoryItemDetailScreen() {
             </Text>
           ) : null}
         </View>
+
+        {projection ? (
+          <View
+            style={[
+              styles.projectionBanner,
+              { backgroundColor: (projection.daysRemaining <= 7 ? colors.danger : projection.daysRemaining <= 15 ? colors.warning : colors.textMuted) + '22' },
+            ]}
+          >
+            <Text
+              style={{
+                color: projection.daysRemaining <= 7 ? colors.danger : projection.daysRemaining <= 15 ? colors.warning : colors.textSecondary,
+                ...typography.captionMedium,
+              }}
+            >
+              {projection.daysRemaining <= 0
+                ? 'No ritmo atual de consumo, o estoque já deveria ter acabado'
+                : `No ritmo atual, acaba em ${projection.daysRemaining} dia(s) — por volta de ${formatDate(projection.projectedEmptyDate)}`}
+            </Text>
+          </View>
+        ) : null}
 
         <View style={styles.quickActions}>
           <QuickAction
@@ -124,6 +146,7 @@ export default function InventoryItemDetailScreen() {
                   <Text style={styles.rowDate}>{formatDate(m.moved_at)}</Text>
                 </View>
                 {m.lotName ? <Text style={styles.rowNotes}>Lote: {m.lotName}</Text> : null}
+                {m.plotName ? <Text style={styles.rowNotes}>Piquete: {m.plotName}</Text> : null}
                 {m.notes ? <Text style={styles.rowNotes}>{m.notes}</Text> : null}
               </Card>
             ))
@@ -188,6 +211,10 @@ function createStyles(colors: Colors) {
       backgroundColor: colors.surfaceAlt,
     },
     expirationBanner: {
+      borderRadius: radius.md,
+      padding: spacing.md,
+    },
+    projectionBanner: {
       borderRadius: radius.md,
       padding: spacing.md,
     },

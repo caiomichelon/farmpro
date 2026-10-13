@@ -183,6 +183,7 @@ export function useCattleInventoryItem(itemId: string | undefined) {
 
 export interface CattleInventoryMovementWithLot extends CattleInventoryMovement {
   lotName: string | null;
+  plotName: string | null;
 }
 
 /** Histórico de entradas/saídas de um item, mais recente primeiro. */
@@ -198,14 +199,17 @@ export function useCattleInventoryMovements(itemId: string | undefined) {
     try {
       const { data, error: fetchError } = await supabase
         .from('cattle_inventory_movements')
-        .select('*, cattle_lots(name)')
+        .select('*, cattle_lots(name), plots(name)')
         .eq('item_id', itemId)
         .order('moved_at', { ascending: false });
 
       if (fetchError) throw fetchError;
 
-      const rows = (data ?? []) as unknown as (CattleInventoryMovement & { cattle_lots: { name: string } | null })[];
-      setMovements(rows.map((row) => ({ ...row, lotName: row.cattle_lots?.name ?? null })));
+      const rows = (data ?? []) as unknown as (CattleInventoryMovement & {
+        cattle_lots: { name: string } | null;
+        plots: { name: string } | null;
+      })[];
+      setMovements(rows.map((row) => ({ ...row, lotName: row.cattle_lots?.name ?? null, plotName: row.plots?.name ?? null })));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível carregar as movimentações.');
     } finally {
@@ -218,7 +222,16 @@ export function useCattleInventoryMovements(itemId: string | undefined) {
   }, [reload]);
 
   const createMovement = useCallback(
-    async (input: { type: CattleInventoryMovementType; quantity: number; lot_id?: string; notes?: string; moved_at?: string }) => {
+    async (input: {
+      type: CattleInventoryMovementType;
+      quantity: number;
+      lot_id?: string;
+      plot_id?: string;
+      latitude?: number;
+      longitude?: number;
+      notes?: string;
+      moved_at?: string;
+    }) => {
       if (!itemId) return { error: 'Item não encontrado.' };
 
       const { error: insertError } = await supabase.from('cattle_inventory_movements').insert({
@@ -226,6 +239,9 @@ export function useCattleInventoryMovements(itemId: string | undefined) {
         type: input.type,
         quantity: input.quantity,
         lot_id: input.lot_id || null,
+        plot_id: input.plot_id || null,
+        latitude: input.latitude ?? null,
+        longitude: input.longitude ?? null,
         notes: input.notes || null,
         moved_at: input.moved_at || new Date().toISOString().slice(0, 10),
       });
@@ -239,4 +255,42 @@ export function useCattleInventoryMovements(itemId: string | undefined) {
   );
 
   return { movements, isLoading, error, reload, createMovement };
+}
+
+/** Estimativa de quando o item vai acabar, a partir do consumo médio diário
+ * das saídas registradas (últimos 30 dias, ou desde a primeira saída se o
+ * histórico for mais curto). Null quando não há saída suficiente pra
+ * projetar (item novo, ou só entradas registradas ainda). */
+export interface StockProjection {
+  avgDailyConsumption: number;
+  daysRemaining: number;
+  projectedEmptyDate: string;
+}
+
+export function computeStockProjection(
+  movements: Pick<CattleInventoryMovement, 'type' | 'quantity' | 'moved_at'>[],
+  currentQuantity: number
+): StockProjection | null {
+  const saidas = movements.filter((m) => m.type === 'saida');
+  if (saidas.length === 0 || currentQuantity <= 0) return null;
+
+  const today = new Date();
+  const lookbackStart = new Date(today);
+  lookbackStart.setDate(lookbackStart.getDate() - 30);
+
+  const earliestSaida = saidas.reduce((min, m) => (m.moved_at < min ? m.moved_at : min), saidas[0].moved_at);
+  const windowStart = new Date(earliestSaida) > lookbackStart ? new Date(earliestSaida) : lookbackStart;
+  const windowDays = Math.max(1, Math.round((today.getTime() - windowStart.getTime()) / 86_400_000));
+
+  const totalOutInWindow = saidas
+    .filter((m) => new Date(m.moved_at) >= windowStart)
+    .reduce((sum, m) => sum + Number(m.quantity), 0);
+
+  if (totalOutInWindow <= 0) return null;
+
+  const avgDailyConsumption = totalOutInWindow / windowDays;
+  const daysRemaining = Math.floor(currentQuantity / avgDailyConsumption);
+  const projectedEmptyDate = new Date(today.getTime() + daysRemaining * 86_400_000).toISOString().slice(0, 10);
+
+  return { avgDailyConsumption, daysRemaining, projectedEmptyDate };
 }

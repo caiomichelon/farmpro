@@ -151,13 +151,18 @@ export type Plot = {
 };
 
 /** Um abastecimento de cocho registrado num piquete — base do farol de cor
- * (verde/amarelo/vermelho) do mapa de piquetes. */
+ * (verde/amarelo/vermelho) do mapa de piquetes. Quando ligado a um item de
+ * estoque (stock_item_id), o abastecimento desconta a quantidade do
+ * estoque automaticamente — ver useCattleInventoryMovements. */
 export type PlotCochoEvent = {
   id: string;
   plot_id: string;
   refilled_at: string;
   product: string | null;
   sacos: number | null;
+  stock_item_id: string | null;
+  latitude: number | null;
+  longitude: number | null;
   notes: string | null;
   created_at: string;
 };
@@ -687,7 +692,7 @@ export type EmployeeTask = {
   created_at: string;
 };
 
-export type CattleInventoryCategory = 'racao' | 'nucleo_mineral' | 'medicamento' | 'outro';
+export type CattleInventoryCategory = 'racao' | 'sal' | 'proteico' | 'mineral' | 'nucleo' | 'medicamento' | 'vacina' | 'outro';
 export type CattleInventoryUnit = 'kg' | 'saco' | 'litro' | 'dose' | 'unidade';
 export type CattleInventoryMovementType = 'entrada' | 'saida';
 
@@ -716,13 +721,17 @@ export type CattleInventoryItem = {
 
 /** Entrada (compra) ou saída (consumo) de um item de estoque — a saída
  * pode opcionalmente indicar pra qual lote foi (ex.: ração consumida pelo
- * Lote 5). */
+ * Lote 5) e/ou pra qual piquete (suplementação de campo), além da
+ * localização de quem registrou (evidência de que foi lá de verdade). */
 export type CattleInventoryMovement = {
   id: string;
   item_id: string;
   type: CattleInventoryMovementType;
   quantity: number;
   lot_id: string | null;
+  plot_id: string | null;
+  latitude: number | null;
+  longitude: number | null;
   notes: string | null;
   moved_at: string;
   created_at: string;

@@ -1,4 +1,5 @@
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import * as Location from 'expo-location';
 import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,7 +10,8 @@ import { ChipSelect } from '../../../../../src/components/ChipSelect';
 import { EmptyState } from '../../../../../src/components/EmptyState';
 import { ScreenHeader } from '../../../../../src/components/ScreenHeader';
 import { TextField } from '../../../../../src/components/TextField';
-import { COCHO_PRODUCT_SUGGESTIONS } from '../../../../../src/data/cattleOptions';
+import { CATTLE_INVENTORY_SUPPLEMENT_CATEGORIES, CATTLE_INVENTORY_UNIT_LABELS, COCHO_PRODUCT_SUGGESTIONS } from '../../../../../src/data/cattleOptions';
+import { useCattleInventoryItems, useCattleInventoryMovements } from '../../../../../src/hooks/useCattleInventory';
 import { usePlot } from '../../../../../src/hooks/usePlots';
 import { usePlotAguadaEvents } from '../../../../../src/hooks/usePlotAguadaEvents';
 import { usePlotCercaEvents } from '../../../../../src/hooks/usePlotCercaEvents';
@@ -66,16 +68,20 @@ export default function PlotDetailScreen() {
   const colors = useColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const t = useT();
-  const { plotId } = useLocalSearchParams<{ farmId: string; plotId: string }>();
+  const { farmId, plotId } = useLocalSearchParams<{ farmId: string; plotId: string }>();
   const { plot, isLoading: isLoadingPlot, reload: reloadPlot, updateCochoIntervalDays, updateForageMinHeightCm } = usePlot(plotId);
   const cocho = usePlotCochoEvents(plotId);
   const aguada = usePlotAguadaEvents(plotId);
   const cerca = usePlotCercaEvents(plotId);
   const forage = usePlotForageEvents(plotId);
+  const { items: stockItems } = useCattleInventoryItems(farmId);
+  const supplementStockItems = stockItems.filter((i) => CATTLE_INVENTORY_SUPPLEMENT_CATEGORIES.includes(i.category));
 
   const [isAddingCocho, setIsAddingCocho] = useState(false);
   const [product, setProduct] = useState('');
   const [sacos, setSacos] = useState('');
+  const [stockItemId, setStockItemId] = useState<string | null>(null);
+  const stockMovements = useCattleInventoryMovements(stockItemId ?? undefined);
   const [cochoError, setCochoError] = useState<string | null>(null);
   const [isSavingCocho, setIsSavingCocho] = useState(false);
 
@@ -119,17 +125,56 @@ export default function PlotDetailScreen() {
     }
     setCochoError(null);
     setIsSavingCocho(true);
+
+    // Localização é a evidência de que quem abasteceu passou de verdade no
+    // piquete — mesma ideia do ponto digital e das coletas de campo. Se a
+    // permissão for negada, o abastecimento ainda é salvo, só sem GPS.
+    let latitude: number | undefined;
+    let longitude: number | undefined;
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        const position = await Location.getCurrentPositionAsync({});
+        latitude = position.coords.latitude;
+        longitude = position.coords.longitude;
+      }
+    } catch {
+      // Sem localização disponível agora — segue sem ela.
+    }
+
+    const quantity = sacos ? Number(sacos.replace(',', '.')) : undefined;
+
     const { error: createError } = await cocho.createEvent({
       product,
-      sacos: sacos ? Number(sacos.replace(',', '.')) : undefined,
+      sacos: quantity,
+      stock_item_id: stockItemId ?? undefined,
+      latitude,
+      longitude,
     });
-    setIsSavingCocho(false);
     if (createError) {
+      setIsSavingCocho(false);
       setCochoError(createError);
       return;
     }
+
+    // Quando um item do estoque foi escolhido, desconta automaticamente a
+    // quantidade informada — a saída fica ligada ao piquete pra rastrear
+    // quanto saiu pra onde.
+    if (stockItemId && quantity) {
+      await stockMovements.createMovement({
+        type: 'saida',
+        quantity,
+        plot_id: plotId,
+        latitude,
+        longitude,
+        notes: t('cochoForm.stockMovementNote', { plot: plot?.name ?? '' }),
+      });
+    }
+
+    setIsSavingCocho(false);
     setProduct('');
     setSacos('');
+    setStockItemId(null);
     setIsAddingCocho(false);
   }
 
@@ -314,12 +359,42 @@ export default function PlotDetailScreen() {
               />
               <TextField label={t('cochoForm.productLabel')} value={product} onChangeText={setProduct} placeholder={t('cochoForm.productPlaceholder')} />
               <TextField
-                label={t('cochoForm.sacosLabel')}
+                label={
+                  stockItemId
+                    ? t('cochoForm.quantityUnitLabel', {
+                        unit: CATTLE_INVENTORY_UNIT_LABELS[supplementStockItems.find((i) => i.id === stockItemId)?.unit ?? 'saco'],
+                      })
+                    : t('cochoForm.sacosLabel')
+                }
                 value={sacos}
                 onChangeText={setSacos}
                 keyboardType="decimal-pad"
                 placeholder={t('mortality.optional')}
               />
+              {supplementStockItems.length > 0 ? (
+                <>
+                  <ChipSelect
+                    label={t('cochoForm.stockItemLabel')}
+                    options={supplementStockItems.map((i) => ({ value: i.id, label: i.name }))}
+                    value={stockItemId}
+                    onChange={(value) => {
+                      setStockItemId(value);
+                      const picked = supplementStockItems.find((i) => i.id === value);
+                      if (picked) setProduct(picked.name);
+                    }}
+                    accentColor={colors.pecuaria}
+                  />
+                  {stockItemId ? (
+                    <Text style={styles.stockHint}>
+                      {t('cochoForm.stockItemHint', {
+                        qty: supplementStockItems.find((i) => i.id === stockItemId)?.currentQuantity ?? 0,
+                        unit: CATTLE_INVENTORY_UNIT_LABELS[supplementStockItems.find((i) => i.id === stockItemId)?.unit ?? 'saco'],
+                      })}
+                    </Text>
+                  ) : null}
+                </>
+              ) : null}
+              <Text style={styles.locationNote}>{t('cochoForm.locationNote')}</Text>
               {cochoError ? <Text style={styles.errorText}>{cochoError}</Text> : null}
               <View style={styles.formButtons}>
                 <Button label={t('cochoForm.cancel')} variant="ghost" onPress={() => setIsAddingCocho(false)} style={{ flex: 1 }} />
@@ -586,6 +661,15 @@ function createStyles(colors: Colors) {
     },
     errorText: {
       color: colors.danger,
+    },
+    stockHint: {
+      ...typography.caption,
+      color: colors.textSecondary,
+      marginTop: -spacing.sm,
+    },
+    locationNote: {
+      ...typography.caption,
+      color: colors.textMuted,
     },
     historyTitle: {
       ...typography.subheading,
