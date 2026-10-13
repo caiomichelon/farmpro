@@ -138,6 +138,9 @@ export type Plot = {
   /** Limite de lotação (UA/ha) definido pelo usuário — só usado em pastos
    * (type='pecuaria'). Null até o usuário configurar. */
   max_stocking_rate_ua_ha: number | null;
+  /** Contorno georreferenciado (pontos lat/lng formando o polígono), pra
+   * desenhar o talhão/piquete no mapa — null em talhões sem mapeamento. */
+  boundary: { lat: number; lng: number }[] | null;
   created_at: string;
 };
 
