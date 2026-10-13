@@ -2,7 +2,7 @@ import { CATTLE_LOT_STATUS_LABELS } from '../data/cattleOptions';
 import type { CattleLotSummary } from '../hooks/useCattleLots';
 import { CATTLE_LOT_COST_CATEGORY_LABELS } from '../hooks/useCattleLotCosts';
 import type { CattleSlaughterWithHouse } from '../hooks/useCattleSlaughters';
-import type { CattleLotCost, CattleLotCostCategory } from '../types/database';
+import type { CattleLotCost, CattleLotCostCategory, CattleMortalityEvent } from '../types/database';
 
 const KG_PER_ARROBA = 15;
 
@@ -38,6 +38,7 @@ export interface LotReportInput {
   lot: CattleLotSummary;
   costs: CattleLotCost[];
   slaughters: CattleSlaughterWithHouse[];
+  mortalityEvents: CattleMortalityEvent[];
   /** Preço por unidade (mesma unidade de lot.priceUnit) digitado à mão pelo
    * usuário, pra simular com um valor diferente da cotação automática — só
    * vale enquanto o lote está "ativo" (projeção); depois de abatido, o
@@ -89,7 +90,7 @@ function computeRealizedResult(slaughters: CattleSlaughterWithHouse[], fallbackY
  * o lote é "abatido" ele vira resultado realizado, com os números de verdade
  * dos registros de abate — nunca mistura os dois rótulos. */
 export function buildLotReportHtml(input: LotReportInput): string {
-  const { farmName, city, state, generatedAt, lot, costs, slaughters, priceOverride } = input;
+  const { farmName, city, state, generatedAt, lot, costs, slaughters, mortalityEvents, priceOverride } = input;
   const location = [city, state].filter(Boolean).join(' / ') || '—';
   const dateStr = generatedAt.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
   const isRealized = lot.status === 'abatido' && slaughters.length > 0;
@@ -195,9 +196,22 @@ export function buildLotReportHtml(input: LotReportInput): string {
     <div class="stat"><div class="value">${number(exitWeightKg)} kg</div><div class="label">${isRealized ? 'Peso médio de saída' : 'Peso médio atual'}</div></div>
     <div class="stat"><div class="value">${lot.gmdKgPerDay !== null ? `${number(lot.gmdKgPerDay, 2)} kg/dia` : '—'}</div><div class="label">GMD</div></div>
     <div class="stat"><div class="value">${lot.daysInLot}</div><div class="label">Dias em confinamento</div></div>
-    <div class="stat"><div class="value">${number(lot.mortalityRatePct, 1)}%</div><div class="label">Mortalidade</div></div>
+    <div class="stat"><div class="value">${number(lot.totalMortality)}</div><div class="label">Animais perdidos (${number(lot.mortalityRatePct, 1)}% de mortalidade)</div></div>
     <div class="stat"><div class="value">${exitDateLabel}</div><div class="label">${isRealized ? 'Data do abate' : 'Saída estimada'}</div></div>
   </div>
+
+  <h2>Mortes registradas</h2>
+  ${
+    mortalityEvents.length === 0
+      ? '<p>Nenhuma morte registrada neste lote.</p>'
+      : `<table>
+    <tr><th>Data</th><th class="num">Cabeças perdidas</th><th>Causa</th></tr>
+    ${mortalityEvents
+      .map((e) => `<tr><td>${formatDate(e.event_date)}</td><td class="num">${e.head_count}</td><td>${e.cause ?? 'Não informada'}</td></tr>`)
+      .join('')}
+    <tr><th>Total</th><th class="num">${number(lot.totalMortality)}</th><th></th></tr>
+  </table>`
+  }
 
   <h2>Custos lançados</h2>
   ${

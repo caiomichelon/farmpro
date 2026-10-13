@@ -97,4 +97,14 @@ export const FAT_FINISH_SCORE_OPTIONS = [
   { value: '5', label: '5 · Excessiva' },
 ];
 
-export const INSEMINATION_METHODS = ['IATF', 'Monta natural', 'IA em cio observado'];
+/** Causas mais comuns de morte no gado de corte — só sugestão (vira um botão
+ * pra tocar), o campo de causa aceita qualquer texto digitado também. */
+export const MORTALITY_CAUSE_SUGGESTIONS = [
+  'Doença',
+  'Acidente',
+  'Intoxicação',
+  'Raio',
+  'Cobra',
+  'Afogamento',
+  'Desconhecida',
+];

@@ -20,6 +20,10 @@ export interface CattleLotSummary extends CattleLot {
   latestWeighingDate: string | null;
   gmdKgPerDay: number | null;
   mortalityRatePct: number;
+  /** Cabeças perdidas (soma de todos os eventos de mortalidade do lote) —
+   * número bruto, pra mostrar "X animais perdidos" sem precisar recalcular
+   * a partir da taxa percentual. */
+  totalMortality: number;
   daysInLot: number;
   readiness: CattleLotReadiness;
   /** kg que faltam pra bater a meta — null se não tem meta definida, 0 ou
@@ -155,6 +159,7 @@ async function withSummary(lots: CattleLot[]): Promise<CattleLotSummary[]> {
       latestWeighingDate,
       gmdKgPerDay,
       mortalityRatePct: (totalMortality / lot.entry_head_count) * 100,
+      totalMortality,
       daysInLot,
       readiness,
       kgToTarget,

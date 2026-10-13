@@ -9,6 +9,7 @@ import { ScreenHeader } from '../../../../../../../src/components/ScreenHeader';
 import { TextField } from '../../../../../../../src/components/TextField';
 import { useCattleLot } from '../../../../../../../src/hooks/useCattleLots';
 import { useCattleLotCosts } from '../../../../../../../src/hooks/useCattleLotCosts';
+import { useCattleMortalityEvents } from '../../../../../../../src/hooks/useCattleMortality';
 import { useCattleSlaughters } from '../../../../../../../src/hooks/useCattleSlaughters';
 import { useFarm } from '../../../../../../../src/hooks/useFarms';
 import { useT } from '../../../../../../../src/i18n';
@@ -36,13 +37,14 @@ export default function LotReportScreen() {
   const { lot, isLoading: isLoadingLot } = useCattleLot(lotId);
   const { costs, isLoading: isLoadingCosts } = useCattleLotCosts(lotId);
   const { slaughters, isLoading: isLoadingSlaughters } = useCattleSlaughters(lotId);
+  const { events: mortalityEvents, isLoading: isLoadingMortality } = useCattleMortalityEvents(lotId);
   const [isSharing, setIsSharing] = useState(false);
   const [shareError, setShareError] = useState<string | null>(null);
   const [isEditingPrice, setIsEditingPrice] = useState(false);
   const [priceInput, setPriceInput] = useState('');
   const [priceOverride, setPriceOverride] = useState<number | null>(null);
 
-  const isLoading = isLoadingLot || isLoadingCosts || isLoadingSlaughters || !farm || !lot;
+  const isLoading = isLoadingLot || isLoadingCosts || isLoadingSlaughters || isLoadingMortality || !farm || !lot;
   const isRealized = lot?.status === 'abatido' && slaughters.length > 0;
 
   const html = useMemo(() => {
@@ -55,9 +57,10 @@ export default function LotReportScreen() {
       lot,
       costs,
       slaughters,
+      mortalityEvents,
       priceOverride,
     });
-  }, [farm, lot, costs, slaughters, priceOverride]);
+  }, [farm, lot, costs, slaughters, mortalityEvents, priceOverride]);
 
   function handleStartEditPrice() {
     if (!lot) return;

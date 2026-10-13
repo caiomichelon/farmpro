@@ -5,9 +5,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../../../../../src/components/Button';
 import { Card } from '../../../../../../../src/components/Card';
+import { ChipSelect } from '../../../../../../../src/components/ChipSelect';
 import { FadeSlideIn } from '../../../../../../../src/components/FadeSlideIn';
 import { ScreenHeader } from '../../../../../../../src/components/ScreenHeader';
 import { TextField } from '../../../../../../../src/components/TextField';
+import { MORTALITY_CAUSE_SUGGESTIONS } from '../../../../../../../src/data/cattleOptions';
 import { useCattleMortalityEvents } from '../../../../../../../src/hooks/useCattleMortality';
 import { useT } from '../../../../../../../src/i18n';
 import { radius, spacing, typography, useColors, type Colors } from '../../../../../../../src/theme';
@@ -54,6 +56,13 @@ export default function MortalityScreen() {
                 onChangeText={setHeadCount}
                 placeholder="Ex.: 2"
                 keyboardType="number-pad"
+              />
+              <ChipSelect
+                label={t('mortality.causeSuggestionsLabel')}
+                options={MORTALITY_CAUSE_SUGGESTIONS.map((c) => ({ value: c, label: c }))}
+                value={cause}
+                onChange={setCause}
+                accentColor={colors.danger}
               />
               <TextField label={t('mortality.cause')} value={cause} onChangeText={setCause} placeholder={t('mortality.optional')} />
             </Card>
