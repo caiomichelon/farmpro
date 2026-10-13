@@ -2,6 +2,7 @@ import { createElement } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 
+import { darkenHex } from '../lib/colorUtils';
 import { radius } from '../theme';
 
 export interface MapPlot {
@@ -10,9 +11,9 @@ export interface MapPlot {
   areaHectares: number;
   /** Pontos lat/lng que formam o contorno do talhão/piquete. */
   boundary: { lat: number; lng: number }[];
-  /** Cor do polígono — por enquanto sempre a mesma (sem farol ainda), mas já
-   * deixa pronto pra colorir por status quando o farol de cocho/aguada/etc.
-   * existir. */
+  /** Cor de preenchimento do polígono (ex.: cor do farol de status) — a
+   * borda sai automaticamente um pouco mais escura que essa cor, pra
+   * separar um talhão do outro sem precisar escolher uma segunda cor. */
   color?: string;
 }
 
@@ -25,9 +26,10 @@ function buildMapHtml(plots: MapPlot[], defaultColor: string): string {
     .map((plot) => {
       const latLngs = plot.boundary.map((p) => `[${p.lat},${p.lng}]`).join(',');
       const label = `${plot.name}<br/>${number(plot.areaHectares, 1)} ha`;
-      const color = plot.color ?? defaultColor;
+      const fillColor = plot.color ?? defaultColor;
+      const borderColor = darkenHex(fillColor, 0.25);
       return `(function(){
-        var poly = L.polygon([${latLngs}], { color: ${JSON.stringify(color)}, weight: 2, fillOpacity: 0.35 }).addTo(map);
+        var poly = L.polygon([${latLngs}], { color: ${JSON.stringify(borderColor)}, weight: 2, fillColor: ${JSON.stringify(fillColor)}, fillOpacity: 0.85 }).addTo(map);
         poly.bindPopup(${JSON.stringify(label)});
         layers.push(poly);
       })();`;
