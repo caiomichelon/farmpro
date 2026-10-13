@@ -23,7 +23,7 @@ export type ProductionCostCategory =
   | 'mao_de_obra'
   | 'outro';
 export type CattleLotStatus = 'ativo' | 'vendido' | 'abatido';
-export type EmployeeSector = 'lavoura' | 'corte' | 'cria' | 'escritorio';
+export type EmployeeSector = 'lavoura' | 'corte' | 'escritorio';
 export type EmployeeCostType = 'mensalista' | 'diarista' | 'tarefa';
 export type EmployeeStatus = 'ativo' | 'inativo';
 export type TimeEntryType = 'entrada' | 'saida_almoco' | 'volta_almoco' | 'saida';

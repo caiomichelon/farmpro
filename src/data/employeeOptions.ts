@@ -3,17 +3,16 @@ import type { EmployeeCostType, EmployeeSector, FarmSectorType, TimeEntryType } 
 export const EMPLOYEE_SECTOR_LABELS: Record<EmployeeSector, string> = {
   lavoura: 'Lavoura',
   corte: 'Pecuária — Corte',
-  cria: 'Pecuária — Cria',
   escritorio: 'Escritório / Administrativo',
 };
 
-export const EMPLOYEE_SECTOR_OPTIONS: EmployeeSector[] = ['lavoura', 'corte', 'cria', 'escritorio'];
+export const EMPLOYEE_SECTOR_OPTIONS: EmployeeSector[] = ['lavoura', 'corte', 'escritorio'];
 
 export type EmployeeArea = 'lavoura' | 'pecuaria';
 
 const AREA_SECTORS: Record<EmployeeArea, EmployeeSector[]> = {
   lavoura: ['lavoura'],
-  pecuaria: ['corte', 'cria'],
+  pecuaria: ['corte'],
 };
 
 /** Setores que fazem sentido pra quem entrou pela Lavoura ou pela Pecuária —
