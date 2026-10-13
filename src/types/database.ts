@@ -141,6 +141,21 @@ export type Plot = {
   /** Contorno georreferenciado (pontos lat/lng formando o polígono), pra
    * desenhar o talhão/piquete no mapa — null em talhões sem mapeamento. */
   boundary: { lat: number; lng: number }[] | null;
+  /** De quantos em quantos dias o cocho desse piquete precisa ser
+   * reabastecido — usado pra calcular o farol de cor no mapa. */
+  cocho_interval_days: number;
+  created_at: string;
+};
+
+/** Um abastecimento de cocho registrado num piquete — base do farol de cor
+ * (verde/amarelo/vermelho) do mapa de piquetes. */
+export type PlotCochoEvent = {
+  id: string;
+  plot_id: string;
+  refilled_at: string;
+  product: string | null;
+  sacos: number | null;
+  notes: string | null;
   created_at: string;
 };
 
@@ -775,6 +790,12 @@ export interface Database {
         Row: Plot;
         Insert: Partial<Plot> & { farm_id: string; name: string; area_hectares: number; type: PlotType };
         Update: Partial<Plot>;
+        Relationships: [];
+      };
+      plot_cocho_events: {
+        Row: PlotCochoEvent;
+        Insert: Partial<PlotCochoEvent> & { plot_id: string };
+        Update: Partial<PlotCochoEvent>;
         Relationships: [];
       };
       subscriptions: {

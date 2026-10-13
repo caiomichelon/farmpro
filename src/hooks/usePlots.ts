@@ -199,5 +199,16 @@ export function usePlot(plotId: string | undefined) {
     reload();
   }, [reload]);
 
-  return { plot, isLoading, error, reload };
+  const updateCochoIntervalDays = useCallback(
+    async (days: number) => {
+      if (!plotId) return { error: 'Talhão não encontrado.' };
+      const { error: updateError } = await supabase.from('plots').update({ cocho_interval_days: days }).eq('id', plotId);
+      if (updateError) return { error: updateError.message };
+      await reload();
+      return { error: null };
+    },
+    [plotId, reload]
+  );
+
+  return { plot, isLoading, error, reload, updateCochoIntervalDays };
 }

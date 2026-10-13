@@ -108,3 +108,7 @@ export const MORTALITY_CAUSE_SUGGESTIONS = [
   'Afogamento',
   'Desconhecida',
 ];
+
+/** Produtos mais comuns abastecidos no cocho — só sugestão, o campo aceita
+ * qualquer texto digitado também. */
+export const COCHO_PRODUCT_SUGGESTIONS = ['Sal', 'Ração', 'Proteico', 'Mistura mineral', 'Núcleo'];
