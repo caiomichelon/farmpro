@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { enqueueMutation, isLikelyNetworkError } from '../lib/offlineQueue';
 import { supabase } from '../lib/supabase';
 import type { PlotCochoEvent } from '../types/database';
 
@@ -46,7 +47,7 @@ export function usePlotCochoEvents(plotId: string | undefined) {
     }) => {
       if (!plotId) return { error: 'Piquete não encontrado.' };
 
-      const { error: insertError } = await supabase.from('plot_cocho_events').insert({
+      const payload = {
         plot_id: plotId,
         refilled_at: input.refilled_at || new Date().toISOString().slice(0, 10),
         product: input.product?.trim() || null,
@@ -55,12 +56,26 @@ export function usePlotCochoEvents(plotId: string | undefined) {
         latitude: input.latitude ?? null,
         longitude: input.longitude ?? null,
         notes: input.notes?.trim() || null,
-      });
+      };
 
-      if (insertError) return { error: insertError.message };
+      try {
+        const { error: insertError } = await supabase.from('plot_cocho_events').insert(payload);
+        if (insertError) {
+          // Sem sinal no pasto — guarda localmente pra sincronizar depois,
+          // em vez de perder o registro.
+          if (isLikelyNetworkError(insertError.message)) {
+            await enqueueMutation('plot_cocho_events', payload);
+            return { error: null, queued: true };
+          }
+          return { error: insertError.message };
+        }
+      } catch {
+        await enqueueMutation('plot_cocho_events', payload);
+        return { error: null, queued: true };
+      }
 
       await reload();
-      return { error: null };
+      return { error: null, queued: false };
     },
     [plotId, reload]
   );

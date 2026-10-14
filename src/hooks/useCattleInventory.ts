@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { enqueueMutation, isLikelyNetworkError } from '../lib/offlineQueue';
 import { supabase } from '../lib/supabase';
 import type {
   CattleInventoryCategory,
@@ -234,7 +235,7 @@ export function useCattleInventoryMovements(itemId: string | undefined) {
     }) => {
       if (!itemId) return { error: 'Item não encontrado.' };
 
-      const { error: insertError } = await supabase.from('cattle_inventory_movements').insert({
+      const payload = {
         item_id: itemId,
         type: input.type,
         quantity: input.quantity,
@@ -244,12 +245,26 @@ export function useCattleInventoryMovements(itemId: string | undefined) {
         longitude: input.longitude ?? null,
         notes: input.notes || null,
         moved_at: input.moved_at || new Date().toISOString().slice(0, 10),
-      });
+      };
 
-      if (insertError) return { error: insertError.message };
+      try {
+        const { error: insertError } = await supabase.from('cattle_inventory_movements').insert(payload);
+        if (insertError) {
+          // Sem sinal no pasto — guarda localmente pra sincronizar depois,
+          // em vez de perder a movimentação (e o desconto de estoque).
+          if (isLikelyNetworkError(insertError.message)) {
+            await enqueueMutation('cattle_inventory_movements', payload);
+            return { error: null, queued: true };
+          }
+          return { error: insertError.message };
+        }
+      } catch {
+        await enqueueMutation('cattle_inventory_movements', payload);
+        return { error: null, queued: true };
+      }
 
       await reload();
-      return { error: null };
+      return { error: null, queued: false };
     },
     [itemId, reload]
   );

@@ -1,7 +1,7 @@
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import * as Location from 'expo-location';
 import { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../../../src/components/Button';
@@ -81,6 +81,7 @@ export default function PlotDetailScreen() {
   const [product, setProduct] = useState('');
   const [sacos, setSacos] = useState('');
   const [stockItemId, setStockItemId] = useState<string | null>(null);
+  const selectedStockItem = supplementStockItems.find((i) => i.id === stockItemId) ?? null;
   const stockMovements = useCattleInventoryMovements(stockItemId ?? undefined);
   const [cochoError, setCochoError] = useState<string | null>(null);
   const [isSavingCocho, setIsSavingCocho] = useState(false);
@@ -144,7 +145,7 @@ export default function PlotDetailScreen() {
 
     const quantity = sacos ? Number(sacos.replace(',', '.')) : undefined;
 
-    const { error: createError } = await cocho.createEvent({
+    const { error: createError, queued: cochoQueued } = await cocho.createEvent({
       product,
       sacos: quantity,
       stock_item_id: stockItemId ?? undefined,
@@ -160,8 +161,9 @@ export default function PlotDetailScreen() {
     // Quando um item do estoque foi escolhido, desconta automaticamente a
     // quantidade informada — a saída fica ligada ao piquete pra rastrear
     // quanto saiu pra onde.
+    let movementQueued = false;
     if (stockItemId && quantity) {
-      await stockMovements.createMovement({
+      const { queued } = await stockMovements.createMovement({
         type: 'saida',
         quantity,
         plot_id: plotId,
@@ -169,9 +171,13 @@ export default function PlotDetailScreen() {
         longitude,
         notes: t('cochoForm.stockMovementNote', { plot: plot?.name ?? '' }),
       });
+      movementQueued = Boolean(queued);
     }
 
     setIsSavingCocho(false);
+    if (cochoQueued || movementQueued) {
+      Alert.alert(t('cochoForm.offlineTitle'), t('cochoForm.offlineMessage'));
+    }
     setProduct('');
     setSacos('');
     setStockItemId(null);
@@ -360,10 +366,8 @@ export default function PlotDetailScreen() {
               <TextField label={t('cochoForm.productLabel')} value={product} onChangeText={setProduct} placeholder={t('cochoForm.productPlaceholder')} />
               <TextField
                 label={
-                  stockItemId
-                    ? t('cochoForm.quantityUnitLabel', {
-                        unit: CATTLE_INVENTORY_UNIT_LABELS[supplementStockItems.find((i) => i.id === stockItemId)?.unit ?? 'saco'],
-                      })
+                  selectedStockItem
+                    ? t('cochoForm.quantityUnitLabel', { unit: CATTLE_INVENTORY_UNIT_LABELS[selectedStockItem.unit] })
                     : t('cochoForm.sacosLabel')
                 }
                 value={sacos}
@@ -384,11 +388,11 @@ export default function PlotDetailScreen() {
                     }}
                     accentColor={colors.pecuaria}
                   />
-                  {stockItemId ? (
+                  {selectedStockItem ? (
                     <Text style={styles.stockHint}>
                       {t('cochoForm.stockItemHint', {
-                        qty: supplementStockItems.find((i) => i.id === stockItemId)?.currentQuantity ?? 0,
-                        unit: CATTLE_INVENTORY_UNIT_LABELS[supplementStockItems.find((i) => i.id === stockItemId)?.unit ?? 'saco'],
+                        qty: selectedStockItem.currentQuantity,
+                        unit: CATTLE_INVENTORY_UNIT_LABELS[selectedStockItem.unit],
                       })}
                     </Text>
                   ) : null}
