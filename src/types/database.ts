@@ -422,12 +422,21 @@ export type CattleLotWeighing = {
 };
 
 /** Evento de mortalidade de um lote — base da taxa de mortalidade. */
+/** Uma morte registrada num lote. Quando ligada a um animal rastreado
+ * individualmente (animal_id), head_count é sempre 1 e o status desse
+ * animal vira 'morto' automaticamente — ver useCattleMortalityEvents. */
 export type CattleMortalityEvent = {
   id: string;
   lot_id: string;
   event_date: string;
   head_count: number;
   cause: string | null;
+  animal_id: string | null;
+  category: string | null;
+  photo_url: string | null;
+  photographer: string | null;
+  latitude: number | null;
+  longitude: number | null;
   notes: string | null;
   created_at: string;
 };

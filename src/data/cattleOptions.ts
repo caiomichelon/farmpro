@@ -120,3 +120,7 @@ export const MORTALITY_CAUSE_SUGGESTIONS = [
 /** Produtos mais comuns abastecidos no cocho — só sugestão, o campo aceita
  * qualquer texto digitado também. */
 export const COCHO_PRODUCT_SUGGESTIONS = ['Sal', 'Ração', 'Proteico', 'Mistura mineral', 'Núcleo'];
+
+/** Categorias mais comuns pra classificar o animal perdido — só sugestão,
+ * o campo aceita qualquer texto digitado também. */
+export const MORTALITY_CATEGORY_SUGGESTIONS = ['Bezerro', 'Bezerra', 'Novilho', 'Novilha', 'Boi', 'Vaca', 'Touro'];

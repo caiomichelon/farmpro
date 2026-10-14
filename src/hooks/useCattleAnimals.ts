@@ -149,7 +149,17 @@ export function useCattleAnimals(lotId: string | undefined) {
     [lotId, reload]
   );
 
-  return { animals, isLoading, error, reload, createAnimal };
+  const updateStatus = useCallback(
+    async (animalId: string, status: CattleAnimal['status']) => {
+      const { error: updateError } = await supabase.from('cattle_animals').update({ status }).eq('id', animalId);
+      if (updateError) return { error: updateError.message };
+      await reload();
+      return { error: null };
+    },
+    [reload]
+  );
+
+  return { animals, isLoading, error, reload, createAnimal, updateStatus };
 }
 
 /** Todos os animais da fazenda, com o nome do lote — a "planilha grande". */

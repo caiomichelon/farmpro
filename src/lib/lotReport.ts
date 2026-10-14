@@ -30,6 +30,14 @@ function formatDate(isoDate: string): string {
   return `${day}/${month}/${year}`;
 }
 
+/** Escapa texto digitado pelo usuário (nome da fazenda, causa de morte
+ * etc.) antes de jogar no HTML do relatório — esse HTML é renderizado num
+ * WebView/iframe com JS ligado, então texto livre sem escape vira uma
+ * injeção de HTML/script nos próprios dados da fazenda. */
+function escapeHtml(value: string): string {
+  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 export interface LotReportInput {
   farmName: string;
   city: string | null;
@@ -175,11 +183,11 @@ export function buildLotReportHtml(input: LotReportInput): string {
 <body>
   <header>
     <div>
-      <div class="brand">${farmName}</div>
-      <div class="brand-sub">${location}</div>
+      <div class="brand">${escapeHtml(farmName)}</div>
+      <div class="brand-sub">${escapeHtml(location)}</div>
     </div>
     <div class="doc-title">
-      <h1>Relatório do Lote — ${lot.name}</h1>
+      <h1>Relatório do Lote — ${escapeHtml(lot.name)}</h1>
       <p>Gerado em ${dateStr}</p>
       <span class="status-badge">${CATTLE_LOT_STATUS_LABELS[lot.status]}</span>
     </div>
@@ -205,11 +213,14 @@ export function buildLotReportHtml(input: LotReportInput): string {
     mortalityEvents.length === 0
       ? '<p>Nenhuma morte registrada neste lote.</p>'
       : `<table>
-    <tr><th>Data</th><th class="num">Cabeças perdidas</th><th>Causa</th></tr>
+    <tr><th>Data</th><th class="num">Cabeças perdidas</th><th>Categoria</th><th>Causa</th></tr>
     ${mortalityEvents
-      .map((e) => `<tr><td>${formatDate(e.event_date)}</td><td class="num">${e.head_count}</td><td>${e.cause ?? 'Não informada'}</td></tr>`)
+      .map(
+        (e) =>
+          `<tr><td>${formatDate(e.event_date)}</td><td class="num">${e.head_count}</td><td>${e.category ? escapeHtml(e.category) : '—'}</td><td>${e.cause ? escapeHtml(e.cause) : 'Não informada'}</td></tr>`
+      )
       .join('')}
-    <tr><th>Total</th><th class="num">${number(lot.totalMortality)}</th><th></th></tr>
+    <tr><th>Total</th><th class="num">${number(lot.totalMortality)}</th><th></th><th></th></tr>
   </table>`
   }
 

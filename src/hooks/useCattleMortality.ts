@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { enqueueMutation, isLikelyNetworkError } from '../lib/offlineQueue';
 import { supabase } from '../lib/supabase';
 import type { CattleMortalityEvent } from '../types/database';
 
@@ -34,21 +35,58 @@ export function useCattleMortalityEvents(lotId: string | undefined) {
   }, [reload]);
 
   const createEvent = useCallback(
-    async (input: { head_count: number; cause?: string; event_date?: string; notes?: string }) => {
+    async (input: {
+      head_count: number;
+      cause?: string;
+      animal_id?: string;
+      category?: string;
+      photo_url?: string;
+      photographer?: string;
+      latitude?: number;
+      longitude?: number;
+      event_date?: string;
+      notes?: string;
+    }) => {
       if (!lotId) return { error: 'Lote não encontrado.' };
 
-      const { error: insertError } = await supabase.from('cattle_mortality_events').insert({
+      const payload = {
         lot_id: lotId,
         head_count: input.head_count,
         cause: input.cause || null,
+        animal_id: input.animal_id ?? null,
+        category: input.category || null,
+        photo_url: input.photo_url || null,
+        photographer: input.photographer || null,
+        latitude: input.latitude ?? null,
+        longitude: input.longitude ?? null,
         event_date: input.event_date || new Date().toISOString().slice(0, 10),
         notes: input.notes || null,
-      });
+      };
 
-      if (insertError) return { error: insertError.message };
+      try {
+        const { error: insertError } = await supabase.from('cattle_mortality_events').insert(payload);
+        if (insertError) {
+          // Sem sinal no pasto/curral — guarda localmente pra sincronizar
+          // depois, em vez de perder o registro.
+          if (isLikelyNetworkError(insertError.message)) {
+            await enqueueMutation('cattle_mortality_events', payload);
+            return { error: null, queued: true };
+          }
+          return { error: insertError.message };
+        }
+      } catch {
+        await enqueueMutation('cattle_mortality_events', payload);
+        return { error: null, queued: true };
+      }
+
+      // Animal rastreado individualmente que morreu sai do rebanho ativo —
+      // marca o status dele, sem precisar de um segundo passo manual.
+      if (input.animal_id) {
+        await supabase.from('cattle_animals').update({ status: 'morto' }).eq('id', input.animal_id);
+      }
 
       await reload();
-      return { error: null };
+      return { error: null, queued: false };
     },
     [lotId, reload]
   );
